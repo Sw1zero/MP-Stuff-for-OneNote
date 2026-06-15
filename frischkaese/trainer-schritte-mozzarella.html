@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mozzarella - Schritte nennen</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .trainer-wrap {
+      max-width: 620px;
+      margin: 0 auto;
+      padding: 32px 16px 56px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .task-intro {
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      padding: 14px 20px;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+      line-height: 1.6;
+    }
+
+    .score-bar {
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      padding: 11px 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      min-height: 44px;
+    }
+    .score-bar .score-val {
+      font-size: 1.05rem;
+      color: var(--blue-dark);
+    }
+
+    .step-row {
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      padding: 10px 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .step-nr {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-subtle);
+      background: var(--bg);
+      border-radius: 50%;
+      min-width: 28px;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+
+    .step-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .step-input {
+      font-family: var(--font);
+      font-size: 0.9rem;
+      padding: 7px 11px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      width: 100%;
+      box-sizing: border-box;
+      color: var(--text);
+      background: var(--bg);
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .step-input:focus { outline: none; border-color: var(--blue-light); }
+    .step-input.correct {
+      border-color: #38a169;
+      background: #f0fdf4;
+      color: #15803d;
+    }
+    .step-input.wrong {
+      border-color: var(--red);
+      background: #fff5f5;
+    }
+    .step-input.revealed {
+      color: var(--text-subtle);
+      font-style: italic;
+    }
+
+    .step-feedback {
+      font-size: 0.80rem;
+      min-height: 0;
+      line-height: 1.4;
+    }
+    .step-feedback.hint    { color: var(--blue-dark); }
+    .step-feedback.correct { color: #15803d; font-weight: 500; }
+    .step-feedback.wrong   { color: var(--text-muted); }
+
+    .tipp-btn {
+      font-family: var(--font);
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-subtle);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 4px 8px;
+      cursor: pointer;
+      margin-top: 5px;
+      flex-shrink: 0;
+      transition: background 0.1s, color 0.1s;
+    }
+    .tipp-btn:hover { background: var(--blue-tint); color: var(--blue-dark); border-color: var(--blue-light); }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<header class="bzwu-header">
+  <div class="header-text">
+    <span class="school-badge">BZWU Wil-Uzwil · Milchpraktiker EBA · Frischkäse</span>
+    <h1>Mozzarella - Schritte nennen</h1>
+    <p>Schreiben Sie den Schritt für jede Nummer. Ein Stichwort genügt.</p>
+  </div>
+  <div class="header-logos">
+    <img src="../assets/logos/bzwu.png" alt="BZWU" class="header-logo">
+    <img src="../assets/logos/milchtechnologen.svg" alt="Milchtechnologen" class="header-logo">
+  </div>
+</header>
+
+<main>
+<div class="trainer-wrap">
+  <a class="back-link" href="../index.html">&#8592; Alle Lerntools</a>
+
+  <div class="task-intro">
+    Es gibt 9 Schritte bei der Mozzarella-Herstellung.<br>
+    Schreiben Sie für jeden Schritt den wichtigsten Begriff.<br>
+    Beispiel: «Pasteurisieren» oder «Lab zugeben».
+  </div>
+
+  <div class="score-bar" id="scoreBar">
+    <span>Noch nicht geprüft</span>
+  </div>
+
+  <div id="stepList"></div>
+
+  <div class="actions">
+    <button class="btn btn-primary" onclick="checkAll()">Alle prüfen</button>
+    <button class="btn btn-ghost"   onclick="showAll()">Lösungen zeigen</button>
+    <button class="btn btn-ghost"   onclick="resetAll()">&#8635; Zurücksetzen</button>
+  </div>
+</div>
+</main>
+
+<footer class="bzwu-footer">
+  BZWU Wil-Uzwil · Milchpraktiker EBA · Philipp Neukomm
+</footer>
+
+<script>
+var STEPS = [
+  {
+    label: 'Homogenisieren (30-50 bar)',
+    keys:  ['homogen'],
+    tipp:  'Homo...'
+  },
+  {
+    label: 'Pasteurisieren (mind. 75 °C, 15 Sekunden)',
+    keys:  ['pasteur'],
+    tipp:  'Paster...'
+  },
+  {
+    label: 'Abkühlen, Kulturen oder Säure zugeben',
+    keys:  ['kultur', 'saur', 'abkuhl'],
+    tipp:  'Abkuhl... / Kultur...'
+  },
+  {
+    label: 'Lab zugeben - Gallert bildet sich',
+    keys:  ['lab'],
+    tipp:  'Lab...'
+  },
+  {
+    label: 'Gallert schneiden: Bruch haselnussgross',
+    keys:  ['schneid', 'hasel', 'schnitt', 'gallert'],
+    tipp:  'Schneid... / Hasel...'
+  },
+  {
+    label: 'Bruch nachwärmen auf 36-40 °C (Synärese)',
+    keys:  ['nachwarm', 'synar', 'warm'],
+    tipp:  'Nachwarm...'
+  },
+  {
+    label: 'Molke ablassen, Bruch in Pastafilier-Wasser (70-75 °C)',
+    keys:  ['molke'],
+    tipp:  'Molke...'
+  },
+  {
+    label: 'Pastafilieren: Kneten und Dehnen bis 57-59 °C',
+    keys:  ['pastafil', 'filier', 'kneten', 'dehnen'],
+    tipp:  'Pastafil...'
+  },
+  {
+    label: 'Kugeln oder Stangen formen, im Salzbad kühlen',
+    keys:  ['form', 'salzbad', 'kugel', 'stang'],
+    tipp:  'Form... / Salzbad...'
+  }
+];
+
+function normalize(s) {
+  return s.toLowerCase()
+    .replace(/ä/g, 'a')
+    .replace(/ö/g, 'o')
+    .replace(/ü/g, 'u')
+    .replace(/ß/g, 's');
+}
+
+function isCorrect(val, keys) {
+  if (!val.trim()) return false;
+  var norm = normalize(val);
+  return keys.some(function(k) { return norm.indexOf(k) >= 0; });
+}
+
+function buildList() {
+  var list = document.getElementById('stepList');
+  list.innerHTML = '';
+  STEPS.forEach(function(step, i) {
+    var n   = i + 1;
+    var row = document.createElement('div');
+    row.className = 'step-row';
+    row.id = 'row-' + n;
+    row.innerHTML =
+      '<div class="step-nr">' + n + '</div>' +
+      '<div class="step-body">' +
+        '<input type="text" class="step-input" id="inp-' + n + '"' +
+               ' placeholder="Schritt benennen..." autocomplete="off" autocorrect="off" spellcheck="false">' +
+        '<div class="step-feedback" id="fb-' + n + '"></div>' +
+      '</div>' +
+      '<button class="tipp-btn" onclick="showTipp(' + i + ')">Tipp</button>';
+    list.appendChild(row);
+
+    var inp = document.getElementById('inp-' + n);
+    inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        var next = document.getElementById('inp-' + (n + 1));
+        if (next) { next.focus(); } else { checkAll(); }
+      }
+    });
+  });
+}
+
+function showTipp(i) {
+  var fb = document.getElementById('fb-' + (i + 1));
+  fb.textContent = 'Tipp: ' + STEPS[i].tipp;
+  fb.className = 'step-feedback hint';
+}
+
+function checkAll() {
+  var score = 0;
+  var answered = 0;
+  STEPS.forEach(function(step, i) {
+    var n   = i + 1;
+    var inp = document.getElementById('inp-' + n);
+    var fb  = document.getElementById('fb-'  + n);
+    var val = inp.value.trim();
+    if (val !== '' && !inp.classList.contains('revealed')) {
+      answered++;
+      var ok = isCorrect(val, step.keys);
+      inp.className = 'step-input ' + (ok ? 'correct' : 'wrong');
+      if (ok) {
+        score++;
+        fb.textContent = '';
+        fb.className = 'step-feedback';
+      } else {
+        fb.textContent = 'Richtig: ' + step.label;
+        fb.className = 'step-feedback wrong';
+      }
+    } else if (val === '') {
+      inp.className = 'step-input';
+      fb.textContent = '';
+      fb.className = 'step-feedback';
+    }
+  });
+
+  var bar = document.getElementById('scoreBar');
+  if (answered === 0) {
+    bar.innerHTML = '<span>Noch keine Antworten eingetragen</span>';
+    return;
+  }
+  if (score === STEPS.length) {
+    bar.innerHTML = '<span>&#10003; Alle richtig!</span><span class="score-val">' + score + ' / ' + STEPS.length + '</span>';
+  } else {
+    bar.innerHTML = '<span>Richtig:</span><span class="score-val">' + score + ' / ' + STEPS.length + '</span>';
+  }
+}
+
+function showAll() {
+  STEPS.forEach(function(step, i) {
+    var n   = i + 1;
+    var inp = document.getElementById('inp-' + n);
+    var fb  = document.getElementById('fb-'  + n);
+    if (!inp.value.trim() || inp.classList.contains('wrong')) {
+      inp.value = step.label;
+      inp.className = 'step-input revealed';
+      fb.textContent = '';
+      fb.className = 'step-feedback';
+    }
+  });
+}
+
+function resetAll() {
+  STEPS.forEach(function(step, i) {
+    var n   = i + 1;
+    var inp = document.getElementById('inp-' + n);
+    var fb  = document.getElementById('fb-'  + n);
+    inp.value = '';
+    inp.className = 'step-input';
+    fb.textContent = '';
+    fb.className = 'step-feedback';
+  });
+  document.getElementById('scoreBar').innerHTML = '<span>Noch nicht geprüft</span>';
+  document.getElementById('inp-1').focus();
+}
+
+buildList();
+document.getElementById('inp-1').focus();
+</script>
+</body>
+</html>

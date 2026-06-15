@@ -107,6 +107,18 @@ body {
   padding: 36px 24px 60px;
 }
 
+.back-link {
+  font-size: 0.78rem;
+  color: var(--text-subtle);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 20px;
+  align-self: flex-start;
+}
+.back-link:hover { color: var(--red); }
+
 .section-title {
   font-size: 0.75rem;
   font-weight: 600;

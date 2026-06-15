@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mozzarella – Lernkärtchen</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .lk-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px 56px;
+    }
+
+    /* ---- Fortschritt ---- */
+    .progress-text {
+      font-size: 0.82rem;
+      color: var(--text-subtle);
+      margin-bottom: 6px;
+      text-align: center;
+    }
+    .progress-bar-wrap {
+      width: 440px;
+      max-width: 92vw;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--blue-dark);
+      border-radius: 2px;
+      transition: width 0.3s;
+    }
+
+    /* ---- Kategorie-Filter ---- */
+    .filter-wrap {
+      margin-bottom: 24px;
+      width: 440px;
+      max-width: 92vw;
+    }
+
+    /* ---- Flip-Karte ---- */
+    .scene {
+      width: 440px;
+      max-width: 92vw;
+      height: 310px;
+      perspective: 900px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.45s ease;
+      position: relative;
+    }
+
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .card-front {
+      background: var(--surface);
+      justify-content: space-between;
+    }
+
+    .card-back {
+      background: var(--blue-dark);
+      color: #fff;
+      transform: rotateY(180deg);
+      justify-content: flex-start;
+    }
+
+    .card-category-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+      align-self: flex-start;
+    }
+
+    .card-back .card-category-badge {
+      background: rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.9);
+    }
+
+    .card-term {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.55;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .card-hint {
+      font-size: 0.73rem;
+      color: var(--text-subtle);
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    .card-explanation {
+      font-size: 0.93rem;
+      line-height: 1.65;
+      color: rgba(255,255,255,0.95);
+      margin-top: 4px;
+    }
+
+    .card-explanation strong {
+      color: #fff;
+    }
+
+    /* ---- Steuerung ---- */
+    .controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .keyboard-hint {
+      font-size: 0.73rem;
+      color: var(--text-subtle);
+      text-align: center;
+      margin-top: 6px;
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+
+<header class="bzwu-header">
+  <div class="header-text">
+    <span class="school-badge">BZWU Wil-Uzwil · Milchpraktiker EBA · Frischkäse</span>
+    <h1>Mozzarella – Lernkärtchen</h1>
+    <p>Karte anklicken oder Leertaste drücken zum Umdrehen.</p>
+  </div>
+  <div class="header-logos">
+    <img src="../assets/logos/bzwu.png" alt="BZWU" class="header-logo">
+    <img src="../assets/logos/milchtechnologen.svg" alt="Milchtechnologen" class="header-logo">
+  </div>
+</header>
+
+<main>
+<a class="back-link" href="../index.html">&#8592; Alle Lerntools</a>
+
+<div class="lk-wrap">
+
+  <div class="progress-text" id="progressText"></div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressBar"></div>
+  </div>
+
+  <div class="filter-wrap">
+    <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
+      <button class="filter-btn active" id="f-alle"       onclick="setFilter('alle')">Alle</button>
+      <button class="filter-btn"        id="f-rohstoff"   onclick="setFilter('rohstoff')">Rohstoff &amp; Kulturen</button>
+      <button class="filter-btn"        id="f-herstellung" onclick="setFilter('herstellung')">Herstellung</button>
+      <button class="filter-btn"        id="f-maengel"    onclick="setFilter('maengel')">Qualitätsmängel</button>
+    </div>
+  </div>
+
+  <div class="scene" id="scene" onclick="flipCard()">
+    <div class="card" id="card">
+      <div class="card-face card-front">
+        <span class="card-category-badge" id="frontBadge"></span>
+        <div class="card-term" id="frontTerm"></div>
+        <div class="card-hint">Karte umdrehen für die Antwort</div>
+      </div>
+      <div class="card-face card-back">
+        <span class="card-category-badge" id="backBadge"></span>
+        <div class="card-explanation" id="backText"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-ghost"    onclick="prevCard()">&#8592; Zurück</button>
+    <button class="btn btn-success"  onclick="flipCard()">Umdrehen</button>
+    <button class="btn btn-ghost"    onclick="nextCard()">Weiter &#8594;</button>
+  </div>
+  <div class="controls">
+    <button class="btn btn-primary" onclick="shuffleCards()">&#8644; Mischen</button>
+  </div>
+  <p class="keyboard-hint">&#8592; &#8594; navigieren &nbsp;|&nbsp; Leertaste umdrehen &nbsp;|&nbsp; S mischen</p>
+
+</div>
+</main>
+
+<script>
+var CATEGORY_COLORS = {
+  'rohstoff':    { bg: '#fef9c3', fg: '#854d0e' },
+  'herstellung': { bg: '#dcfce7', fg: '#15803d' },
+  'maengel':     { bg: '#ffedd5', fg: '#9a3412' }
+};
+
+var CATEGORY_LABELS = {
+  'rohstoff':    'Rohstoff & Kulturen',
+  'herstellung': 'Herstellung',
+  'maengel':     'Qualitätsmängel'
+};
+
+var ALL_CARDS = [
+
+  // ── Rohstoff & Kulturen ──────────────────────────────────────────────────
+  { cat: 'rohstoff',
+    front: 'Aus welcher Milch wird Mozzarella hergestellt?',
+    back:  'Meist aus <strong>Kuhmilch</strong>. Der Original-Mozzarella aus Italien wird aus Büffelmilch gemacht. Für Vollfettkäse braucht die Milch ca. <strong>3 % Fett</strong>.'
+  },
+  { cat: 'rohstoff',
+    front: 'Warum wird die Mozzarella-Milch homogenisiert?',
+    back:  'Die Milch wird mit <strong>30–50 bar</strong> gleichmässig verteilt. Das macht den Teig weicher. Es bindet mehr Wasser und erhöht die Ausbeute. Zu hoher Druck schadet – er lässt Fett in die Molke entweichen.'
+  },
+  { cat: 'rohstoff',
+    front: 'Bei welcher Temperatur wird Mozzarella-Milch pasteurisiert?',
+    back:  'Mindestens <strong>15 Sekunden</strong> bei ca. <strong>75 °C</strong>.'
+  },
+  { cat: 'rohstoff',
+    front: 'Welche Kulturen braucht man für Mozzarella?',
+    back:  '<strong>Thermophile oder mesophile</strong> Mischkulturen. Sie müssen schnell säuern. Sonst dauert der Herstellungsprozess zu lang.'
+  },
+  { cat: 'rohstoff',
+    front: 'Was ist der Unterschied: fermentierter vs. unfermentierter Mozzarella?',
+    back:  '<strong>Fermentiert:</strong> Milchsäurebakterien senken den pH-Wert im Käse.<br><strong>Unfermentiert:</strong> Man gibt Zitronen- oder Milchsäure direkt in die Milch.'
+  },
+  { cat: 'rohstoff',
+    front: 'Auf welchen pH-Wert wird die Milch bei unfermentiertem Mozzarella gesenkt?',
+    back:  'Auf <strong>pH 5,7–5,8</strong>. Das geschieht durch Zugabe von Zitronen- oder Milchsäure – noch vor dem Einlaben.'
+  },
+
+  // ── Herstellung ──────────────────────────────────────────────────────────
+  { cat: 'herstellung',
+    front: 'Was bedeutet «Pasta filata»?',
+    back:  '«Pasta filata» ist Italienisch und heisst <strong>gezogener Teig</strong>. Der Käsebruch wird in heissem Wasser geknetet, gezogen und gedehnt. Dadurch wird Mozzarella faserig und elastisch.'
+  },
+  { cat: 'herstellung',
+    front: 'Wie gross wird der Mozzarella-Bruch geschnitten?',
+    back:  'Ca. so gross wie eine <strong>Haselnuss</strong>. Das ist grober als bei anderen Käsen. So bleibt mehr Fett im Bruch.'
+  },
+  { cat: 'herstellung',
+    front: 'Auf welche Temperatur wird der Bruch beim Nachwärmen erhitzt?',
+    back:  'Auf <strong>36–40 °C</strong>. Das fördert die Synärese – also den Austritt von Molke aus dem Bruch.'
+  },
+  { cat: 'herstellung',
+    front: 'Was ist Synärese?',
+    back:  'Synärese bedeutet: <strong>Molke tritt aus dem Bruch oder Käse aus</strong>. Bei der Herstellung ist das gewünscht. Bei der Lagerung ist es ein Fehler.'
+  },
+  { cat: 'herstellung',
+    front: 'Wie läuft das Pastafilieren ab?',
+    back:  'Der Bruch kommt in <strong>70–75 °C</strong> heisses Wasser. Er erwärmt sich auf <strong>57–59 °C</strong>. Dann wird er geknetet, gezogen und gedehnt – bis er faserig und glatt ist.'
+  },
+  { cat: 'herstellung',
+    front: 'Welchen pH-Wert braucht der Bruch beim Pastafilieren?',
+    back:  '<strong>Fermentiert:</strong> ca. pH 5,2<br><strong>Unfermentiert:</strong> ca. pH 5,7<br>Bei falschem pH reisst die Masse oder wird klumpig – das Pastafilieren misslingt.'
+  },
+  { cat: 'herstellung',
+    front: 'Wie wird Mozzarella nach dem Pastafilieren geformt?',
+    back:  'Als <strong>Kugeln oder Stangen</strong>. In kleinen Betrieben von Hand. In Grossbetrieben mit Ausformmaschinen.'
+  },
+  { cat: 'herstellung',
+    front: 'Was ist der Unterschied im Teig: fermentiert vs. unfermentiert?',
+    back:  '<strong>Fermentiert:</strong> fester, gut zum Raffeln, intensiver Geschmack – ideal für Pizza und Lasagne.<br><strong>Unfermentiert:</strong> weicher, saftiger, mildes Milcharoma – ideal für Salate und Sandwiches.'
+  },
+
+  // ── Qualitätsmängel ──────────────────────────────────────────────────────
+  { cat: 'maengel',
+    front: 'Was verursacht einen festen, zähen Teig bei Mozzarella?',
+    back:  'Die <strong>Pastafilata-Temperatur war zu tief</strong>. Die Masse konnte nicht richtig gedehnt werden.'
+  },
+  { cat: 'maengel',
+    front: 'Was verursacht einen kurzen, trockenen Teig?',
+    back:  'Die <strong>Pastafilata-Temperatur war zu hoch</strong>. Oder der Teig wurde zu lange geknetet. Fett tritt ins Wasser aus.'
+  },
+  { cat: 'maengel',
+    front: 'Was verursacht einen pappigen Teig bei der Lagerung?',
+    back:  '<strong>Zu hoher Wasser- oder Salzgehalt.</strong> Oder die Milchsäurebakterien bauen das Eiweiss während der Lagerung ab.'
+  },
+  { cat: 'maengel',
+    front: 'Was verursacht schlechte Schmelzeigenschaften (klumpig, fettig)?',
+    back:  '<strong>Zu hoher pH-Wert</strong> im Käse → viel Kalzium → Fett tritt beim Schmelzen aus. Auch <strong>zu wenig Salz</strong> ist eine häufige Ursache.'
+  },
+  { cat: 'maengel',
+    front: 'Was verursacht Schimmelwachstum auf Mozzarella?',
+    back:  '<strong>Unterbrochene Kühlkette.</strong> Infektionen beim Kühlen oder Verpacken. Oder eine undichte Verpackung.'
+  },
+  { cat: 'maengel',
+    front: 'Was verursacht Kochgeschmack bei Mozzarella?',
+    back:  'Eine <strong>zu hohe Pasteurisationstemperatur</strong>. Das Eiweiss verändert sich und gibt einen gekochten Beigeschmack.'
+  }
+];
+
+var currentFilter = 'alle';
+var deck = [];
+var currentIndex = 0;
+var isFlipped = false;
+
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('f-' + f).classList.add('active');
+  buildDeck();
+  currentIndex = 0;
+  showCard(false);
+}
+
+function buildDeck() {
+  if (currentFilter === 'alle') {
+    deck = ALL_CARDS.slice();
+  } else {
+    deck = ALL_CARDS.filter(function(c) { return c.cat === currentFilter; });
+  }
+}
+
+function showCard(animate) {
+  var card = document.getElementById('card');
+
+  function render() {
+    isFlipped = false;
+    card.classList.remove('flipped');
+
+    var c = deck[currentIndex];
+    var col = CATEGORY_COLORS[c.cat];
+
+    var fb = document.getElementById('frontBadge');
+    fb.textContent = CATEGORY_LABELS[c.cat];
+    fb.style.background = col.bg;
+    fb.style.color = col.fg;
+
+    document.getElementById('frontTerm').textContent = c.front;
+
+    var bb = document.getElementById('backBadge');
+    bb.textContent = CATEGORY_LABELS[c.cat];
+
+    document.getElementById('backText').innerHTML = c.back;
+
+    var total = deck.length;
+    document.getElementById('progressText').textContent = 'Karte ' + (currentIndex + 1) + ' von ' + total;
+    document.getElementById('progressBar').style.width = ((currentIndex + 1) / total * 100) + '%';
+  }
+
+  if (animate) {
+    var scene = document.getElementById('scene');
+    scene.style.opacity = '0';
+    scene.style.transition = 'opacity 0.15s';
+    setTimeout(function() {
+      render();
+      scene.style.opacity = '1';
+    }, 150);
+  } else {
+    render();
+  }
+}
+
+function flipCard() {
+  isFlipped = !isFlipped;
+  document.getElementById('card').classList.toggle('flipped', isFlipped);
+}
+
+function nextCard() {
+  if (currentIndex < deck.length - 1) {
+    currentIndex++;
+    showCard(true);
+  }
+}
+
+function prevCard() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    showCard(true);
+  }
+}
+
+function shuffleCards() {
+  for (var i = deck.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = deck[i]; deck[i] = deck[j]; deck[j] = tmp;
+  }
+  currentIndex = 0;
+  showCard(true);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+  if (e.key === 'ArrowRight') nextCard();
+  if (e.key === 'ArrowLeft')  prevCard();
+  if (e.key === 's' || e.key === 'S') shuffleCards();
+});
+
+buildDeck();
+showCard(false);
+</script>
+</body>
+</html>

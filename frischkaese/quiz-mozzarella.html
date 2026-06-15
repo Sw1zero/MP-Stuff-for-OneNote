@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mozzarella - Quiz</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .quiz-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px 56px;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* Score-Leiste */
+    .score-bar {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 24px;
+      justify-content: center;
+    }
+    .score-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .score-number {
+      font-size: 1.6rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .score-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-subtle);
+    }
+    .score-correct { color: #38a169; }
+    .score-wrong   { color: var(--red); }
+    .score-serie   { color: var(--blue-dark); }
+
+    /* Filter */
+    .filter-wrap {
+      margin-bottom: 20px;
+      width: 100%;
+    }
+
+    /* Fortschritt */
+    .progress-text {
+      font-size: 0.82rem;
+      color: var(--text-subtle);
+      margin-bottom: 6px;
+      text-align: center;
+      width: 100%;
+    }
+    .progress-bar-wrap {
+      width: 100%;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    /* Fragekarte */
+    .question-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 28px;
+      width: 100%;
+      margin-bottom: 14px;
+    }
+    .question-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+    }
+    .question-text {
+      font-size: 1.0rem;
+      font-weight: 600;
+      line-height: 1.55;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+
+    /* Antwort-Buttons */
+    .answers {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .answer-btn {
+      font-family: var(--font);
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-align: left;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      line-height: 1.4;
+    }
+    .answer-btn:hover:not(:disabled) {
+      border-color: var(--blue-light);
+      background: var(--blue-tint);
+    }
+    .answer-btn.correct {
+      border-color: #38a169;
+      background: #dcfce7;
+      color: #15803d;
+      font-weight: 600;
+    }
+    .answer-btn.wrong {
+      border-color: var(--red);
+      background: var(--red-light);
+      color: var(--red-dark);
+    }
+    .answer-btn:disabled { cursor: default; }
+
+    /* Rückmeldung */
+    .feedback {
+      width: 100%;
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      font-size: 0.88rem;
+      line-height: 1.55;
+      display: none;
+      margin-bottom: 14px;
+    }
+    .feedback.correct {
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      color: #15803d;
+      display: block;
+    }
+    .feedback.wrong {
+      background: var(--red-light);
+      border: 1px solid #fca5a5;
+      color: #991b1b;
+      display: block;
+    }
+    .feedback-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    /* Weiter-Button */
+    .quiz-nav {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    /* Ergebnis-Bildschirm */
+    .end-screen {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 40px 28px;
+      width: 100%;
+      text-align: center;
+      display: none;
+    }
+    .end-screen.visible { display: block; }
+    .end-big {
+      font-size: 2.6rem;
+      font-weight: 700;
+      color: var(--blue-dark);
+      margin-bottom: 8px;
+    }
+    .end-text {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+      line-height: 1.55;
+    }
+  </style>
+</head>
+<body>
+
+<header class="bzwu-header">
+  <div class="header-text">
+    <span class="school-badge">BZWU Wil-Uzwil · Milchpraktiker EBA · Frischkäse</span>
+    <h1>Mozzarella - Quiz</h1>
+    <p>Wählen Sie die richtige Antwort. Sie erhalten sofort eine Rückmeldung.</p>
+  </div>
+  <div class="header-logos">
+    <img src="../assets/logos/bzwu.png" alt="BZWU" class="header-logo">
+    <img src="../assets/logos/milchtechnologen.svg" alt="Milchtechnologen" class="header-logo">
+  </div>
+</header>
+
+<main>
+<div class="quiz-wrap">
+  <a class="back-link" href="../index.html">&#8592; Alle Lerntools</a>
+
+  <div class="score-bar">
+    <div class="score-item">
+      <span class="score-number score-correct" id="scoreCorrect">0</span>
+      <span class="score-label">Richtig</span>
+    </div>
+    <div class="score-item">
+      <span class="score-number score-wrong" id="scoreWrong">0</span>
+      <span class="score-label">Falsch</span>
+    </div>
+    <div class="score-item">
+      <span class="score-number score-serie" id="scoreSerie">0</span>
+      <span class="score-label">Serie</span>
+    </div>
+  </div>
+
+  <div class="filter-wrap">
+    <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
+      <button class="filter-btn active" id="f-alle"        onclick="setFilter('alle')">Alle</button>
+      <button class="filter-btn"        id="f-rohstoff"    onclick="setFilter('rohstoff')">Rohstoff &amp; Kulturen</button>
+      <button class="filter-btn"        id="f-herstellung" onclick="setFilter('herstellung')">Herstellung</button>
+      <button class="filter-btn"        id="f-maengel"     onclick="setFilter('maengel')">Qualitätsmängel</button>
+    </div>
+  </div>
+
+  <div class="progress-text" id="progressText"></div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressBar"></div>
+  </div>
+
+  <div class="question-card" id="questionCard">
+    <span class="question-badge" id="questionBadge"></span>
+    <div class="question-text" id="questionText"></div>
+    <div class="answers" id="answers"></div>
+  </div>
+
+  <div class="feedback" id="feedback">
+    <div class="feedback-title" id="feedbackTitle"></div>
+    <div id="feedbackText"></div>
+  </div>
+
+  <div class="quiz-nav" id="quizNav" style="display:none;">
+    <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Weiter &#8594;</button>
+  </div>
+
+  <div class="end-screen" id="endScreen">
+    <div class="end-big" id="endScore"></div>
+    <div class="end-text" id="endText"></div>
+    <button class="btn btn-primary" onclick="restartQuiz()">Nochmals versuchen</button>
+  </div>
+
+</div>
+</main>
+
+<script>
+var CATEGORY_COLORS = {
+  'rohstoff':    { bg: '#fef9c3', fg: '#854d0e' },
+  'herstellung': { bg: '#dcfce7', fg: '#15803d' },
+  'maengel':     { bg: '#ffedd5', fg: '#9a3412' }
+};
+
+var CATEGORY_LABELS = {
+  'rohstoff':    'Rohstoff & Kulturen',
+  'herstellung': 'Herstellung',
+  'maengel':     'Qualitätsmängel'
+};
+
+var ALL_QUESTIONS = [
+
+  // Rohstoff & Kulturen
+  { cat: 'rohstoff',
+    q: 'Aus welcher Milch wird Mozzarella in der Schweiz meist hergestellt?',
+    options: ['Büffelmilch', 'Kuhmilch', 'Ziegenmilch', 'Schafsmilch'],
+    correct: 1,
+    explanation: 'In der Schweiz wird Mozzarella meist aus Kuhmilch hergestellt. Der Original-Mozzarella aus Italien kommt aus Büffelmilch.'
+  },
+  { cat: 'rohstoff',
+    q: 'Wie viel Fett braucht die Milch für Vollfett-Mozzarella?',
+    options: ['ca. 1 %', 'ca. 2 %', 'ca. 3 %', 'ca. 4 %'],
+    correct: 2,
+    explanation: 'Für Vollfett-Mozzarella braucht die Milch ca. 3 % Fett.'
+  },
+  { cat: 'rohstoff',
+    q: 'Warum wird die Mozzarella-Milch homogenisiert?',
+    options: [
+      'Damit die Milch schneller gerinnt',
+      'Damit der Teig weicher wird und mehr Wasser bindet',
+      'Damit die Pasteurisierung besser wirkt',
+      'Damit sich die Kulturen schneller vermehren'
+    ],
+    correct: 1,
+    explanation: 'Homogenisierung macht den Teig weicher und bindet mehr Wasser. Das erhöht die Ausbeute. Zu hoher Druck schadet: Fett tritt dann in die Molke aus.'
+  },
+  { cat: 'rohstoff',
+    q: 'Mit welchem Druck wird die Mozzarella-Milch homogenisiert?',
+    options: ['5-10 bar', '15-20 bar', '30-50 bar', '80-100 bar'],
+    correct: 2,
+    explanation: 'Die Milch wird mit 30-50 bar homogenisiert. Dieser Druck verteilt die Fetttröpfchen gleichmässig in der Milch.'
+  },
+  { cat: 'rohstoff',
+    q: 'Bei welcher Temperatur und Haltezeit wird Mozzarella-Milch pasteurisiert?',
+    options: [
+      '15 Sekunden bei 75 °C',
+      '15 Sekunden bei 65 °C',
+      '30 Minuten bei 63 °C',
+      '5 Sekunden bei 85 °C'
+    ],
+    correct: 0,
+    explanation: 'Die Milch wird mindestens 15 Sekunden bei ca. 75 °C pasteurisiert. Eine zu hohe Temperatur verursacht später Kochgeschmack.'
+  },
+  { cat: 'rohstoff',
+    q: 'Welche Kulturen braucht man für fermentierten Mozzarella?',
+    options: [
+      'Rottschmierkulturen',
+      'Thermophile oder mesophile Mischkulturen',
+      'Propionsäurebakterien',
+      'Hefen und Schimmelpilze'
+    ],
+    correct: 1,
+    explanation: 'Man verwendet thermophile oder mesophile Mischkulturen. Sie müssen schnell säuern, sonst dauert die Herstellung zu lang.'
+  },
+  { cat: 'rohstoff',
+    q: 'Auf welchen pH-Wert wird die Milch bei unfermentiertem Mozzarella eingestellt?',
+    options: ['pH 4,5-4,6', 'pH 5,2-5,3', 'pH 5,7-5,8', 'pH 6,5-6,6'],
+    correct: 2,
+    explanation: 'Man gibt Zitronen- oder Milchsäure direkt in die Milch. Damit sinkt der pH auf 5,7-5,8. Eine Säuerung durch Kulturen ist dann nicht mehr nötig.'
+  },
+
+  // Herstellung
+  { cat: 'herstellung',
+    q: 'Was bedeutet «Pasta filata»?',
+    options: ['Getrockneter Teig', 'Gepresster Teig', 'Gezogener Teig', 'Gesäuerter Teig'],
+    correct: 2,
+    explanation: '«Pasta filata» ist Italienisch und heisst gezogener Teig. Der Bruch wird in heissem Wasser geknetet, gezogen und gedehnt. Dadurch wird Mozzarella faserig und elastisch.'
+  },
+  { cat: 'herstellung',
+    q: 'Wie gross wird der Mozzarella-Bruch geschnitten?',
+    options: ['Reiskorngross', 'Weizenkorngross', 'Haselnussgross', 'Walnussgross'],
+    correct: 2,
+    explanation: 'Der Bruch wird ca. haselnussgross geschnitten. Das ist grober als bei anderen Käsen. So bleibt mehr Fett im Bruch.'
+  },
+  { cat: 'herstellung',
+    q: 'Auf welche Temperatur wird der Bruch beim Nachwärmen erhitzt?',
+    options: ['20-25 °C', '30-35 °C', '36-40 °C', '45-50 °C'],
+    correct: 2,
+    explanation: 'Der Bruch wird auf 36-40 °C nachgewärmt. Das fördert die Synärese, also den Austritt von Molke aus dem Bruch.'
+  },
+  { cat: 'herstellung',
+    q: 'Was bedeutet Synärese?',
+    options: [
+      'Das Gerinnen der Milch durch Lab',
+      'Das Austreiben von Molke aus dem Bruch',
+      'Das Kneten des Käseteigs',
+      'Das Formen der Käsekugeln'
+    ],
+    correct: 1,
+    explanation: 'Synärese heisst: Molke tritt aus dem Bruch oder Käse aus. Bei der Herstellung ist das gewünscht. Bei der Lagerung ist es ein Fehler.'
+  },
+  { cat: 'herstellung',
+    q: 'Wie heiss ist das Wasser beim Pastafilieren?',
+    options: ['45-50 °C', '57-59 °C', '70-75 °C', '85-90 °C'],
+    correct: 2,
+    explanation: 'Das Pastafilier-Wasser hat 70-75 °C. Die Käsemasse erwärmt sich dabei auf 57-59 °C. Dann wird sie geknetet, gezogen und gedehnt.'
+  },
+  { cat: 'herstellung',
+    q: 'Auf welche Temperatur erwärmt sich die Käsemasse beim Pastafilieren?',
+    options: ['40-45 °C', '50-55 °C', '57-59 °C', '65-70 °C'],
+    correct: 2,
+    explanation: 'Die Masse erwärmt sich auf 57-59 °C. Bei dieser Temperatur lässt sie sich gut kneten, ziehen und dehnen.'
+  },
+  { cat: 'herstellung',
+    q: 'Welchen pH-Wert braucht der Bruch beim Pastafilieren (fermentierter Mozzarella)?',
+    options: ['pH 4,5', 'pH 5,2', 'pH 5,7', 'pH 6,2'],
+    correct: 1,
+    explanation: 'Der Bruch braucht beim Pastafilieren ca. pH 5,2. Bei falschem pH reisst die Masse oder wird klumpig. Das Pastafilieren funktioniert dann nicht.'
+  },
+
+  // Qualitaetsmangel
+  { cat: 'maengel',
+    q: 'Was verursacht einen festen, zähen Mozzarella-Teig?',
+    options: [
+      'Die Pastafilata-Temperatur war zu hoch',
+      'Die Pastafilata-Temperatur war zu tief',
+      'Der pH-Wert war zu tief',
+      'Es wurde zu viel Salz zugegeben'
+    ],
+    correct: 1,
+    explanation: 'War die Pastafilata-Temperatur zu tief, konnte die Masse nicht richtig gedehnt werden. Der Teig bleibt fest und zäh.'
+  },
+  { cat: 'maengel',
+    q: 'Was verursacht einen kurzen, trockenen Teig bei Mozzarella?',
+    options: [
+      'Die Pastafilata-Temperatur war zu tief',
+      'Die Pastafilata-Temperatur war zu hoch oder der Teig wurde zu lang geknetet',
+      'Das Nachwärmen war zu kurz',
+      'Zu viel Säuerungskultur wurde zugegeben'
+    ],
+    correct: 1,
+    explanation: 'War die Temperatur zu hoch oder wurde zu lang geknetet, tritt Fett ins Wasser aus. Der Teig wird kurz und trocken.'
+  },
+  { cat: 'maengel',
+    q: 'Was verursacht einen pappigen Teig bei der Lagerung?',
+    options: [
+      'Zu tiefe Lagerungstemperatur',
+      'Zu wenig Salz in der Lake',
+      'Zu hoher Wasser- oder Salzgehalt, oder Eiweissabbau durch Bakterien',
+      'Zu hohe Pastafilata-Temperatur'
+    ],
+    correct: 2,
+    explanation: 'Ein pappiger Teig entsteht durch zu hohen Wasser- oder Salzgehalt. Oder Milchsäurebakterien bauen das Eiweiss während der Lagerung ab.'
+  },
+  { cat: 'maengel',
+    q: 'Was verursacht schlechte Schmelzeigenschaften (klumpig, fettig)?',
+    options: [
+      'Zu tiefer pH-Wert und zu viel Salz',
+      'Zu hoher pH-Wert und zu wenig Salz',
+      'Zu tiefe Pasteurisationstemperatur',
+      'Zu feiner Bruchschnitt'
+    ],
+    correct: 1,
+    explanation: 'Zu hoher pH-Wert bedeutet: viel Kalzium ist noch gebunden. Beim Schmelzen tritt Fett aus. Zu wenig Salz verstärkt das Problem.'
+  },
+  { cat: 'maengel',
+    q: 'Was verursacht Schimmelwachstum auf Mozzarella?',
+    options: [
+      'Zu hohe Pasteurisationstemperatur',
+      'Zu viel Salz in der Lake',
+      'Unterbrochene Kühlkette oder undichte Verpackung',
+      'Zu langer Reifeprozess'
+    ],
+    correct: 2,
+    explanation: 'Schimmel entsteht bei unterbrochener Kühlkette, bei Infektionen beim Verpacken oder durch eine undichte Verpackung.'
+  },
+  { cat: 'maengel',
+    q: 'Was verursacht Kochgeschmack bei Mozzarella?',
+    options: [
+      'Zu lange Säuerungszeit',
+      'Zu hohe Pastafilata-Temperatur',
+      'Zu hohe Pasteurisationstemperatur',
+      'Zu viel Homogenisierungsdruck'
+    ],
+    correct: 2,
+    explanation: 'Eine zu hohe Pasteurisationstemperatur verändert das Milcheiweiss. Das gibt einen gekochten Beigeschmack.'
+  }
+];
+
+var currentFilter = 'alle';
+var deck = [];
+var currentIndex = 0;
+var answered = false;
+var scoreCorrect = 0;
+var scoreWrong = 0;
+var scoreSerie = 0;
+
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('f-' + f).classList.add('active');
+  resetQuiz();
+}
+
+function buildDeck() {
+  var pool = currentFilter === 'alle'
+    ? ALL_QUESTIONS.slice()
+    : ALL_QUESTIONS.filter(function(q) { return q.cat === currentFilter; });
+  deck = pool.slice();
+  for (var i = deck.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = deck[i]; deck[i] = deck[j]; deck[j] = tmp;
+  }
+}
+
+function resetQuiz() {
+  scoreCorrect = 0;
+  scoreWrong = 0;
+  scoreSerie = 0;
+  updateScoreBar();
+  buildDeck();
+  currentIndex = 0;
+  document.getElementById('endScreen').classList.remove('visible');
+  document.getElementById('questionCard').style.display = '';
+  document.getElementById('progressText').style.display = '';
+  document.getElementById('progressBar').parentElement.style.display = '';
+  showQuestion();
+}
+
+function restartQuiz() {
+  resetQuiz();
+}
+
+function updateScoreBar() {
+  document.getElementById('scoreCorrect').textContent = scoreCorrect;
+  document.getElementById('scoreWrong').textContent = scoreWrong;
+  document.getElementById('scoreSerie').textContent = scoreSerie;
+}
+
+function showQuestion() {
+  answered = false;
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('quizNav').style.display = 'none';
+
+  var q = deck[currentIndex];
+  var col = CATEGORY_COLORS[q.cat];
+
+  var badge = document.getElementById('questionBadge');
+  badge.textContent = CATEGORY_LABELS[q.cat];
+  badge.style.background = col.bg;
+  badge.style.color = col.fg;
+
+  document.getElementById('questionText').textContent = q.q;
+
+  var answersDiv = document.getElementById('answers');
+  answersDiv.innerHTML = '';
+
+  var indices = [0, 1, 2, 3];
+  for (var i = indices.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = indices[i]; indices[i] = indices[j]; indices[j] = tmp;
+  }
+
+  for (var k = 0; k < indices.length; k++) {
+    (function(optIdx) {
+      var btn = document.createElement('button');
+      btn.className = 'answer-btn';
+      btn.textContent = q.options[optIdx];
+      btn.onclick = function() { checkAnswer(optIdx); };
+      answersDiv.appendChild(btn);
+    })(indices[k]);
+  }
+
+  var total = deck.length;
+  document.getElementById('progressText').textContent = 'Frage ' + (currentIndex + 1) + ' von ' + total;
+  document.getElementById('progressBar').style.width = ((currentIndex + 1) / total * 100) + '%';
+}
+
+function checkAnswer(selectedIdx) {
+  if (answered) return;
+  answered = true;
+
+  var q = deck[currentIndex];
+  var isCorrect = (selectedIdx === q.correct);
+
+  document.querySelectorAll('.answer-btn').forEach(function(b) {
+    b.disabled = true;
+    var idx = q.options.indexOf(b.textContent);
+    if (idx === q.correct) {
+      b.classList.add('correct');
+    } else if (idx === selectedIdx && !isCorrect) {
+      b.classList.add('wrong');
+    }
+  });
+
+  if (isCorrect) {
+    scoreCorrect++;
+    scoreSerie++;
+  } else {
+    scoreWrong++;
+    scoreSerie = 0;
+  }
+  updateScoreBar();
+
+  var feedback = document.getElementById('feedback');
+  var feedbackTitle = document.getElementById('feedbackTitle');
+
+  if (isCorrect) {
+    feedback.className = 'feedback correct';
+    feedbackTitle.textContent = 'Richtig!';
+  } else {
+    feedback.className = 'feedback wrong';
+    feedbackTitle.textContent = 'Falsch. Richtig wäre: ' + q.options[q.correct];
+  }
+  document.getElementById('feedbackText').textContent = q.explanation;
+
+  var nav = document.getElementById('quizNav');
+  nav.style.display = 'flex';
+  document.getElementById('nextBtn').textContent =
+    (currentIndex >= deck.length - 1) ? 'Ergebnis anzeigen' : 'Weiter →';
+}
+
+function nextQuestion() {
+  currentIndex++;
+  if (currentIndex >= deck.length) {
+    showEndScreen();
+  } else {
+    showQuestion();
+  }
+}
+
+function showEndScreen() {
+  document.getElementById('questionCard').style.display = 'none';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('quizNav').style.display = 'none';
+  document.getElementById('progressText').style.display = 'none';
+  document.getElementById('progressBar').parentElement.style.display = 'none';
+
+  var total = deck.length;
+  var pct = Math.round(scoreCorrect / total * 100);
+
+  document.getElementById('endScore').textContent = scoreCorrect + ' von ' + total + ' richtig';
+
+  var msg;
+  if (pct >= 90)      msg = 'Ausgezeichnet! Sie kennen Mozzarella sehr gut.';
+  else if (pct >= 70) msg = 'Gut gemacht! Noch ein paar Fragen üben und Sie sind top.';
+  else if (pct >= 50) msg = 'Nicht schlecht. Schauen Sie die Lernkärtchen nochmals an.';
+  else                msg = 'Schauen Sie nochmals in die Lernkärtchen. Dann klappt es besser.';
+
+  document.getElementById('endText').textContent = pct + ' % richtig. ' + msg;
+  document.getElementById('endScreen').classList.add('visible');
+}
+
+buildDeck();
+showQuestion();
+</script>
+</body>
+</html>

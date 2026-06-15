@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Einheiten-Trainer – Milchtechnologie</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px 56px;
+    }
+
+    .back-link {
+      font-size: 0.78rem;
+      color: var(--text-subtle);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 20px;
+      align-self: flex-start;
+    }
+    .back-link:hover { color: var(--red); }
+
+    .page-header { text-align: center; margin-bottom: 24px; }
+    .page-header h1 { font-size: 1.15rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+    .page-header p  { font-size: 0.82rem; color: var(--text-subtle); }
+
+    /* ---- Score bar ---- */
+    .score-bar {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .score-pill {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 6px 14px;
+      box-shadow: var(--shadow-sm);
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .score-pill .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+
+    .dot-correct  { background: #38a169; }
+    .dot-wrong    { background: var(--red); }
+    .dot-streak   { background: var(--blue); }
+
+    /* ---- Category filter ---- */
+    .filter-wrap { margin-bottom: 24px; }
+
+    /* ---- Question card ---- */
+    .question-card {
+      width: 480px;
+      max-width: 92vw;
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 36px 32px 28px;
+      margin-bottom: 16px;
+      transition: opacity 0.2s;
+    }
+
+    .question-card.fading { opacity: 0; }
+
+    .cat-badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+
+    .cat-masse   { background: #dbeeff; color: #1e4e8c; }
+    .cat-volumen { background: #dcfce7; color: #15803d; }
+
+    /* The equation display */
+    .equation {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    .eq-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .eq-unit {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .eq-equals {
+      font-size: 1.8rem;
+      color: var(--text-subtle);
+      font-weight: 300;
+    }
+
+    .eq-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .eq-input {
+      font-family: var(--font);
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text);
+      width: 140px;
+      padding: 6px 10px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: #f8fafc;
+      text-align: right;
+      transition: border-color 0.15s;
+    }
+
+    .eq-input:focus {
+      outline: none;
+      border-color: var(--blue);
+      background: var(--surface);
+    }
+
+    .eq-input.correct { border-color: #38a169; background: #f0fff4; }
+    .eq-input.wrong   { border-color: var(--red); background: var(--red-light); }
+
+    /* ---- Feedback ---- */
+    .feedback-box {
+      border-radius: var(--radius-md);
+      padding: 13px 16px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .feedback-box.correct { display: block; background: #f0fff4; border: 1px solid #9ae6b4; color: #276749; }
+    .feedback-box.wrong   { display: block; background: var(--red-light); border: 1px solid #fca5a5; color: var(--red-dark); }
+
+    .feedback-hint {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      opacity: 0.85;
+    }
+
+    /* ---- Buttons ---- */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* ---- Conversion table (tooltip) ---- */
+    .ref-card {
+      width: 480px;
+      max-width: 92vw;
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 20px 24px;
+      margin-top: 24px;
+    }
+
+    .ref-title {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-subtle);
+      margin-bottom: 14px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ref-body { display: none; }
+    .ref-body.open { display: block; }
+
+    .ref-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 24px;
+    }
+
+    .ref-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      padding: 4px 0;
+      border-bottom: 1px solid #f1f5f9;
+      color: var(--text-muted);
+    }
+
+    .ref-row strong { color: var(--text); }
+  </style>
+</head>
+<body>
+
+  <a class="back-link" href="../index.html">&#8592; Alle Lerntools</a>
+
+  <div class="page-header">
+    <h1>Einheiten-Trainer</h1>
+    <p>Rechnen Sie die Einheit um und drücken Sie Enter.</p>
+  </div>
+
+  <!-- Score -->
+  <div class="score-bar">
+    <div class="score-pill"><span class="dot dot-correct"></span><span id="scoreCorrect">0 richtig</span></div>
+    <div class="score-pill"><span class="dot dot-wrong"></span><span id="scoreWrong">0 falsch</span></div>
+    <div class="score-pill"><span class="dot dot-streak"></span><span id="scoreStreak">Serie: 0</span></div>
+  </div>
+
+  <!-- Category filter -->
+  <div class="filter-wrap">
+    <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
+      <button class="filter-btn active" id="cat-alle"    onclick="setCat('alle')">Alle</button>
+      <button class="filter-btn"        id="cat-masse"   onclick="setCat('masse')">Masse</button>
+      <button class="filter-btn"        id="cat-volumen" onclick="setCat('volumen')">Volumen</button>
+    </div>
+  </div>
+
+  <!-- Question card -->
+  <div class="question-card" id="questionCard">
+    <span class="cat-badge" id="catBadge"></span>
+    <div class="equation">
+      <span class="eq-value"  id="eqValue"></span>
+      <span class="eq-unit"   id="eqFrom"></span>
+      <span class="eq-equals">=</span>
+      <div class="eq-input-wrap">
+        <input class="eq-input" type="text" id="answerInput"
+               inputmode="decimal" autocomplete="off"
+               placeholder="?"
+               onkeydown="if(event.key==='Enter') checkAnswer()">
+        <span class="eq-unit" id="eqTo"></span>
+      </div>
+    </div>
+    <div class="feedback-box" id="feedbackBox"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="checkBtn" onclick="checkAnswer()">Prüfen</button>
+      <button class="btn btn-ghost"   id="nextBtn"  onclick="nextQuestion()" style="display:none">Nächste Frage &#8594;</button>
+    </div>
+  </div>
+
+  <!-- Reference table -->
+  <div class="ref-card">
+    <div class="ref-title" onclick="toggleRef()">
+      Umrechnungshilfe
+      <span id="refArrow">&#9660;</span>
+    </div>
+    <div class="ref-body" id="refBody">
+      <div class="ref-grid">
+        <div>
+          <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-subtle);margin-bottom:8px;">Masse</div>
+          <div class="ref-row"><span>1 t</span><strong>= 1000 kg</strong></div>
+          <div class="ref-row"><span>1 kg</span><strong>= 1000 g</strong></div>
+          <div class="ref-row"><span>1 g</span><strong>= 1000 mg</strong></div>
+        </div>
+        <div>
+          <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-subtle);margin-bottom:8px;">Volumen</div>
+          <div class="ref-row"><span>1 l</span><strong>= 10 dl</strong></div>
+          <div class="ref-row"><span>1 l</span><strong>= 100 cl</strong></div>
+          <div class="ref-row"><span>1 l</span><strong>= 1000 ml</strong></div>
+          <div class="ref-row"><span>1 dl</span><strong>= 100 ml</strong></div>
+          <div class="ref-row"><span>1 cl</span><strong>= 10 ml</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var CONVERSIONS = [
+      // Masse
+      { from:'g',  to:'kg', cat:'masse',   vals:[250,500,750,1000,1250,1500,2000,2500,3000,5000,7500,10000], factor:0.001,  hint:'1 kg = 1000 g → ÷ 1000' },
+      { from:'kg', to:'g',  cat:'masse',   vals:[0.25,0.5,0.75,1,1.25,1.5,2,2.5,3,5,7.5,10],               factor:1000,   hint:'1 kg = 1000 g → × 1000' },
+      { from:'g',  to:'mg', cat:'masse',   vals:[0.25,0.5,0.75,1,1.5,2,2.5,5],                              factor:1000,   hint:'1 g = 1000 mg → × 1000' },
+      { from:'mg', to:'g',  cat:'masse',   vals:[250,500,750,1000,1500,2000,2500,5000],                      factor:0.001,  hint:'1 g = 1000 mg → ÷ 1000' },
+      { from:'kg', to:'t',  cat:'masse',   vals:[250,500,750,1000,1250,1500,2000,2500,5000],                 factor:0.001,  hint:'1 t = 1000 kg → ÷ 1000' },
+      { from:'t',  to:'kg', cat:'masse',   vals:[0.25,0.5,0.75,1,1.25,1.5,2,2.5,5],                         factor:1000,   hint:'1 t = 1000 kg → × 1000' },
+      // Volumen
+      { from:'ml', to:'l',  cat:'volumen', vals:[250,500,750,1000,1250,1500,2000,2500,5000],                 factor:0.001,  hint:'1 l = 1000 ml → ÷ 1000' },
+      { from:'l',  to:'ml', cat:'volumen', vals:[0.25,0.5,0.75,1,1.25,1.5,2,2.5,5],                         factor:1000,   hint:'1 l = 1000 ml → × 1000' },
+      { from:'dl', to:'l',  cat:'volumen', vals:[1,2,3,4,5,6,7,8,9,10,15,20,25,30,50],                      factor:0.1,    hint:'1 l = 10 dl → ÷ 10' },
+      { from:'l',  to:'dl', cat:'volumen', vals:[0.1,0.2,0.3,0.4,0.5,1,1.5,2,2.5,3,4,5],                   factor:10,     hint:'1 l = 10 dl → × 10' },
+      { from:'cl', to:'l',  cat:'volumen', vals:[25,50,75,100,125,150,200,250,500],                          factor:0.01,   hint:'1 l = 100 cl → ÷ 100' },
+      { from:'l',  to:'cl', cat:'volumen', vals:[0.25,0.5,0.75,1,1.25,1.5,2,2.5,5],                         factor:100,    hint:'1 l = 100 cl → × 100' },
+      { from:'ml', to:'dl', cat:'volumen', vals:[100,200,250,300,400,500,750,1000,2500],                     factor:0.01,   hint:'1 dl = 100 ml → ÷ 100' },
+      { from:'dl', to:'ml', cat:'volumen', vals:[1,2,2.5,3,4,5,7.5,10,25],                                  factor:100,    hint:'1 dl = 100 ml → × 100' },
+      { from:'ml', to:'cl', cat:'volumen', vals:[10,20,25,30,40,50,75,100,250,500],                          factor:0.1,    hint:'1 cl = 10 ml → ÷ 10' },
+      { from:'cl', to:'ml', cat:'volumen', vals:[1,2,2.5,3,4,5,7.5,10,25,50],                               factor:10,     hint:'1 cl = 10 ml → × 10' },
+    ];
+
+    var currentCat    = 'alle';
+    var currentConv   = null;
+    var currentValue  = null;
+    var currentAnswer = null;
+    var answered      = false;
+    var scoreCorrect  = 0;
+    var scoreWrong    = 0;
+    var streak        = 0;
+    var lastConvIndex = -1;
+
+    function fmt(n) {
+      // Show integer without decimals, otherwise trim trailing zeros
+      if (n === Math.floor(n)) return String(n);
+      return parseFloat(n.toPrecision(6)).toString();
+    }
+
+    function setCat(cat) {
+      currentCat = cat;
+      document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.getElementById('cat-' + cat).classList.add('active');
+      nextQuestion();
+    }
+
+    function getDeck() {
+      if (currentCat === 'alle') return CONVERSIONS;
+      return CONVERSIONS.filter(function(c) { return c.cat === currentCat; });
+    }
+
+    function nextQuestion() {
+      var card = document.getElementById('questionCard');
+      card.classList.add('fading');
+      setTimeout(function() {
+        loadQuestion();
+        card.classList.remove('fading');
+      }, 180);
+    }
+
+    function loadQuestion() {
+      answered = false;
+      var deck = getDeck();
+
+      // Avoid repeating the same conversion type twice in a row
+      var idx;
+      do { idx = Math.floor(Math.random() * deck.length); } while (deck.length > 1 && idx === lastConvIndex);
+      lastConvIndex = idx;
+      currentConv = deck[idx];
+
+      var vals = currentConv.vals;
+      currentValue  = vals[Math.floor(Math.random() * vals.length)];
+      currentAnswer = parseFloat((currentValue * currentConv.factor).toPrecision(9));
+
+      // UI update
+      var badge = document.getElementById('catBadge');
+      badge.textContent = currentConv.cat === 'masse' ? 'Masse' : 'Volumen';
+      badge.className   = 'cat-badge cat-' + currentConv.cat;
+
+      document.getElementById('eqValue').textContent = fmt(currentValue);
+      document.getElementById('eqFrom').textContent  = currentConv.from;
+      document.getElementById('eqTo').textContent    = currentConv.to;
+
+      var inp = document.getElementById('answerInput');
+      inp.value     = '';
+      inp.className = 'eq-input';
+      inp.disabled  = false;
+      inp.focus();
+
+      var fb = document.getElementById('feedbackBox');
+      fb.className   = 'feedback-box';
+      fb.textContent = '';
+
+      document.getElementById('checkBtn').style.display = '';
+      document.getElementById('nextBtn').style.display  = 'none';
+    }
+
+    function checkAnswer() {
+      if (answered) return;
+
+      var inp = document.getElementById('answerInput');
+      var raw = inp.value.replace(',', '.').trim();
+      var val = parseFloat(raw);
+
+      if (isNaN(val) || raw === '') {
+        inp.focus();
+        return;
+      }
+
+      answered = true;
+      inp.disabled = true;
+
+      var correct = Math.abs(val - currentAnswer) < Math.abs(currentAnswer) * 0.0001 + 0.00001;
+      var fb = document.getElementById('feedbackBox');
+
+      if (correct) {
+        scoreCorrect++;
+        streak++;
+        inp.classList.add('correct');
+        fb.className = 'feedback-box correct';
+        fb.innerHTML = '<strong>&#10003; Richtig!</strong> ' +
+          fmt(currentValue) + ' ' + currentConv.from + ' = ' + fmt(currentAnswer) + ' ' + currentConv.to;
+      } else {
+        scoreWrong++;
+        streak = 0;
+        inp.classList.add('wrong');
+        fb.className = 'feedback-box wrong';
+        fb.innerHTML = '<strong>&#10007; Nicht ganz.</strong> ' +
+          'Lösung: <strong>' + fmt(currentAnswer) + ' ' + currentConv.to + '</strong>' +
+          '<div class="feedback-hint">Tipp: ' + currentConv.hint + '</div>';
+      }
+
+      document.getElementById('checkBtn').style.display = 'none';
+      document.getElementById('nextBtn').style.display  = '';
+
+      updateScore();
+    }
+
+    function updateScore() {
+      document.getElementById('scoreCorrect').textContent = scoreCorrect + ' richtig';
+      document.getElementById('scoreWrong').textContent   = scoreWrong  + ' falsch';
+      document.getElementById('scoreStreak').textContent  = 'Serie: ' + streak;
+    }
+
+    function toggleRef() {
+      var body  = document.getElementById('refBody');
+      var arrow = document.getElementById('refArrow');
+      var open  = body.classList.toggle('open');
+      arrow.textContent = open ? '▲' : '▼';
+    }
+
+    // Init
+    loadQuestion();
+  </script>
+</body>
+</html>

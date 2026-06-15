@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BZWU Milchtechnologie – Lerntools</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .filter-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .filter-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-subtle);
+      width: 48px;
+      flex-shrink: 0;
+    }
+    @media (max-width: 600px) {
+      .filter-bar { padding: 10px 16px; }
+      .filter-label { width: auto; }
+    }
+
+    .module-section { margin-bottom: 8px; }
+    .module-section.hidden { display: none; }
+  </style>
+</head>
+<body>
+
+<header class="bzwu-header">
+  <div class="header-text">
+  <span class="school-badge">BZWU Wil-Uzwil · Milchtechnologie EFZ</span>
+  <h1>Lerntools</h1>
+  <p>Interaktive Übungen für den Unterricht – einfach anklicken und loslegen.</p>
+  </div>
+  <div class="header-logos">
+    <img src="assets/logos/bzwu.png" alt="BZWU" class="header-logo">
+    <img src="assets/logos/milchtechnologen.svg" alt="Milchtechnologen" class="header-logo">
+  </div>
+</header>
+
+<div class="filter-bar">
+  <div class="filter-row">
+    <span class="filter-label">Modul</span>
+    <button class="filter-btn active" data-filter="module" data-value="all">Alle</button>
+    <button class="filter-btn" data-filter="module" data-value="a2">a.2</button>
+    <button class="filter-btn" data-filter="module" data-value="a7">a.7</button>
+    <button class="filter-btn" data-filter="module" data-value="a8">a.8</button>
+    <button class="filter-btn" data-filter="module" data-value="b1">b.1</button>
+    <button class="filter-btn" data-filter="module" data-value="b7">b.7</button>
+    <button class="filter-btn" data-filter="module" data-value="d1">d.1</button>
+    <button class="filter-btn" data-filter="module" data-value="animationen">Animationen</button>
+    <button class="filter-btn" data-filter="module" data-value="allgemein">Allgemein</button>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Typ</span>
+    <button class="filter-btn active" data-filter="type" data-value="all">Alle</button>
+    <button class="filter-btn" data-filter="type" data-value="wahr-falsch">Wahr/Falsch</button>
+    <button class="filter-btn" data-filter="type" data-value="tabellen-luecken">Tabellen-Lücken</button>
+    <button class="filter-btn" data-filter="type" data-value="prozessvergleich">Prozessvergleich</button>
+    <button class="filter-btn" data-filter="type" data-value="lernkaertchen">Lernkärtchen</button>
+    <button class="filter-btn" data-filter="type" data-value="quiz">Quiz</button>
+    <button class="filter-btn" data-filter="type" data-value="memory">Memory</button>
+    <button class="filter-btn" data-filter="type" data-value="sortierer">Sortierer</button>
+    <button class="filter-btn" data-filter="type" data-value="zuordnung">Zuordnung</button>
+    <button class="filter-btn" data-filter="type" data-value="lueckentext">Lückentext</button>
+    <button class="filter-btn" data-filter="type" data-value="kreuzwortraetsel">Kreuzworträtsel</button>
+    <button class="filter-btn" data-filter="type" data-value="hotspot">Hotspot</button>
+    <button class="filter-btn" data-filter="type" data-value="prozess-entscheid">Prozess-Entscheid</button>
+    <button class="filter-btn" data-filter="type" data-value="spiel">Spiel</button>
+    <button class="filter-btn" data-filter="type" data-value="fachrechner">Fachrechner</button>
+    <button class="filter-btn" data-filter="type" data-value="animation">Animation</button>
+    <button class="filter-btn" data-filter="type" data-value="trainer">Trainer</button>
+  </div>
+</div>
+
+<main class="page-main">
+
+  <!-- a.2 -->
+  <div class="module-section" id="section-a2">
+    <div class="section-title">a.2 – Rohstoffe trennen</div>
+    <div class="tool-grid">
+
+      <a class="tool-card" href="a2-rohstoffe-trennen/memory-trommelbestandteile.html" data-module="a2" data-type="memory">
+        <div class="card-top">
+          <span class="badge badge-module">a.2</span>
+          <span class="badge badge-type">Memory</span>
+        </div>
+        <div class="card-title">Trommelbestandteile</div>
+        <div class="card-meta">
+          11 Paare
+          <span class="dot"></span>
+          Zentrifuge
+          <span class="dot"></span>
+          Bild &amp; Name
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- a.7 -->
+  <div class="module-section" id="section-a7">
+    <div class="section-title">a.7 – Technische Einrichtungen</div>
+    <div class="tool-grid">
+
+      <a class="tool-card" href="a7-technische-einrichtungen/tabellen-luecken-metalle.html" data-module="a7" data-type="tabellen-luecken">
+        <div class="card-top">
+          <span class="badge badge-module">a.7</span>
+          <span class="badge badge-type">Tabellen-Lücken</span>
+        </div>
+        <div class="card-title">Werkstoffe – Metalle</div>
+        <div class="card-meta">
+          10 Felder
+          <span class="dot"></span>
+          Eigenschaft &amp; Verwendung
+          <span class="dot"></span>
+          Klick / Drag / Touch
+        </div>
+      </a>
+
+      <a class="tool-card" href="a7-technische-einrichtungen/quiz-werkstoffe-schmierstoffe.html" data-module="a7" data-type="quiz">
+        <div class="card-top">
+          <span class="badge badge-module">a.7</span>
+          <span class="badge badge-type">Quiz</span>
+        </div>
+        <div class="card-title">Werkstoffe &amp; Schmierstoffe</div>
+        <div class="card-meta">
+          12 Fragen
+          <span class="dot"></span>
+          Metalle · Kunststoffe · Schmierstoffe
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- a.8 -->
+  <div class="module-section" id="section-a8">
+    <div class="section-title">a.8 – Kulturen einsetzen</div>
+    <div class="tool-grid">
+
+      <a class="tool-card" href="a8-kulturen/hotspot-bakterienzelle.html" data-module="a8" data-type="hotspot">
+        <div class="card-top">
+          <span class="badge badge-module">a.8</span>
+          <span class="badge badge-type">Hotspot</span>
+        </div>
+        <div class="card-title">Bakterienzelle beschriften</div>
+        <div class="card-meta">
+          8 Strukturen
+          <span class="dot"></span>
+          Klick auf das Bild
+        </div>
+      </a>
+
+      <a class="tool-card" href="a8-kulturen/tabellen-luecken-kuehlung.html" data-module="a8" data-type="tabellen-luecken">
+        <div class="card-top">
+          <span class="badge badge-module">a.8</span>
+          <span class="badge badge-type">Tabellen-Lücken</span>
+        </div>
+        <div class="card-title">Kühlung & Mikroorganismen</div>
+        <div class="card-meta">
+          3 Kältestufen
+          <span class="dot"></span>
+          Temperatur & Wirkung
+        </div>
+      </a>
+
+      <a class="tool-card" href="a8-kulturen/quiz-kulturenformen.html" data-module="a8" data-type="quiz">
+        <div class="card-top">
+          <span class="badge badge-module">a.8</span>
+          <span class="badge badge-type">Quiz</span>
+        </div>
+        <div class="card-title">Kulturenformen</div>
+        <div class="card-meta">
+          10 Fragen
+          <span class="dot"></span>
+          flüssig · lyophilisiert · gefroren
+        </div>
+      </a>
+
+      <a class="tool-card" href="a8-kulturen/tabellen-luecken-kontrolle.html" data-module="a8" data-type="tabellen-luecken">
+        <div class="card-top">
+          <span class="badge badge-module">a.8</span>
+          <span class="badge badge-type">Tabellen-Lücken</span>
+        </div>
+        <div class="card-title">Kontrolle der Kulturen</div>
+        <div class="card-meta">
+          5 Methoden
+          <span class="dot"></span>
+          mit °SH-Deutung
+        </div>
+      </a>
+
+      <a class="tool-card" href="a8-kulturen/quiz-abweichungen-phagen.html" data-module="a8" data-type="quiz">
+        <div class="card-top">
+          <span class="badge badge-module">a.8</span>
+          <span class="badge badge-type">Quiz</span>
+        </div>
+        <div class="card-title">Abweichungen & Bakteriophagen</div>
+        <div class="card-meta">
+          10 Fragen
+          <span class="dot"></span>
+          Ursachen · Massnahmen · Phagen
+        </div>
+      </a>
+
+      <a class="tool-card" href="a8-kulturen/tabellen-luecken-milchsaeuregaerung.html" data-module="a8" data-type="tabellen-luecken">
+        <div class="card-top">
+          <span class="badge badge-module">a.8</span>
+          <span class="badge badge-type">Tabellen-Lücken</span>
+        </div>
+        <div class="card-title">Milchsäuregärung</div>
+        <div class="card-meta">
+          homo- vs. heterofermentativ
+        </div>
+      </a>
+
+      <a class="tool-card" href="a8-kulturen/kreuzwortraetsel-kulturen.html" data-module="a8" data-type="kreuzwortraetsel">
+        <div class="card-top">
+          <span class="badge badge-module">a.8</span>
+          <span class="badge badge-type">Kreuzworträtsel</span>
+        </div>
+        <div class="card-title">Kulturen & Mikroorganismen</div>
+        <div class="card-meta">
+          11 Fachbegriffe
+          <span class="dot"></span>
+          Gitter mit Hinweisen
+        </div>
+      </a>
+
+      <a class="tool-card" href="a8-kulturen/spiel-homofermentativ.html" data-module="a8" data-type="spiel">
+        <div class="card-top">
+          <span class="badge badge-module">a.8</span>
+          <span class="badge badge-type">Spiel</span>
+        </div>
+        <div class="card-title">Homofermentative fangen</div>
+        <div class="card-meta">
+          Geschicklichkeit
+          <span class="dot"></span>
+          homo- vs. heterofermentativ
+          <span class="dot"></span>
+          Maus / Touch / Tasten
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- b.1 -->
+  <div class="module-section" id="section-b1">
+    <div class="section-title">b.1 – Hartkäse herstellen</div>
+    <div class="tool-grid">
+
+      <a class="tool-card" href="b1-hartkaese/quiz-gesetzliches-kaese.html" data-module="b1" data-type="quiz">
+        <div class="card-top">
+          <span class="badge badge-module">b.1</span>
+          <span class="badge badge-type">Quiz</span>
+        </div>
+        <div class="card-title">Gesetzliche Vorgaben</div>
+        <div class="card-meta">
+          11 Fragen
+          <span class="dot"></span>
+          VLtH · ZuV · HyV · AOP
+        </div>
+      </a>
+
+      <a class="tool-card" href="b1-hartkaese/tabellen-luecken-vlth-artikel.html" data-module="b1" data-type="tabellen-luecken">
+        <div class="card-top">
+          <span class="badge badge-module">b.1</span>
+          <span class="badge badge-type">Tabellen-Lücken</span>
+        </div>
+        <div class="card-title">VLtH-Artikel zuordnen</div>
+        <div class="card-meta">
+          7 Artikel
+          <span class="dot"></span>
+          Art. 50–54
+          <span class="dot"></span>
+          Klick / Drag / Touch
+        </div>
+      </a>
+
+      <a class="tool-card" href="b1-hartkaese/zuordnung-verordnungen.html" data-module="b1" data-type="zuordnung">
+        <div class="card-top">
+          <span class="badge badge-module">b.1</span>
+          <span class="badge badge-type">Zuordnung</span>
+        </div>
+        <div class="card-title">Verordnungen zuordnen</div>
+        <div class="card-meta">
+          5 Verordnungen
+          <span class="dot"></span>
+          Aufgabe → Verordnung
+          <span class="dot"></span>
+          Klick / Drag / Touch
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- b.7 -->
+  <div class="module-section" id="section-b7">
+    <div class="section-title">b.7 – Sauermilchprodukte herstellen</div>
+    <div class="tool-grid">
+
+      <a class="tool-card" href="b7-sauermilch/lernkaertchen.html" data-module="b7" data-type="lernkaertchen">
+        <div class="card-top">
+          <span class="badge badge-module">b.7</span>
+          <span class="badge badge-type">Lernkärtchen</span>
+        </div>
+        <div class="card-title">Sauermilchprodukte herstellen</div>
+        <div class="card-meta">
+          50 Begriffe
+          <span class="dot"></span>
+          6 Kategorien
+          <span class="dot"></span>
+          Shuffle
+        </div>
+      </a>
+
+      <a class="tool-card" href="b7-sauermilch/tabellen-luecken-kulturen.html" data-module="b7" data-type="tabellen-luecken">
+        <div class="card-top">
+          <span class="badge badge-module">b.7</span>
+          <span class="badge badge-type">Tabellen-Lücken</span>
+        </div>
+        <div class="card-title">Jogurtkulturen vergleichen</div>
+        <div class="card-meta">
+          10 Lücken
+          <span class="dot"></span>
+          Sc. thermophilus &amp; Lb. bulgaricus
+          <span class="dot"></span>
+          Wortbank
+        </div>
+      </a>
+
+      <a class="tool-card" href="b7-sauermilch/prozessvergleich-jogurt.html" data-module="b7" data-type="prozessvergleich">
+        <div class="card-top">
+          <span class="badge badge-module">b.7</span>
+          <span class="badge badge-type">Prozessvergleich</span>
+        </div>
+        <div class="card-title">Gerührt vs. Stichfest</div>
+        <div class="card-meta">
+          Joghurtherstellung
+          <span class="dot"></span>
+          2 Varianten
+          <span class="dot"></span>
+          mit Details
+        </div>
+      </a>
+
+      <a class="tool-card" href="b7-sauermilch/wahr-falsch-sauermilch.html" data-module="b7" data-type="wahr-falsch">
+        <div class="card-top">
+          <span class="badge badge-module">b.7</span>
+          <span class="badge badge-type">Wahr/Falsch</span>
+        </div>
+        <div class="card-title">Wahr oder Falsch?</div>
+        <div class="card-meta">
+          20 Aussagen
+          <span class="dot"></span>
+          Swipe-Karten
+          <span class="dot"></span>
+          mit Erklärung
+        </div>
+      </a>
+
+      <a class="tool-card" href="b7-sauermilch/quiz-qualitaetsmaengel.html" data-module="b7" data-type="quiz">
+        <div class="card-top">
+          <span class="badge badge-module">b.7</span>
+          <span class="badge badge-type">Quiz</span>
+        </div>
+        <div class="card-title">Qualitätsmängel erkennen</div>
+        <div class="card-meta">
+          15 Fragen
+          <span class="dot"></span>
+          Multiple Choice
+          <span class="dot"></span>
+          mit Erklärungen
+        </div>
+      </a>
+
+      <a class="tool-card" href="b7-sauermilch/sortierer-jogurtherstellung.html" data-module="b7" data-type="sortierer">
+        <div class="card-top">
+          <span class="badge badge-module">b.7</span>
+          <span class="badge badge-type">Sortierer</span>
+        </div>
+        <div class="card-title">Jogurtherstellung sortieren</div>
+        <div class="card-meta">
+          13 Schritte
+          <span class="dot"></span>
+          Drag &amp; Drop
+          <span class="dot"></span>
+          mit Auswertung
+        </div>
+      </a>
+
+      <a class="tool-card" href="b7-sauermilch/lueckentext-saeuregerinnung.html" data-module="b7" data-type="lueckentext">
+        <div class="card-top">
+          <span class="badge badge-module">b.7</span>
+          <span class="badge badge-type">Lückentext</span>
+        </div>
+        <div class="card-title">Säuregerinnung</div>
+        <div class="card-meta">
+          11 Lücken
+          <span class="dot"></span>
+          Einfach &amp; Schwer
+          <span class="dot"></span>
+          mit Wortbank
+        </div>
+      </a>
+
+      <a class="tool-card" href="b7-sauermilch/fachrechner-mischungskreuz.html" data-module="b7" data-type="fachrechner">
+        <div class="card-top">
+          <span class="badge badge-module">b.7</span>
+          <span class="badge badge-type">Fachrechner</span>
+        </div>
+        <div class="card-title">Mischungskreuz</div>
+        <div class="card-meta">
+          Fettgehalt · Frucht · Zucker
+          <span class="dot"></span>
+          mit Rechenweg
+        </div>
+      </a>
+
+      <a class="tool-card" href="b7-sauermilch/zuordnung-anlagenteile-stichfest.html" data-module="b7" data-type="zuordnung">
+        <div class="card-top">
+          <span class="badge badge-module">b.7</span>
+          <span class="badge badge-type">Zuordnung</span>
+        </div>
+        <div class="card-title">Anlagenteile zuordnen – Stichfest</div>
+        <div class="card-meta">
+          12 Anlagenteile
+          <span class="dot"></span>
+          Stichfester Joghurt
+          <span class="dot"></span>
+          mit Schema
+        </div>
+      </a>
+
+      <a class="tool-card" href="b7-sauermilch/zuordnung-anlagenteile-geruehrt.html" data-module="b7" data-type="zuordnung">
+        <div class="card-top">
+          <span class="badge badge-module">b.7</span>
+          <span class="badge badge-type">Zuordnung</span>
+        </div>
+        <div class="card-title">Anlagenteile zuordnen – Gerührt</div>
+        <div class="card-meta">
+          13 Anlagenteile
+          <span class="dot"></span>
+          Gerührter Joghurt
+          <span class="dot"></span>
+          mit Schema
+        </div>
+      </a>
+
+      <a class="tool-card" href="b7-sauermilch/prozess-entscheid-jogurt.html" data-module="b7" data-type="prozess-entscheid">
+        <div class="card-top">
+          <span class="badge badge-module">b.7</span>
+          <span class="badge badge-type">Prozess-Entscheid</span>
+        </div>
+        <div class="card-title">Jogurtherstellung</div>
+        <div class="card-meta">
+          6 Entscheidungen
+          <span class="dot"></span>
+          mit Fehleranalyse
+        </div>
+      </a>
+
+      <a class="tool-card" href="b7-sauermilch/qualitaetsmaengel-jogurt.html" data-module="b7" data-type="lernkaertchen">
+        <div class="card-top">
+          <span class="badge badge-module">b.7</span>
+          <span class="badge badge-type">Lernkärtchen</span>
+        </div>
+        <div class="card-title">Qualitätsmängel Jogurt</div>
+        <div class="card-meta">
+          10 K2-Fragen
+          <span class="dot"></span>
+          Beschreiben · Erklären
+        </div>
+      </a>
+
+      <a class="tool-card" href="b7-sauermilch/quiz-gesetzliches.html" data-module="b7" data-type="quiz">
+        <div class="card-top">
+          <span class="badge badge-module">b.7</span>
+          <span class="badge badge-type">Quiz</span>
+        </div>
+        <div class="card-title">Gesetzliche Anforderungen</div>
+        <div class="card-meta">
+          11 Fragen
+          <span class="dot"></span>
+          VLtH · Fettgehaltsstufen · Keimzahlen
+        </div>
+      </a>
+
+      <a class="tool-card" href="b7-sauermilch/tabellen-luecken-richtwerte.html" data-module="b7" data-type="tabellen-luecken">
+        <div class="card-top">
+          <span class="badge badge-module">b.7</span>
+          <span class="badge badge-type">Tabellen-Lücken</span>
+        </div>
+        <div class="card-title">Richtwerte Joghurtherstellung</div>
+        <div class="card-meta">
+          12 Richtwerte
+          <span class="dot"></span>
+          Temperatur · Druck · Zeit · pH
+        </div>
+      </a>
+
+      <a class="tool-card" href="b7-sauermilch/lueckentext-symbiose-kultur.html" data-module="b7" data-type="lueckentext">
+        <div class="card-top">
+          <span class="badge badge-module">b.7</span>
+          <span class="badge badge-type">Lückentext</span>
+        </div>
+        <div class="card-title">Symbiose &amp; Kultursteuerung</div>
+        <div class="card-meta">
+          11 Lücken
+          <span class="dot"></span>
+          Sc &amp; Lb · mild vs. sauer
+          <span class="dot"></span>
+          Einfach &amp; Schwer
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- d.1 -->
+  <div class="module-section" id="section-d1">
+    <div class="section-title">d.1 – Hygiene</div>
+    <div class="tool-grid">
+
+      <a class="tool-card" href="d1-hygiene/spiel-desinfektion.html" data-module="d1" data-type="spiel">
+        <div class="card-top">
+          <span class="badge badge-module">d.1</span>
+          <span class="badge badge-type">Spiel</span>
+        </div>
+        <div class="card-title">Mikroorganismen desinfizieren</div>
+        <div class="card-meta">
+          Geschicklichkeit
+          <span class="dot"></span>
+          nützlich · schädlich · pathogen
+          <span class="dot"></span>
+          Maus / Touch / Tasten
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Animationen (modulübergreifende Rubrik) -->
+  <div class="module-section" id="section-animationen">
+    <div class="section-title">Animationen</div>
+    <div class="tool-grid">
+
+      <a class="tool-card" href="b5-quark/animation-labgerinnung.html" data-module="animationen" data-type="animation">
+        <div class="card-top">
+          <span class="badge" style="background:#f3e8ff;color:#6b21a8;">Allgemein</span>
+          <span class="badge badge-type">Animation</span>
+        </div>
+        <div class="card-title">Labgerinnung des Kaseins</div>
+        <div class="card-meta">
+          5 Schritte
+          <span class="dot"></span>
+          Chymosin · Kalziumbrücken · Synärese
+        </div>
+      </a>
+
+      <a class="tool-card" href="b7-sauermilch/animation-sauergerinnung.html" data-module="animationen" data-type="animation">
+        <div class="card-top">
+          <span class="badge" style="background:#f3e8ff;color:#6b21a8;">Allgemein</span>
+          <span class="badge badge-type">Animation</span>
+        </div>
+        <div class="card-title">Säuregerinnung des Kaseins</div>
+        <div class="card-meta">
+          4 Schritte
+          <span class="dot"></span>
+          mit pH- &amp; Säuregrad-Anzeige
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Allgemein -->
+  <div class="module-section" id="section-allgemein">
+    <div class="section-title">Allgemeine Tools</div>
+    <div class="tool-grid">
+
+      <a class="tool-card" href="tools/fachrechner-salzbad.html" data-module="allgemein" data-type="fachrechner">
+        <div class="card-top">
+          <span class="badge" style="background:#f3e8ff;color:#6b21a8;">Allgemein</span>
+          <span class="badge badge-type">Fachrechner</span>
+        </div>
+        <div class="card-title">Salzbad berechnen</div>
+        <div class="card-meta">
+          Prozent · Volumen · Umrechnung
+          <span class="dot"></span>
+          Mischungskreuz
+        </div>
+      </a>
+
+      <a class="tool-card" href="tools/fachrechner-fettgehalt.html" data-module="allgemein" data-type="fachrechner">
+        <div class="card-top">
+          <span class="badge" style="background:#f3e8ff;color:#6b21a8;">Allgemein</span>
+          <span class="badge badge-type">Fachrechner</span>
+        </div>
+        <div class="card-title">Fettgehalt standardisieren</div>
+        <div class="card-meta">
+          Mischungskreuz
+          <span class="dot"></span>
+          Teile &amp; Mengen
+        </div>
+      </a>
+
+      <a class="tool-card" href="tools/einheiten-trainer.html" data-module="allgemein" data-type="trainer">
+        <div class="card-top">
+          <span class="badge" style="background:#f3e8ff;color:#6b21a8;">Allgemein</span>
+          <span class="badge badge-type">Trainer</span>
+        </div>
+        <div class="card-title">Einheiten umrechnen</div>
+        <div class="card-meta">
+          Masse &amp; Volumen
+          <span class="dot"></span>
+          Random
+          <span class="dot"></span>
+          mit Serie-Zähler
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+</main>
+
+<footer class="bzwu-footer">
+  BZWU Wil-Uzwil · Milchtechnologie EFZ · Philipp Neukomm
+</footer>
+
+<script>
+var activeModule = 'all';
+var activeType   = 'all';
+
+document.querySelectorAll('.filter-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var filter = btn.dataset.filter;
+    var value  = btn.dataset.value;
+
+    // Update active state for this filter row
+    document.querySelectorAll('.filter-btn[data-filter="' + filter + '"]').forEach(function(b) {
+      b.classList.remove('active');
+    });
+    btn.classList.add('active');
+
+    if (filter === 'module') activeModule = value;
+    if (filter === 'type')   activeType   = value;
+
+    applyFilter();
+  });
+});
+
+function applyFilter() {
+  // Show/hide individual cards
+  document.querySelectorAll('.tool-card:not(.disabled)').forEach(function(card) {
+    var moduleMatch = activeModule === 'all' || card.dataset.module === activeModule;
+    var typeMatch   = activeType   === 'all' || card.dataset.type   === activeType;
+    card.style.display = (moduleMatch && typeMatch) ? '' : 'none';
+  });
+
+  // Show/hide module sections when all their cards are hidden
+  document.querySelectorAll('.module-section').forEach(function(section) {
+    var visible = section.querySelectorAll('.tool-card:not(.disabled):not([style*="display: none"])').length;
+    section.classList.toggle('hidden', visible === 0);
+  });
+}
+</script>
+
+</body>
+</html>

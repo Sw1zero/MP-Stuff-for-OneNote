@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mozzarella - Mängel und Ursachen</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .zu-wrap {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 32px 16px 56px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .task-intro {
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      padding: 14px 20px;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 24px;
+      width: 100%;
+      box-shadow: var(--shadow-sm);
+      line-height: 1.55;
+    }
+
+    .bank-title {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-subtle);
+      margin-bottom: 8px;
+      align-self: flex-start;
+    }
+
+    .cause-bank {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 28px;
+      width: 100%;
+      padding: 16px;
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      min-height: 60px;
+      align-content: flex-start;
+    }
+
+    .cause-chip {
+      font-family: var(--font);
+      font-size: 0.82rem;
+      font-weight: 500;
+      padding: 7px 14px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: left;
+      line-height: 1.4;
+    }
+    .cause-chip:hover:not(.used) { border-color: var(--blue-dark); background: var(--blue-tint); }
+    .cause-chip.selected { border-color: var(--blue-dark); background: var(--blue-dark); color: #fff; }
+    .cause-chip.used { opacity: 0; pointer-events: none; position: absolute; }
+
+    /* Defect cards grid */
+    .defect-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 480px) {
+      .defect-grid { grid-template-columns: 1fr; }
+    }
+
+    .defect-card {
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      border: 2px solid transparent;
+      transition: border-color 0.2s;
+    }
+    .defect-card.is-correct { border-color: #38a169; }
+    .defect-card.is-wrong   { border-color: var(--red); }
+
+    .defect-title {
+      background: #fff7ed;
+      color: #9a3412;
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 10px 14px;
+      border-bottom: 1px solid #fed7aa;
+      line-height: 1.3;
+    }
+
+    .defect-slot {
+      min-height: 52px;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      color: var(--text-subtle);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      transition: background 0.15s;
+      line-height: 1.4;
+    }
+    .defect-slot:empty::before { content: 'Ursache hier zuordnen...'; font-style: italic; }
+    .defect-slot.filled { color: var(--text); font-style: normal; }
+    .defect-slot:hover:not(.correct):not(.wrong) { background: #fef9c3; }
+    .defect-card.is-correct .defect-slot { background: #dcfce7; color: #15803d; font-weight: 600; }
+    .defect-card.is-wrong   .defect-slot { background: #fee2e2; color: var(--red); }
+
+    .result-msg {
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-align: center;
+      color: var(--text-muted);
+      min-height: 1.4em;
+      margin-bottom: 16px;
+    }
+    .result-msg.success { color: #15803d; }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+<header class="bzwu-header">
+  <div class="header-text">
+    <span class="school-badge">BZWU Wil-Uzwil · Milchpraktiker EBA · Frischkäse</span>
+    <h1>Mozzarella - Mängel und Ursachen</h1>
+    <p>Ordnen Sie jedem Mangel die richtige Ursache zu.</p>
+  </div>
+  <div class="header-logos">
+    <img src="../assets/logos/bzwu.png" alt="BZWU" class="header-logo">
+    <img src="../assets/logos/milchtechnologen.svg" alt="Milchtechnologen" class="header-logo">
+  </div>
+</header>
+
+<main>
+<div class="zu-wrap">
+  <a class="back-link" href="../index.html">&#8592; Alle Lerntools</a>
+
+  <div class="task-intro">
+    Klicken Sie eine Ursache in der Wortbank an. Dann klicken Sie auf den passenden Mangel.<br>
+    Zum Entfernen: zugeordnete Zelle anklicken.
+  </div>
+
+  <div class="bank-title">Ursachen (Wortbank)</div>
+  <div class="cause-bank" id="causeBank"></div>
+
+  <div class="defect-grid" id="defectGrid"></div>
+
+  <div class="result-msg" id="resultMsg"></div>
+  <div class="actions">
+    <button class="btn btn-primary" onclick="checkAnswers()">Zuordnung prüfen</button>
+    <button class="btn btn-ghost"   onclick="resetAll()">&#8635; Zurücksetzen</button>
+  </div>
+</div>
+</main>
+
+<script>
+var PAIRS = [
+  {
+    id: 'zaeh',
+    mangel: 'Fester, zäher Teig',
+    ursache: 'Pastafilata-Temperatur zu tief'
+  },
+  {
+    id: 'trocken',
+    mangel: 'Kurzer, trockener Teig',
+    ursache: 'Pastafilata-Temperatur zu hoch oder zu langes Kneten'
+  },
+  {
+    id: 'pappig',
+    mangel: 'Pappiger Teig bei der Lagerung',
+    ursache: 'Zu hoher Wasser- oder Salzgehalt; Eiweissabbau durch Bakterien'
+  },
+  {
+    id: 'schmelz',
+    mangel: 'Schlechte Schmelzeigenschaften (klumpig, fettig)',
+    ursache: 'Zu hoher pH-Wert; zu wenig Salz im Käse'
+  },
+  {
+    id: 'schimmel',
+    mangel: 'Schimmel- und Hefewachstum',
+    ursache: 'Unterbrochene Kühlkette oder undichte Verpackung'
+  },
+  {
+    id: 'koch',
+    mangel: 'Kochgeschmack',
+    ursache: 'Zu hohe Pasteurisationstemperatur'
+  }
+];
+
+var selectedChip = null;
+
+function shuffle(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+function buildUI() {
+  var bank = document.getElementById('causeBank');
+  bank.innerHTML = '';
+  var shuffled = shuffle(PAIRS.slice());
+  shuffled.forEach(function(pair) {
+    var btn = document.createElement('button');
+    btn.className = 'cause-chip';
+    btn.textContent = pair.ursache;
+    btn.dataset.cause = pair.ursache;
+    btn.id = 'chip-' + pair.id;
+    btn.onclick = function() { selectChip(btn); };
+    bank.appendChild(btn);
+  });
+
+  var grid = document.getElementById('defectGrid');
+  grid.innerHTML = '';
+  PAIRS.forEach(function(pair) {
+    var card = document.createElement('div');
+    card.className = 'defect-card';
+    card.id = 'card-' + pair.id;
+    card.dataset.correct = pair.ursache;
+
+    var title = document.createElement('div');
+    title.className = 'defect-title';
+    title.textContent = pair.mangel;
+
+    var slot = document.createElement('div');
+    slot.className = 'defect-slot';
+    slot.id = 'slot-' + pair.id;
+    slot.onclick = function() { handleSlot(slot, card); };
+
+    card.appendChild(title);
+    card.appendChild(slot);
+    grid.appendChild(card);
+  });
+}
+
+function selectChip(el) {
+  if (selectedChip === el) {
+    el.classList.remove('selected');
+    selectedChip = null;
+    return;
+  }
+  if (selectedChip) selectedChip.classList.remove('selected');
+  selectedChip = el;
+  el.classList.add('selected');
+}
+
+function handleSlot(slot, card) {
+  if (slot.dataset.value) {
+    clearSlot(slot, card);
+  } else if (selectedChip) {
+    fillSlot(slot, card, selectedChip.dataset.cause, selectedChip);
+  }
+}
+
+function fillSlot(slot, card, cause, chip) {
+  slot.textContent = cause;
+  slot.dataset.value = cause;
+  slot.classList.add('filled');
+  card.classList.remove('is-correct', 'is-wrong');
+  chip.classList.add('used');
+  chip.classList.remove('selected');
+  selectedChip = null;
+}
+
+function clearSlot(slot, card) {
+  var cause = slot.dataset.value;
+  if (!cause) return;
+  slot.textContent = '';
+  slot.dataset.value = '';
+  slot.classList.remove('filled');
+  card.classList.remove('is-correct', 'is-wrong');
+  restoreChip(cause);
+  clearResultMsg();
+}
+
+function restoreChip(cause) {
+  document.querySelectorAll('.cause-chip').forEach(function(chip) {
+    if (chip.dataset.cause === cause) chip.classList.remove('used');
+  });
+}
+
+function clearResultMsg() {
+  document.getElementById('resultMsg').textContent = '';
+  document.getElementById('resultMsg').className = 'result-msg';
+}
+
+function checkAnswers() {
+  var correct = 0;
+  PAIRS.forEach(function(pair) {
+    var slot = document.getElementById('slot-' + pair.id);
+    var card = document.getElementById('card-' + pair.id);
+    card.classList.remove('is-correct', 'is-wrong');
+    if (!slot.dataset.value) return;
+    if (slot.dataset.value === pair.ursache) {
+      card.classList.add('is-correct');
+      correct++;
+    } else {
+      card.classList.add('is-wrong');
+    }
+  });
+  var msg = document.getElementById('resultMsg');
+  if (correct === PAIRS.length) {
+    msg.textContent = 'Perfekt! Alle ' + PAIRS.length + ' Zuordnungen sind richtig.';
+    msg.className = 'result-msg success';
+  } else {
+    msg.textContent = correct + ' von ' + PAIRS.length + ' Zuordnungen sind richtig. Rot = falsch.';
+    msg.className = 'result-msg';
+  }
+}
+
+function resetAll() {
+  PAIRS.forEach(function(pair) {
+    var slot = document.getElementById('slot-' + pair.id);
+    var card = document.getElementById('card-' + pair.id);
+    slot.textContent = '';
+    slot.dataset.value = '';
+    slot.classList.remove('filled');
+    card.classList.remove('is-correct', 'is-wrong');
+  });
+  selectedChip = null;
+  clearResultMsg();
+  document.querySelectorAll('.cause-chip').forEach(function(chip) {
+    chip.classList.remove('used', 'selected');
+  });
+}
+
+buildUI();
+</script>
+</body>
+</html>

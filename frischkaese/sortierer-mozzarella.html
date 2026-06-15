@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mozzarella - Herstellung sortieren</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .sorter-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px 56px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .task-intro {
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      padding: 14px 20px;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 24px;
+      width: 100%;
+      line-height: 1.5;
+    }
+
+    .sort-list {
+      list-style: none;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .sort-item {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: grab;
+      user-select: none;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.15s, opacity 0.15s;
+      box-shadow: var(--shadow-sm);
+    }
+    .sort-item:active { cursor: grabbing; }
+    .sort-item.dragging { opacity: 0.3; }
+    .sort-item.drag-over { border-color: var(--blue-light); background: var(--blue-tint); }
+    .sort-item.is-correct { border-color: #38a169; background: #f0fdf4; }
+    .sort-item.is-wrong   { border-color: var(--red); background: #fff5f5; }
+
+    .drag-handle {
+      color: var(--border);
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      line-height: 1;
+      letter-spacing: -1px;
+    }
+
+    .step-num {
+      min-width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-subtle);
+      flex-shrink: 0;
+    }
+    .sort-item.is-correct .step-num { background: #dcfce7; color: #15803d; }
+    .sort-item.is-wrong   .step-num { background: #fee2e2; color: var(--red); }
+
+    .step-text {
+      flex: 1;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      color: var(--text);
+    }
+
+    .step-arrows {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex-shrink: 0;
+    }
+    .arrow-btn {
+      width: 28px;
+      height: 22px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font);
+      transition: background 0.1s;
+    }
+    .arrow-btn:hover { background: var(--blue-tint); color: var(--blue-dark); border-color: var(--blue-light); }
+
+    .result-msg {
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-align: center;
+      color: var(--text-muted);
+      min-height: 1.4em;
+      margin-bottom: 16px;
+    }
+    .result-msg.success { color: #15803d; }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+
+<header class="bzwu-header">
+  <div class="header-text">
+    <span class="school-badge">BZWU Wil-Uzwil · Milchpraktiker EBA · Frischkäse</span>
+    <h1>Mozzarella - Herstellung sortieren</h1>
+    <p>Bringen Sie die 9 Schritte in die richtige Reihenfolge.</p>
+  </div>
+  <div class="header-logos">
+    <img src="../assets/logos/bzwu.png" alt="BZWU" class="header-logo">
+    <img src="../assets/logos/milchtechnologen.svg" alt="Milchtechnologen" class="header-logo">
+  </div>
+</header>
+
+<main>
+<div class="sorter-wrap">
+  <a class="back-link" href="../index.html">&#8592; Alle Lerntools</a>
+
+  <div class="task-intro">
+    Ziehen Sie die Schritte in die richtige Reihenfolge.<br>
+    Auf dem Handy: Pfeile &#9650; &#9660; verwenden.
+  </div>
+
+  <ul class="sort-list" id="sortList"></ul>
+
+  <div class="result-msg" id="resultMsg"></div>
+
+  <div class="actions">
+    <button class="btn btn-primary" onclick="checkOrder()">Reihenfolge prüfen</button>
+    <button class="btn btn-ghost"   onclick="resetSorter()">&#8635; Neu mischen</button>
+  </div>
+</div>
+</main>
+
+<script>
+var STEPS = [
+  { id: 1, text: 'Milch homogenisieren (30-50 bar). Fett verteilt sich gleichmässig in der Milch.' },
+  { id: 2, text: 'Pasteurisieren: mindestens 15 Sekunden bei 75 °C. Keime werden abgetötet.' },
+  { id: 3, text: 'Milch abkühlen. Kulturen zugeben (fermentiert) oder Säure zugeben (unfermentiert).' },
+  { id: 4, text: 'Lab zugeben. Die Milch gerinnt zum festen Gallert.' },
+  { id: 5, text: 'Käsebruch schneiden: ca. so gross wie eine Haselnuss.' },
+  { id: 6, text: 'Bruch nachwärmen auf 36-40 °C. Molke tritt aus dem Bruch (Synärese).' },
+  { id: 7, text: 'Molke ablassen. Bruch in heisses Pastafilier-Wasser geben (70-75 °C).' },
+  { id: 8, text: 'Pastafilieren: Bruch kneten, ziehen und dehnen bis die Masse 57-59 °C hat.' },
+  { id: 9, text: 'Kugeln oder Stangen formen. Im Salzbad kühlen.' }
+];
+
+var dragSrc = null;
+var touchGhost = null;
+var ghostOffX = 0;
+var ghostOffY = 0;
+
+function shuffle(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+function updateNumbers() {
+  document.querySelectorAll('.sort-item').forEach(function(item, i) {
+    item.querySelector('.step-num').textContent = i + 1;
+  });
+}
+
+function clearFeedback() {
+  document.querySelectorAll('.sort-item').forEach(function(item) {
+    item.classList.remove('is-correct', 'is-wrong');
+  });
+  var msg = document.getElementById('resultMsg');
+  msg.textContent = '';
+  msg.className = 'result-msg';
+}
+
+function buildList(items) {
+  var list = document.getElementById('sortList');
+  list.innerHTML = '';
+  items.forEach(function(step) {
+    var li = document.createElement('li');
+    li.className = 'sort-item';
+    li.draggable = true;
+    li.dataset.id = step.id;
+    li.innerHTML =
+      '<span class="drag-handle">&#8942;&#8942;</span>' +
+      '<span class="step-num"></span>' +
+      '<span class="step-text">' + step.text + '</span>' +
+      '<div class="step-arrows">' +
+        '<button class="arrow-btn" onclick="moveUp(this)">&#9650;</button>' +
+        '<button class="arrow-btn" onclick="moveDown(this)">&#9660;</button>' +
+      '</div>';
+
+    li.addEventListener('dragstart', function(e) {
+      dragSrc = li;
+      li.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    li.addEventListener('dragend', function() {
+      li.classList.remove('dragging');
+      dragSrc = null;
+      updateNumbers();
+    });
+    li.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      if (!dragSrc || dragSrc === li) return;
+      var rect = li.getBoundingClientRect();
+      if (e.clientY < rect.top + rect.height / 2) {
+        list.insertBefore(dragSrc, li);
+      } else {
+        list.insertBefore(dragSrc, li.nextSibling);
+      }
+    });
+
+    li.addEventListener('touchstart', function(e) {
+      dragSrc = li;
+      var r = li.getBoundingClientRect();
+      ghostOffX = e.touches[0].clientX - r.left;
+      ghostOffY = e.touches[0].clientY - r.top;
+      touchGhost = li.cloneNode(true);
+      touchGhost.style.cssText =
+        'position:fixed;left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;' +
+        'opacity:0.9;pointer-events:none;z-index:9999;border-radius:12px;' +
+        'box-shadow:0 8px 24px rgba(0,0,0,0.2);';
+      document.body.appendChild(touchGhost);
+      li.style.opacity = '0.25';
+    }, { passive: true });
+
+    list.appendChild(li);
+  });
+  updateNumbers();
+}
+
+document.addEventListener('touchmove', function(e) {
+  if (!dragSrc || !touchGhost) return;
+  e.preventDefault();
+  var touch = e.touches[0];
+  touchGhost.style.left = (touch.clientX - ghostOffX) + 'px';
+  touchGhost.style.top  = (touch.clientY - ghostOffY) + 'px';
+
+  touchGhost.style.visibility = 'hidden';
+  var el = document.elementFromPoint(touch.clientX, touch.clientY);
+  touchGhost.style.visibility = '';
+
+  var target = el && el.closest('.sort-item');
+  if (target && target !== dragSrc) {
+    var list = document.getElementById('sortList');
+    var rect = target.getBoundingClientRect();
+    if (touch.clientY < rect.top + rect.height / 2) {
+      list.insertBefore(dragSrc, target);
+    } else {
+      list.insertBefore(dragSrc, target.nextSibling);
+    }
+    updateNumbers();
+  }
+}, { passive: false });
+
+document.addEventListener('touchend', function() {
+  if (!dragSrc) return;
+  dragSrc.style.opacity = '';
+  if (touchGhost) { touchGhost.remove(); touchGhost = null; }
+  dragSrc = null;
+}, { passive: true });
+
+function moveUp(btn) {
+  var li = btn.closest('.sort-item');
+  var prev = li.previousElementSibling;
+  if (prev) { li.parentNode.insertBefore(li, prev); updateNumbers(); clearFeedback(); }
+}
+
+function moveDown(btn) {
+  var li = btn.closest('.sort-item');
+  var next = li.nextElementSibling;
+  if (next) { li.parentNode.insertBefore(next, li); updateNumbers(); clearFeedback(); }
+}
+
+function checkOrder() {
+  var items = document.querySelectorAll('.sort-item');
+  var correct = 0;
+  items.forEach(function(item, i) {
+    item.classList.remove('is-correct', 'is-wrong');
+    if (parseInt(item.dataset.id) === i + 1) {
+      item.classList.add('is-correct');
+      correct++;
+    } else {
+      item.classList.add('is-wrong');
+    }
+  });
+  var msg = document.getElementById('resultMsg');
+  if (correct === STEPS.length) {
+    msg.textContent = 'Perfekt! Alle ' + STEPS.length + ' Schritte sind in der richtigen Reihenfolge.';
+    msg.className = 'result-msg success';
+  } else {
+    msg.textContent = correct + ' von ' + STEPS.length + ' Schritten sind richtig. Rot = falsche Position.';
+    msg.className = 'result-msg';
+  }
+}
+
+function resetSorter() {
+  clearFeedback();
+  buildList(shuffle(STEPS));
+}
+
+buildList(shuffle(STEPS));
+</script>
+</body>
+</html>

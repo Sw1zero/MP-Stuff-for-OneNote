@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="../style.css">
   <style>
     .zu-wrap {
-      max-width: 680px;
+      max-width: 720px;
       margin: 0 auto;
       padding: 32px 16px 56px;
       display: flex;
@@ -71,10 +71,6 @@
     .cause-chip.used { opacity: 0; pointer-events: none; position: absolute; }
     .cause-chip.dragging { opacity: 0.3; }
 
-    .defect-card.drag-over { border-color: var(--blue-light); }
-    .defect-card.drag-over .defect-slot { background: var(--blue-tint); }
-
-    /* Defect cards grid */
     .defect-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -83,7 +79,7 @@
       margin-bottom: 24px;
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 520px) {
       .defect-grid { grid-template-columns: 1fr; }
     }
 
@@ -95,35 +91,54 @@
       border: 2px solid transparent;
       transition: border-color 0.2s;
     }
-    .defect-card.is-correct { border-color: #38a169; }
-    .defect-card.is-wrong   { border-color: var(--red); }
+    .defect-card.drag-over { border-color: var(--blue-light); }
 
     .defect-title {
-      background: #fff7ed;
-      color: #9a3412;
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       font-weight: 700;
       padding: 10px 14px;
-      border-bottom: 1px solid #fed7aa;
+      border-bottom: 1px solid;
       line-height: 1.3;
     }
+    .defect-title.cat-geruch  { background: #fff7ed; color: #9a3412; border-color: #fed7aa; }
+    .defect-title.cat-teig    { background: #dbeeff; color: #1e4e8c; border-color: #bcd4f0; }
+    .defect-title.cat-hefe    { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+    .defect-title.cat-schmelz { background: #f3e8ff; color: #6b21a8; border-color: #e9d5ff; }
 
-    .defect-slot {
-      min-height: 52px;
-      padding: 10px 14px;
-      font-size: 0.82rem;
-      color: var(--text-subtle);
-      cursor: pointer;
+    .category-zone {
+      min-height: 64px;
+      padding: 10px;
       display: flex;
-      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-content: flex-start;
+      cursor: pointer;
       transition: background 0.15s;
-      line-height: 1.4;
     }
-    .defect-slot:empty::before { content: 'Ursache hier zuordnen...'; font-style: italic; }
-    .defect-slot.filled { color: var(--text); font-style: normal; }
-    .defect-slot:hover:not(.correct):not(.wrong) { background: #fef9c3; }
-    .defect-card.is-correct .defect-slot { background: #dcfce7; color: #15803d; font-weight: 600; }
-    .defect-card.is-wrong   .defect-slot { background: #fee2e2; color: var(--red); }
+    .category-zone:empty::before {
+      content: 'Ursachen hier ablegen...';
+      font-size: 0.78rem;
+      font-style: italic;
+      color: var(--text-subtle);
+    }
+    .defect-card.drag-over .category-zone { background: var(--blue-tint); }
+
+    .zone-chip {
+      font-family: var(--font);
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 5px 11px;
+      border-radius: 16px;
+      border: 1.5px solid var(--border);
+      background: #f8f9fa;
+      color: var(--text);
+      cursor: pointer;
+      line-height: 1.35;
+      transition: all 0.15s;
+    }
+    .zone-chip:hover { background: #fef9c3; border-color: #ca8a04; }
+    .zone-chip.chip-correct { border-color: #38a169; background: #dcfce7; color: #15803d; font-weight: 600; cursor: default; }
+    .zone-chip.chip-wrong   { border-color: var(--red); background: #fee2e2; color: var(--red); }
 
     .result-msg {
       font-size: 0.9rem;
@@ -149,7 +164,7 @@
   <div class="header-text">
     <span class="school-badge">BZWU Wil-Uzwil · Milchpraktiker EBA · Frischkäse</span>
     <h1>Mozzarella - Mängel und Ursachen</h1>
-    <p>Ordnen Sie jedem Mangel die richtige Ursache zu.</p>
+    <p>Ordnen Sie jede Ursache dem richtigen Mangel zu.</p>
   </div>
   <div class="header-logos">
     <img src="../assets/logos/bzwu.png" alt="BZWU" class="header-logo">
@@ -162,8 +177,8 @@
   <a class="back-link" href="../index.html">&#8592; Alle Lerntools</a>
 
   <div class="task-intro">
-    Klicken Sie eine Ursache in der Wortbank an. Dann klicken Sie auf den passenden Mangel.<br>
-    Zum Entfernen: zugeordnete Zelle anklicken.
+    Klicken Sie eine Ursache an. Dann klicken Sie auf die passende Kategorie.<br>
+    Zum Entfernen: Ursache in der Kategorie anklicken.
   </div>
 
   <div class="bank-title">Ursachen (Wortbank)</div>
@@ -174,44 +189,65 @@
   <div class="result-msg" id="resultMsg"></div>
   <div class="actions">
     <button class="btn btn-primary" onclick="checkAnswers()">Zuordnung prüfen</button>
-    <button class="btn btn-ghost"   onclick="resetAll()">&#8635; Zurücksetzen</button>
+    <button class="btn btn-ghost" onclick="resetAll()">&#8635; Zurücksetzen</button>
   </div>
 </div>
 </main>
 
 <script>
-var PAIRS = [
+var CATEGORIES = [
   {
-    id: 'zaeh',
-    mangel: 'Fester, zäher Teig',
-    ursache: 'Pastafilata-Temperatur zu tief'
+    id: 'geruch',
+    kategorie: 'Abweichender Geruch und Geschmack',
+    color: 'cat-geruch',
+    ursachen: [
+      'Rohmilch mit Fehlgeschmack',
+      'Zu hohe Pasteurisationstemperatur',
+      'Eiweissabbau durch Kulturen oder Lab'
+    ]
   },
   {
-    id: 'trocken',
-    mangel: 'Kurzer, trockener Teig',
-    ursache: 'Pastafilata-Temperatur zu hoch oder zu langes Kneten'
+    id: 'teig',
+    kategorie: 'Abweichende Teigstruktur',
+    color: 'cat-teig',
+    ursachen: [
+      'Pastafilata-Temperatur zu tief',
+      'Pastafilata-Temperatur zu hoch',
+      'Zu hoher Wasser- oder Salzgehalt'
+    ]
   },
   {
-    id: 'pappig',
-    mangel: 'Pappiger Teig bei der Lagerung',
-    ursache: 'Zu hoher Wasser- oder Salzgehalt; Eiweissabbau durch Bakterien'
+    id: 'hefe',
+    kategorie: 'Hefe- und Schimmelwachstum',
+    color: 'cat-hefe',
+    ursachen: [
+      'Kühlkette nicht eingehalten',
+      'Infektionen beim Kühlen oder Verpacken',
+      'Undichte Verpackung'
+    ]
   },
   {
     id: 'schmelz',
-    mangel: 'Schlechte Schmelzeigenschaften (klumpig, fettig)',
-    ursache: 'Zu hoher pH-Wert; zu wenig Salz im Käse'
-  },
-  {
-    id: 'schimmel',
-    mangel: 'Schimmel- und Hefewachstum',
-    ursache: 'Unterbrochene Kühlkette oder undichte Verpackung'
-  },
-  {
-    id: 'koch',
-    mangel: 'Kochgeschmack',
-    ursache: 'Zu hohe Pasteurisationstemperatur'
+    kategorie: 'Schlechte Schmelzeigenschaften',
+    color: 'cat-schmelz',
+    ursachen: [
+      'Zu hoher pH-Wert im Käse',
+      'Zu tiefer Salzgehalt im Käse'
+    ]
   }
 ];
+
+var ALL_URSACHEN = [];
+CATEGORIES.forEach(function(cat) {
+  cat.ursachen.forEach(function(u) {
+    ALL_URSACHEN.push(u);
+  });
+});
+
+var causeTocat = {};
+CATEGORIES.forEach(function(cat) {
+  cat.ursachen.forEach(function(u) { causeTocat[u] = cat.id; });
+});
 
 var selectedChip = null;
 var tdChip  = null;
@@ -228,18 +264,23 @@ function shuffle(arr) {
 }
 
 function buildUI() {
+  buildBank();
+  buildGrid();
+}
+
+function buildBank() {
   var bank = document.getElementById('causeBank');
   bank.innerHTML = '';
-  shuffle(PAIRS.slice()).forEach(function(pair) {
+  shuffle(ALL_URSACHEN.slice()).forEach(function(cause) {
     var btn = document.createElement('button');
     btn.className = 'cause-chip';
-    btn.textContent = pair.ursache;
-    btn.dataset.cause = pair.ursache;
-    btn.id = 'chip-' + pair.id;
+    btn.textContent = cause;
+    btn.dataset.cause = cause;
+    btn.id = 'chip-' + cause.replace(/[^a-zA-Z0-9]/g, '_');
     btn.setAttribute('draggable', 'true');
     btn.onclick = function() { selectChip(btn); };
     btn.addEventListener('dragstart', function(e) {
-      e.dataTransfer.setData('text/plain', pair.ursache);
+      e.dataTransfer.setData('text/plain', cause);
       e.dataTransfer.effectAllowed = 'move';
       btn.classList.add('dragging');
     });
@@ -252,7 +293,7 @@ function buildUI() {
       tdOffX = e.touches[0].clientX - r.left;
       tdOffY = e.touches[0].clientY - r.top;
       tdGhost = document.createElement('span');
-      tdGhost.textContent = pair.ursache;
+      tdGhost.textContent = cause;
       tdGhost.style.cssText =
         'position:fixed;left:' + r.left + 'px;top:' + r.top + 'px;' +
         'font:500 0.82rem/1.4 var(--font,Inter,sans-serif);padding:7px 14px;' +
@@ -265,46 +306,53 @@ function buildUI() {
     }, { passive: true });
     bank.appendChild(btn);
   });
+}
 
+function buildGrid() {
   var grid = document.getElementById('defectGrid');
   grid.innerHTML = '';
-  PAIRS.forEach(function(pair) {
+  CATEGORIES.forEach(function(cat) {
     var card = document.createElement('div');
     card.className = 'defect-card';
-    card.id = 'card-' + pair.id;
-    card.dataset.correct = pair.ursache;
+    card.id = 'card-' + cat.id;
 
     var title = document.createElement('div');
-    title.className = 'defect-title';
-    title.textContent = pair.mangel;
+    title.className = 'defect-title ' + cat.color;
+    title.textContent = cat.kategorie;
 
-    var slot = document.createElement('div');
-    slot.className = 'defect-slot';
-    slot.id = 'slot-' + pair.id;
-    slot.onclick = function() { handleSlot(slot, card); };
-    slot.addEventListener('dragover', function(e) {
-      if (!slot.dataset.value) {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        card.classList.add('drag-over');
-      }
+    var zone = document.createElement('div');
+    zone.className = 'category-zone';
+    zone.id = 'zone-' + cat.id;
+
+    card.addEventListener('click', function(e) {
+      if (!selectedChip) return;
+      if (e.target.classList.contains('zone-chip')) return;
+      if (e.target.classList.contains('defect-title')) return;
+      placeChipInZone(zone, card, selectedChip.dataset.cause, selectedChip);
     });
-    slot.addEventListener('dragleave', function() { card.classList.remove('drag-over'); });
-    slot.addEventListener('drop', function(e) {
+    zone.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      card.classList.add('drag-over');
+    });
+    zone.addEventListener('dragleave', function(e) {
+      if (!card.contains(e.relatedTarget)) card.classList.remove('drag-over');
+    });
+    zone.addEventListener('drop', function(e) {
       e.preventDefault();
       card.classList.remove('drag-over');
       var cause = e.dataTransfer.getData('text/plain');
-      if (!cause || slot.dataset.value) return;
+      if (!cause) return;
       var src = null;
       document.querySelectorAll('.cause-chip').forEach(function(chip) {
         if (chip.dataset.cause === cause && !chip.classList.contains('used') && !src) src = chip;
       });
       if (!src) return;
-      fillSlot(slot, card, cause, src);
+      placeChipInZone(zone, card, cause, src);
     });
 
     card.appendChild(title);
-    card.appendChild(slot);
+    card.appendChild(zone);
     grid.appendChild(card);
   });
 }
@@ -321,10 +369,7 @@ document.addEventListener('touchmove', function(e) {
   document.querySelectorAll('.defect-card').forEach(function(c) { c.classList.remove('drag-over'); });
   if (el) {
     var dc = el.closest ? el.closest('.defect-card') : null;
-    if (dc) {
-      var s = dc.querySelector('.defect-slot');
-      if (s && !s.dataset.value) dc.classList.add('drag-over');
-    }
+    if (dc) dc.classList.add('drag-over');
   }
 }, { passive: false });
 
@@ -337,10 +382,8 @@ document.addEventListener('touchend', function(e) {
   var el = document.elementFromPoint(touch.clientX, touch.clientY);
   var dc = el && el.closest ? el.closest('.defect-card') : null;
   if (dc && !tdChip.classList.contains('used')) {
-    var targetSlot = dc.querySelector('.defect-slot');
-    if (targetSlot && !targetSlot.dataset.value) {
-      fillSlot(targetSlot, dc, tdChip.dataset.cause, tdChip);
-    }
+    var zone = dc.querySelector('.category-zone');
+    placeChipInZone(zone, dc, tdChip.dataset.cause, tdChip);
   }
   tdChip = null;
 }, { passive: true });
@@ -356,39 +399,28 @@ function selectChip(el) {
   el.classList.add('selected');
 }
 
-function handleSlot(slot, card) {
-  if (slot.dataset.value) {
-    clearSlot(slot, card);
-  } else if (selectedChip) {
-    fillSlot(slot, card, selectedChip.dataset.cause, selectedChip);
-  }
-}
-
-function fillSlot(slot, card, cause, chip) {
-  slot.textContent = cause;
-  slot.dataset.value = cause;
-  slot.classList.add('filled');
-  card.classList.remove('is-correct', 'is-wrong');
-  chip.classList.add('used');
-  chip.classList.remove('selected', 'dragging');
+function placeChipInZone(zone, card, cause, bankChip) {
+  bankChip.classList.add('used');
+  bankChip.classList.remove('selected', 'dragging');
+  bankChip.style.opacity = '';
   selectedChip = null;
-}
-
-function clearSlot(slot, card) {
-  var cause = slot.dataset.value;
-  if (!cause) return;
-  slot.textContent = '';
-  slot.dataset.value = '';
-  slot.classList.remove('filled');
-  card.classList.remove('is-correct', 'is-wrong');
-  restoreChip(cause);
+  card.classList.remove('drag-over');
   clearResultMsg();
-}
 
-function restoreChip(cause) {
-  document.querySelectorAll('.cause-chip').forEach(function(chip) {
-    if (chip.dataset.cause === cause) chip.classList.remove('used');
-  });
+  var zc = document.createElement('span');
+  zc.className = 'zone-chip';
+  zc.textContent = cause;
+  zc.dataset.cause = cause;
+  zc.onclick = function(e) {
+    e.stopPropagation();
+    if (zc.classList.contains('chip-correct')) return;
+    zc.remove();
+    clearResultMsg();
+    document.querySelectorAll('.cause-chip').forEach(function(chip) {
+      if (chip.dataset.cause === cause) chip.classList.remove('used');
+    });
+  };
+  zone.appendChild(zc);
 }
 
 function clearResultMsg() {
@@ -398,36 +430,37 @@ function clearResultMsg() {
 
 function checkAnswers() {
   var correct = 0;
-  PAIRS.forEach(function(pair) {
-    var slot = document.getElementById('slot-' + pair.id);
-    var card = document.getElementById('card-' + pair.id);
-    card.classList.remove('is-correct', 'is-wrong');
-    if (!slot.dataset.value) return;
-    if (slot.dataset.value === pair.ursache) {
-      card.classList.add('is-correct');
-      correct++;
-    } else {
-      card.classList.add('is-wrong');
-    }
+  document.querySelectorAll('.category-zone').forEach(function(zone) {
+    var catId = zone.id.replace('zone-', '');
+    zone.querySelectorAll('.zone-chip').forEach(function(chip) {
+      chip.classList.remove('chip-correct', 'chip-wrong');
+      if (causeTocat[chip.dataset.cause] === catId) {
+        chip.classList.add('chip-correct');
+        correct++;
+      } else {
+        chip.classList.add('chip-wrong');
+      }
+    });
   });
+  var total = ALL_URSACHEN.length;
+  var assigned = document.querySelectorAll('.zone-chip').length;
   var msg = document.getElementById('resultMsg');
-  if (correct === PAIRS.length) {
-    msg.textContent = 'Perfekt! Alle ' + PAIRS.length + ' Zuordnungen sind richtig.';
+  if (correct === total && assigned === total) {
+    msg.textContent = 'Perfekt! Alle ' + total + ' Ursachen sind richtig zugeordnet.';
     msg.className = 'result-msg success';
   } else {
-    msg.textContent = correct + ' von ' + PAIRS.length + ' Zuordnungen sind richtig. Rot = falsch.';
+    var missing = total - assigned;
+    var text = correct + ' von ' + total + ' Ursachen richtig zugeordnet.';
+    if (missing > 0) text += ' Noch ' + missing + ' nicht zugeordnet.';
+    text += ' Rot = falsch.';
+    msg.textContent = text;
     msg.className = 'result-msg';
   }
 }
 
 function resetAll() {
-  PAIRS.forEach(function(pair) {
-    var slot = document.getElementById('slot-' + pair.id);
-    var card = document.getElementById('card-' + pair.id);
-    slot.textContent = '';
-    slot.dataset.value = '';
-    slot.classList.remove('filled');
-    card.classList.remove('is-correct', 'is-wrong');
+  document.querySelectorAll('.category-zone').forEach(function(zone) {
+    zone.innerHTML = '';
   });
   selectedChip = null;
   clearResultMsg();

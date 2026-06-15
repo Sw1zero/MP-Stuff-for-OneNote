@@ -68,6 +68,13 @@
     .word-chip:hover:not(.used) { border-color: var(--blue-light); background: var(--blue-tint); }
     .word-chip.selected { border-color: var(--blue-dark); background: var(--blue-dark); color: #fff; }
     .word-chip.used { opacity: 0; pointer-events: none; width: 0; padding: 0; margin: 0; border: none; overflow: hidden; }
+    .word-chip.dragging { opacity: 0.3; }
+
+    .blank-cell.drag-over {
+      background: var(--blue-tint) !important;
+      outline: 2px dashed var(--blue-dark);
+      outline-offset: -2px;
+    }
 
     .table-wrap { width: 100%; overflow-x: auto; margin-bottom: 24px; }
 
@@ -251,6 +258,9 @@ var ANSWERS = {
 };
 
 var selectedChip = null;
+var tdChip  = null;
+var tdGhost = null;
+var tdOffX  = 0, tdOffY = 0;
 
 function shuffle(arr) {
   var a = arr.slice();
@@ -265,7 +275,6 @@ function buildWordBank() {
   var bank = document.getElementById('wordBank');
   bank.innerHTML = '';
   var words = Object.values(ANSWERS);
-  // deduplicate (shouldn't be needed but safe)
   var unique = [];
   words.forEach(function(w) { if (unique.indexOf(w) < 0) unique.push(w); });
   shuffle(unique).forEach(function(word) {
@@ -273,10 +282,102 @@ function buildWordBank() {
     btn.className = 'word-chip';
     btn.textContent = word;
     btn.dataset.word = word;
+    btn.setAttribute('draggable', 'true');
     btn.onclick = function() { selectChip(btn); };
+    btn.addEventListener('dragstart', function(e) {
+      e.dataTransfer.setData('text/plain', word);
+      e.dataTransfer.effectAllowed = 'move';
+      btn.classList.add('dragging');
+    });
+    btn.addEventListener('dragend', function() { btn.classList.remove('dragging'); });
+    btn.addEventListener('touchstart', function(e) {
+      if (btn.classList.contains('used')) return;
+      if (selectedChip) { selectedChip.classList.remove('selected'); selectedChip = null; }
+      tdChip = btn;
+      var r = btn.getBoundingClientRect();
+      tdOffX = e.touches[0].clientX - r.left;
+      tdOffY = e.touches[0].clientY - r.top;
+      tdGhost = document.createElement('span');
+      tdGhost.textContent = word;
+      tdGhost.style.cssText =
+        'position:fixed;left:' + r.left + 'px;top:' + r.top + 'px;' +
+        'font:500 0.80rem/1 var(--font,Inter,sans-serif);padding:6px 13px;' +
+        'border-radius:20px;border:1.5px solid var(--blue-dark);' +
+        'background:var(--blue-dark);color:#fff;white-space:nowrap;' +
+        'pointer-events:none;z-index:9999;box-shadow:0 6px 16px rgba(0,0,0,0.25);' +
+        'transition:none;';
+      document.body.appendChild(tdGhost);
+      btn.style.opacity = '0.3';
+    }, { passive: true });
     bank.appendChild(btn);
   });
 }
+
+function buildDropZones() {
+  document.querySelectorAll('.blank-cell').forEach(function(cell) {
+    cell.addEventListener('dragover', function(e) {
+      if (!cell.classList.contains('filled')) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        cell.classList.add('drag-over');
+      }
+    });
+    cell.addEventListener('dragleave', function() { cell.classList.remove('drag-over'); });
+    cell.addEventListener('drop', function(e) {
+      e.preventDefault();
+      cell.classList.remove('drag-over');
+      var word = e.dataTransfer.getData('text/plain');
+      if (!word || cell.classList.contains('filled')) return;
+      var src = null;
+      document.querySelectorAll('.word-chip').forEach(function(chip) {
+        if (chip.dataset.word === word && !chip.classList.contains('used') && !src) src = chip;
+      });
+      if (!src) return;
+      fillCell(cell, word);
+      src.classList.add('used');
+      src.classList.remove('dragging', 'selected');
+      if (selectedChip === src) selectedChip = null;
+    });
+  });
+}
+
+document.addEventListener('touchmove', function(e) {
+  if (!tdChip || !tdGhost) return;
+  e.preventDefault();
+  var touch = e.touches[0];
+  tdGhost.style.left = (touch.clientX - tdOffX) + 'px';
+  tdGhost.style.top  = (touch.clientY - tdOffY) + 'px';
+  tdGhost.style.visibility = 'hidden';
+  var el = document.elementFromPoint(touch.clientX, touch.clientY);
+  tdGhost.style.visibility = '';
+  document.querySelectorAll('.blank-cell').forEach(function(c) { c.classList.remove('drag-over'); });
+  if (el) {
+    var t = el.closest ? el.closest('.blank-cell') : null;
+    if (!t && el.classList && el.classList.contains('blank-cell')) t = el;
+    if (t && !t.classList.contains('filled')) t.classList.add('drag-over');
+  }
+}, { passive: false });
+
+document.addEventListener('touchend', function(e) {
+  if (!tdChip) return;
+  tdChip.style.opacity = '';
+  if (tdGhost) { tdGhost.remove(); tdGhost = null; }
+  document.querySelectorAll('.blank-cell').forEach(function(c) { c.classList.remove('drag-over'); });
+  var touch = e.changedTouches[0];
+  var el = document.elementFromPoint(touch.clientX, touch.clientY);
+  var target = null;
+  if (el) {
+    target = el.closest ? el.closest('.blank-cell') : null;
+    if (!target && el.classList && el.classList.contains('blank-cell')) target = el;
+  }
+  if (target && !target.classList.contains('filled') && !tdChip.classList.contains('used')) {
+    fillCell(target, tdChip.dataset.word);
+    tdChip.classList.add('used');
+    tdChip.classList.remove('selected');
+    if (selectedChip === tdChip) selectedChip = null;
+  }
+  tdChip = null;
+}, { passive: true });
 
 function selectChip(el) {
   if (selectedChip === el) {
@@ -360,9 +461,11 @@ function resetAll() {
   document.getElementById('resultMsg').textContent = '';
   document.getElementById('resultMsg').className = 'result-msg';
   buildWordBank();
+  buildDropZones();
 }
 
 buildWordBank();
+buildDropZones();
 </script>
 </body>
 </html>

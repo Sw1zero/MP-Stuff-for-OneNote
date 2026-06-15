@@ -69,6 +69,10 @@
     .cause-chip:hover:not(.used) { border-color: var(--blue-dark); background: var(--blue-tint); }
     .cause-chip.selected { border-color: var(--blue-dark); background: var(--blue-dark); color: #fff; }
     .cause-chip.used { opacity: 0; pointer-events: none; position: absolute; }
+    .cause-chip.dragging { opacity: 0.3; }
+
+    .defect-card.drag-over { border-color: var(--blue-light); }
+    .defect-card.drag-over .defect-slot { background: var(--blue-tint); }
 
     /* Defect cards grid */
     .defect-grid {
@@ -210,6 +214,9 @@ var PAIRS = [
 ];
 
 var selectedChip = null;
+var tdChip  = null;
+var tdGhost = null;
+var tdOffX  = 0, tdOffY = 0;
 
 function shuffle(arr) {
   var a = arr.slice();
@@ -223,14 +230,39 @@ function shuffle(arr) {
 function buildUI() {
   var bank = document.getElementById('causeBank');
   bank.innerHTML = '';
-  var shuffled = shuffle(PAIRS.slice());
-  shuffled.forEach(function(pair) {
+  shuffle(PAIRS.slice()).forEach(function(pair) {
     var btn = document.createElement('button');
     btn.className = 'cause-chip';
     btn.textContent = pair.ursache;
     btn.dataset.cause = pair.ursache;
     btn.id = 'chip-' + pair.id;
+    btn.setAttribute('draggable', 'true');
     btn.onclick = function() { selectChip(btn); };
+    btn.addEventListener('dragstart', function(e) {
+      e.dataTransfer.setData('text/plain', pair.ursache);
+      e.dataTransfer.effectAllowed = 'move';
+      btn.classList.add('dragging');
+    });
+    btn.addEventListener('dragend', function() { btn.classList.remove('dragging'); });
+    btn.addEventListener('touchstart', function(e) {
+      if (btn.classList.contains('used')) return;
+      if (selectedChip) { selectedChip.classList.remove('selected'); selectedChip = null; }
+      tdChip = btn;
+      var r = btn.getBoundingClientRect();
+      tdOffX = e.touches[0].clientX - r.left;
+      tdOffY = e.touches[0].clientY - r.top;
+      tdGhost = document.createElement('span');
+      tdGhost.textContent = pair.ursache;
+      tdGhost.style.cssText =
+        'position:fixed;left:' + r.left + 'px;top:' + r.top + 'px;' +
+        'font:500 0.82rem/1.4 var(--font,Inter,sans-serif);padding:7px 14px;' +
+        'border-radius:20px;border:1.5px solid var(--blue-dark);' +
+        'background:var(--blue-dark);color:#fff;max-width:280px;' +
+        'pointer-events:none;z-index:9999;box-shadow:0 6px 16px rgba(0,0,0,0.25);' +
+        'transition:none;';
+      document.body.appendChild(tdGhost);
+      btn.style.opacity = '0.3';
+    }, { passive: true });
     bank.appendChild(btn);
   });
 
@@ -250,12 +282,68 @@ function buildUI() {
     slot.className = 'defect-slot';
     slot.id = 'slot-' + pair.id;
     slot.onclick = function() { handleSlot(slot, card); };
+    slot.addEventListener('dragover', function(e) {
+      if (!slot.dataset.value) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        card.classList.add('drag-over');
+      }
+    });
+    slot.addEventListener('dragleave', function() { card.classList.remove('drag-over'); });
+    slot.addEventListener('drop', function(e) {
+      e.preventDefault();
+      card.classList.remove('drag-over');
+      var cause = e.dataTransfer.getData('text/plain');
+      if (!cause || slot.dataset.value) return;
+      var src = null;
+      document.querySelectorAll('.cause-chip').forEach(function(chip) {
+        if (chip.dataset.cause === cause && !chip.classList.contains('used') && !src) src = chip;
+      });
+      if (!src) return;
+      fillSlot(slot, card, cause, src);
+    });
 
     card.appendChild(title);
     card.appendChild(slot);
     grid.appendChild(card);
   });
 }
+
+document.addEventListener('touchmove', function(e) {
+  if (!tdChip || !tdGhost) return;
+  e.preventDefault();
+  var touch = e.touches[0];
+  tdGhost.style.left = (touch.clientX - tdOffX) + 'px';
+  tdGhost.style.top  = (touch.clientY - tdOffY) + 'px';
+  tdGhost.style.visibility = 'hidden';
+  var el = document.elementFromPoint(touch.clientX, touch.clientY);
+  tdGhost.style.visibility = '';
+  document.querySelectorAll('.defect-card').forEach(function(c) { c.classList.remove('drag-over'); });
+  if (el) {
+    var dc = el.closest ? el.closest('.defect-card') : null;
+    if (dc) {
+      var s = dc.querySelector('.defect-slot');
+      if (s && !s.dataset.value) dc.classList.add('drag-over');
+    }
+  }
+}, { passive: false });
+
+document.addEventListener('touchend', function(e) {
+  if (!tdChip) return;
+  tdChip.style.opacity = '';
+  if (tdGhost) { tdGhost.remove(); tdGhost = null; }
+  document.querySelectorAll('.defect-card').forEach(function(c) { c.classList.remove('drag-over'); });
+  var touch = e.changedTouches[0];
+  var el = document.elementFromPoint(touch.clientX, touch.clientY);
+  var dc = el && el.closest ? el.closest('.defect-card') : null;
+  if (dc && !tdChip.classList.contains('used')) {
+    var targetSlot = dc.querySelector('.defect-slot');
+    if (targetSlot && !targetSlot.dataset.value) {
+      fillSlot(targetSlot, dc, tdChip.dataset.cause, tdChip);
+    }
+  }
+  tdChip = null;
+}, { passive: true });
 
 function selectChip(el) {
   if (selectedChip === el) {
@@ -282,7 +370,7 @@ function fillSlot(slot, card, cause, chip) {
   slot.classList.add('filled');
   card.classList.remove('is-correct', 'is-wrong');
   chip.classList.add('used');
-  chip.classList.remove('selected');
+  chip.classList.remove('selected', 'dragging');
   selectedChip = null;
 }
 
@@ -343,9 +431,7 @@ function resetAll() {
   });
   selectedChip = null;
   clearResultMsg();
-  document.querySelectorAll('.cause-chip').forEach(function(chip) {
-    chip.classList.remove('used', 'selected');
-  });
+  buildUI();
 }
 
 buildUI();

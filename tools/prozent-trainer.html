@@ -246,21 +246,15 @@
 </main>
 
 <script>
-var currentCat  = 'alle';
-var currentTask = null;
-var answered    = false;
+var currentCat   = 'alle';
+var currentTask  = null;
+var answered     = false;
 var scoreCorrect = 0, scoreWrong = 0, streak = 0;
-var lastGen = null;
+var lastGen      = null;
 
-function pick(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function d1(n) {
-  return Math.round(n * 10) / 10;
-}
-
-function fmtN(n) {
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function d1(n)     { return Math.round(n * 10) / 10; }
+function fmtN(n)   {
   if (n === Math.round(n)) return String(Math.round(n));
   return d1(n).toString().replace('.', ',');
 }
@@ -268,67 +262,79 @@ function fmtN(n) {
 // ── Task generators ──────────────────────────────────────────────────────────
 
 function genProzentwert() {
-  var quarks = [180, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800];
-  var pcts   = [10, 12, 15, 18, 20, 25];
+  var quarks = [100, 120, 150, 180, 200, 240, 250, 280, 300, 320, 350, 400,
+                420, 450, 480, 500, 540, 560, 600, 640, 700, 720, 750, 800,
+                840, 900, 960, 1000, 1200, 1500, 2000];
+  var pcts   = [5, 8, 10, 12, 15, 18, 20, 22, 25, 30];
   var quark  = pick(quarks);
   var pct    = pick(pcts);
   var frucht = d1(quark * pct / (100 - pct));
   return {
     cat: 'prozentwert',
-    text: 'Sie haben <strong>' + quark + ' g</strong> Magerquark und möchten eine Mischung mit <strong>' + pct + '% Fruchtanteil</strong> herstellen. Wie viel Fruchtgrundstoff benötigen Sie?',
+    text: 'Sie haben <strong>' + quark + ' g</strong> Magerquark und möchten eine Mischung mit <strong>' + pct + ' % Fruchtanteil</strong> herstellen. Wie viel Fruchtgrundstoff benötigen Sie?',
     answer: frucht,
     unit: 'g',
-    hint: 'Schritt 1: Wie viel Prozent ist der Quark? 100 % − ' + pct + ' % = <strong>' + (100 - pct) + ' %</strong><br>Schritt 2: Frucht = ' + quark + ' g × ' + pct + ' ÷ ' + (100 - pct) + ' = <strong>' + fmtN(frucht) + ' g</strong>'
+    hint: 'Schritt 1: Wie viel Prozent ist der Quark? 100 % - ' + pct + ' % = <strong>' + (100 - pct) + ' %</strong><br>Schritt 2: Frucht = ' + quark + ' g × ' + pct + ' ÷ ' + (100 - pct) + ' = <strong>' + fmtN(frucht) + ' g</strong>'
   };
 }
 
 function genProzentsatz() {
-  var totals = [500, 600, 800, 1000, 1200, 1500, 2000];
-  var pcts   = [5, 8, 10, 12, 15, 20, 25];
-  var total  = pick(totals);
-  var pct    = pick(pcts);
-  var teil   = total * pct / 100;
+  var totals = [200, 250, 300, 400, 500, 600, 750, 800, 1000, 1200, 1500, 2000];
+  var pcts   = [2, 3, 4, 5, 6, 8, 10, 12, 15, 18, 20, 25];
+  var total, pct, teil, tries = 0;
+  do {
+    total = pick(totals);
+    pct   = pick(pcts);
+    teil  = total * pct / 100;
+    tries++;
+  } while (tries < 50 && Math.round(teil * 10) !== teil * 10);
   return {
     cat: 'prozentsatz',
-    text: 'In einem Eimer befinden sich <strong>' + total + ' g</strong> einer fertigen Mischung. Davon sind laut Deklaration <strong>' + teil + ' g</strong> reiner Zucker. Wie hoch ist der Zuckeranteil in Prozent?',
+    text: 'In einem Eimer befinden sich <strong>' + total + ' g</strong> einer fertigen Mischung. Davon sind laut Deklaration <strong>' + fmtN(teil) + ' g</strong> reiner Zucker. Wie hoch ist der Zuckeranteil in Prozent?',
     answer: pct,
     unit: '%',
-    hint: 'Zuckeranteil = Zucker ÷ Gesamtmischung × 100<br>= ' + teil + ' g ÷ ' + total + ' g × 100 = <strong>' + pct + ' %</strong>'
+    hint: 'Zuckeranteil = Zucker ÷ Gesamtmischung × 100<br>= ' + fmtN(teil) + ' g ÷ ' + total + ' g × 100 = <strong>' + pct + ' %</strong>'
   };
 }
 
-var GRUNDWERT_PAIRS = [
-  {frucht:100,pct:10},{frucht:150,pct:10},{frucht:200,pct:10},{frucht:250,pct:10},
-  {frucht:80, pct:8 },{frucht:120,pct:8 },{frucht:160,pct:8 },{frucht:200,pct:8 },
-  {frucht:120,pct:12},{frucht:180,pct:12},{frucht:240,pct:12},
-  {frucht:150,pct:15},{frucht:225,pct:15},{frucht:300,pct:15},
-  {frucht:100,pct:20},{frucht:150,pct:20},{frucht:200,pct:20},
-  {frucht:125,pct:25},{frucht:200,pct:25},{frucht:250,pct:25}
-];
-
 function genGrundwert() {
-  var p     = pick(GRUNDWERT_PAIRS);
-  var total = p.frucht * 100 / p.pct;
+  var fruchts = [50, 60, 75, 80, 90, 100, 120, 125, 150, 160, 175, 180, 200,
+                 225, 240, 250, 270, 300, 320, 360, 375, 400, 450, 480, 500,
+                 600, 625, 750, 800];
+  var pcts    = [5, 8, 10, 12, 15, 20, 25];
+  var frucht, pct, total, tries = 0;
+  do {
+    frucht = pick(fruchts);
+    pct    = pick(pcts);
+    total  = frucht * 100 / pct;
+    tries++;
+  } while (tries < 100 && Math.round(total) !== total);
+  if (tries >= 100) { frucht = 250; pct = 10; total = 2500; }
   return {
     cat: 'grundwert',
-    text: 'Sie haben noch <strong>' + p.frucht + ' g</strong> Fruchtgrundstoff. Ihr Rezept sieht einen Fruchtanteil von <strong>' + p.pct + '%</strong> vor. Wie viel fertige Mischung können Sie damit herstellen?',
+    text: 'Sie haben noch <strong>' + frucht + ' g</strong> Fruchtgrundstoff. Ihr Rezept sieht einen Fruchtanteil von <strong>' + pct + ' %</strong> vor. Wie viel fertige Mischung können Sie damit herstellen?',
     answer: total,
     unit: 'g',
-    hint: 'Gesamtmenge = Frucht ÷ Fruchtanteil × 100<br>= ' + p.frucht + ' g ÷ ' + p.pct + ' × 100 = <strong>' + total + ' g</strong>'
+    hint: 'Gesamtmenge = Frucht ÷ Fruchtanteil × 100<br>= ' + frucht + ' g ÷ ' + pct + ' × 100 = <strong>' + total + ' g</strong>'
   };
 }
 
 var MISCHUNG_TASKS = [
-  {quark:400,start:10,target:5},
-  {quark:300,start:8, target:4},
-  {quark:500,start:12,target:6},
-  {quark:200,start:10,target:4},
-  {quark:600,start:15,target:6},
-  {quark:400,start:15,target:5},
-  {quark:300,start:12,target:4},
-  {quark:250,start:8, target:5},
-  {quark:500,start:10,target:4},
-  {quark:600,start:12,target:8}
+  {quark:200, start:10, target:4},  {quark:250, start:8,  target:4},
+  {quark:250, start:12, target:6},  {quark:300, start:5,  target:3},
+  {quark:300, start:8,  target:4},  {quark:300, start:12, target:4},
+  {quark:300, start:20, target:6},  {quark:400, start:5,  target:2},
+  {quark:400, start:8,  target:4},  {quark:400, start:10, target:5},
+  {quark:400, start:15, target:5},  {quark:400, start:20, target:10},
+  {quark:500, start:4,  target:2},  {quark:500, start:6,  target:3},
+  {quark:500, start:8,  target:4},  {quark:500, start:10, target:4},
+  {quark:500, start:12, target:6},  {quark:500, start:15, target:5},
+  {quark:500, start:20, target:4},  {quark:600, start:5,  target:3},
+  {quark:600, start:10, target:4},  {quark:600, start:12, target:8},
+  {quark:600, start:15, target:6},  {quark:600, start:15, target:10},
+  {quark:600, start:20, target:5},  {quark:750, start:8,  target:4},
+  {quark:800, start:5,  target:4},  {quark:800, start:10, target:8},
+  {quark:1000,start:8,  target:4},  {quark:1200,start:10, target:4}
 ];
 
 function genMischung() {
@@ -337,23 +343,37 @@ function genMischung() {
   var end    = zucker * 100 / t.target;
   return {
     cat: 'mischung',
-    text: 'Sie haben <strong>' + t.quark + ' g</strong> Magerquark mit <strong>' + t.start + '% Zuckergehalt</strong> (= ' + zucker + ' g Zucker). Sie möchten den Zuckergehalt durch Zugabe von reinem Magerquark auf <strong>' + t.target + '%</strong> senken. Wie schwer muss die fertige Mischung sein?',
+    text: 'Sie haben <strong>' + t.quark + ' g</strong> Magerquark mit <strong>' + t.start + ' % Zuckergehalt</strong> (= ' + fmtN(zucker) + ' g Zucker). Sie möchten den Zuckergehalt durch Zugabe von reinem Magerquark auf <strong>' + t.target + ' %</strong> senken. Wie schwer muss die fertige Mischung sein?',
     answer: end,
     unit: 'g',
-    hint: 'Schritt 1: Der Zucker bleibt gleich: <strong>' + zucker + ' g</strong><br>Schritt 2: Endgewicht = ' + zucker + ' g ÷ ' + t.target + ' × 100 = <strong>' + end + ' g</strong>'
+    hint: 'Schritt 1: Der Zucker bleibt gleich: <strong>' + fmtN(zucker) + ' g</strong><br>Schritt 2: Endgewicht = ' + fmtN(zucker) + ' g ÷ ' + t.target + ' × 100 = <strong>' + fmtN(end) + ' g</strong>'
   };
 }
 
 var ANTEIL_TASKS = [
-  {quark:300,frucht:150,zucker:50},
-  {quark:350,frucht:100,zucker:50},
-  {quark:200,frucht:50, zucker:250},
-  {quark:300,frucht:75, zucker:125},
-  {quark:250,frucht:200,zucker:50},
-  {quark:200,frucht:100,zucker:200},
-  {quark:600,frucht:150,zucker:250},
-  {quark:700,frucht:200,zucker:100},
-  {quark:650,frucht:250,zucker:100}
+  // Gesamtmasse 500 g
+  {quark:200, frucht:50,  zucker:250}, {quark:225, frucht:50,  zucker:225},
+  {quark:300, frucht:50,  zucker:150}, {quark:350, frucht:50,  zucker:100},
+  {quark:400, frucht:50,  zucker:50},  {quark:175, frucht:75,  zucker:250},
+  {quark:225, frucht:75,  zucker:200}, {quark:300, frucht:75,  zucker:125},
+  {quark:350, frucht:75,  zucker:75},  {quark:175, frucht:100, zucker:225},
+  {quark:200, frucht:100, zucker:200}, {quark:250, frucht:100, zucker:150},
+  {quark:300, frucht:100, zucker:100}, {quark:350, frucht:100, zucker:50},
+  {quark:200, frucht:125, zucker:175}, {quark:250, frucht:125, zucker:125},
+  {quark:200, frucht:150, zucker:150}, {quark:250, frucht:150, zucker:100},
+  {quark:300, frucht:150, zucker:50},  {quark:250, frucht:200, zucker:50},
+  // Gesamtmasse 1000 g
+  {quark:500, frucht:100, zucker:400}, {quark:600, frucht:100, zucker:300},
+  {quark:700, frucht:100, zucker:200}, {quark:800, frucht:100, zucker:100},
+  {quark:500, frucht:150, zucker:350}, {quark:600, frucht:150, zucker:250},
+  {quark:700, frucht:150, zucker:150}, {quark:750, frucht:150, zucker:100},
+  {quark:500, frucht:200, zucker:300}, {quark:600, frucht:200, zucker:200},
+  {quark:700, frucht:200, zucker:100}, {quark:500, frucht:250, zucker:250},
+  {quark:600, frucht:250, zucker:150}, {quark:650, frucht:250, zucker:100},
+  // Gesamtmasse 800 g
+  {quark:400, frucht:80,  zucker:320}, {quark:480, frucht:80,  zucker:240},
+  {quark:560, frucht:80,  zucker:160}, {quark:480, frucht:160, zucker:160},
+  {quark:400, frucht:200, zucker:200}, {quark:480, frucht:240, zucker:80}
 ];
 
 function genAnteilMischung() {
@@ -365,7 +385,7 @@ function genAnteilMischung() {
     text: 'Sie mischen <strong>' + t.quark + ' g</strong> Magerquark, <strong>' + t.frucht + ' g</strong> Fruchtgrundstoff und <strong>' + t.zucker + ' g</strong> Zucker. Wie hoch ist der prozentuale Anteil des Fruchtgrundstoffs an der Gesamtmasse?',
     answer: pct,
     unit: '%',
-    hint: 'Schritt 1: Gesamtmasse = ' + t.quark + ' g + ' + t.frucht + ' g + ' + t.zucker + ' g = <strong>' + total + ' g</strong><br>Schritt 2: Fruchtanteil = ' + t.frucht + ' g ÷ ' + total + ' g × 100 = <strong>' + fmtN(pct) + ' %</strong>'
+    hint: 'Schritt 1: Gesamtmasse = ' + t.quark + ' + ' + t.frucht + ' + ' + t.zucker + ' = <strong>' + total + ' g</strong><br>Schritt 2: Fruchtanteil = ' + t.frucht + ' ÷ ' + total + ' × 100 = <strong>' + fmtN(pct) + ' %</strong>'
   };
 }
 

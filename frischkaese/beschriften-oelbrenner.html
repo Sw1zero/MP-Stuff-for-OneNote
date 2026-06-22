@@ -149,21 +149,21 @@
 <script>
 /* Hotspot-Koordinaten (cx/cy/r in % des Bildes). Mit ?debug kalibrieren. */
 var PARTS = [
-  { n:1,  name:'Flammkopf',                        keys:['flammkopf','flammrohr','flamme'],                                    zones:[{cx:38,cy:6,r:6}] },
-  { n:2,  name:'Fotowiderstand',                   keys:['fotowiderstand','photowiderstand','sensor','ldr'],                   zones:[{cx:17,cy:34,r:6}] },
-  { n:3,  name:'Magnetventil',                     keys:['magnetventil','ventil'],                                             zones:[{cx:13,cy:46,r:6}] },
-  { n:4,  name:'Zündkabel',                        keys:['zuendkabel','zündkabel','kabel'],                                    zones:[{cx:7,cy:37,r:6}] },
-  { n:5,  name:'Pumpe',                            keys:['pumpe','oelpumpe','ölpumpe'],                                        zones:[{cx:3,cy:50,r:6}] },
-  { n:6,  name:'Ölschlauch-Anschluss',             keys:['oelschlauch','ölschlauch','schlauch','anschluss'],                   zones:[{cx:4,cy:63,r:6}] },
-  { n:7,  name:'Elektromotor',                     keys:['elektromotor','motor'],                                              zones:[{cx:43,cy:85,r:7}] },
-  { n:8,  name:'Ventilatorrad',                    keys:['ventilatorrad','ventilator','luefterrad','lüfterrad','rad'],         zones:[{cx:55,cy:65,r:7}] },
-  { n:9,  name:'Düsenschaft',                      keys:['duesenschaft','düsenschaft','duese','düse','schaft'],                zones:[{cx:47,cy:22,r:6}] },
-  { n:10, name:'Zündelektroden',                   keys:['zuendelektrode','zündelektrode','elektrode','elektroden'],           zones:[{cx:62,cy:8,r:6}] },
-  { n:11, name:'Zündtrafo',                        keys:['zuendtrafo','zündtrafo','trafo','transformator','zuendtransformator'],zones:[{cx:80,cy:19,r:7}] },
-  { n:12, name:'Luftansaugkasten',                 keys:['luftansaugkasten','ansaugkasten','luftkasten','kasten'],             zones:[{cx:87,cy:40,r:7}] },
-  { n:13, name:'Skala für Lufteinstellung',        keys:['skala','lufteinstellskala'],                                         zones:[{cx:91,cy:55,r:6}] },
-  { n:14, name:'Drehschieber für Lufteinstellung', keys:['drehschieber','schieber'],                                           zones:[{cx:85,cy:67,r:7}] },
-  { n:15, name:'Brennerautomat',                   keys:['brennerautomat','automat','steuergeraet','steuergerät'],             zones:[{cx:83,cy:83,r:7}] }
+  { n:1,  name:'Flammkopf',                        keys:['flammkopf','flammrohr','flamme'],                                    zones:[{cx:50,cy:7,r:6}] },
+  { n:2,  name:'Fotowiderstand',                   keys:['fotowiderstand','photowiderstand','sensor','ldr'],                   zones:[{cx:39,cy:41,r:6}] },
+  { n:3,  name:'Magnetventil',                     keys:['magnetventil','ventil'],                                             zones:[{cx:31,cy:51,r:6}] },
+  { n:4,  name:'Zündkabel',                        keys:['zuendkabel','zündkabel','kabel'],                                    zones:[{cx:45,cy:57,r:6}] },
+  { n:5,  name:'Pumpe',                            keys:['pumpe','oelpumpe','ölpumpe'],                                        zones:[{cx:17,cy:62,r:6}] },
+  { n:6,  name:'Ölschlauch-Anschluss',             keys:['oelschlauch','ölschlauch','schlauch','anschluss'],                   zones:[{cx:15,cy:75,r:6}] },
+  { n:7,  name:'Elektromotor',                     keys:['elektromotor','motor'],                                              zones:[{cx:35,cy:75,r:7}] },
+  { n:8,  name:'Ventilatorrad',                    keys:['ventilatorrad','ventilator','luefterrad','lüfterrad','rad'],         zones:[{cx:52,cy:75,r:7}] },
+  { n:9,  name:'Düsenschaft',                      keys:['duesenschaft','düsenschaft','duese','düse','schaft'],                zones:[{cx:52,cy:12,r:6}] },
+  { n:10, name:'Zündelektroden',                   keys:['zuendelektrode','zündelektrode','elektrode','elektroden'],           zones:[{cx:59,cy:18,r:6}] },
+  { n:11, name:'Zündtrafo',                        keys:['zuendtrafo','zündtrafo','trafo','transformator','zuendtransformator'],zones:[{cx:74,cy:41,r:7}] },
+  { n:12, name:'Luftansaugkasten',                 keys:['luftansaugkasten','ansaugkasten','luftkasten','kasten'],             zones:[{cx:83,cy:56,r:7}] },
+  { n:13, name:'Skala für Lufteinstellung',        keys:['skala','lufteinstellskala'],                                         zones:[{cx:88,cy:60,r:6}] },
+  { n:14, name:'Drehschieber für Lufteinstellung', keys:['drehschieber','schieber'],                                           zones:[{cx:88,cy:71,r:7}] },
+  { n:15, name:'Brennerautomat',                   keys:['brennerautomat','automat','steuergeraet','steuergerät'],             zones:[{cx:76,cy:84,r:7}] }
 ];
 
 var DEBUG = /[?&]debug/.test(location.search);

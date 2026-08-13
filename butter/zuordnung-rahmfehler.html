@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rahmfehler - Ursachen zuordnen</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .zu-wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 32px 16px 56px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .task-intro {
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      padding: 14px 20px;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 24px;
+      width: 100%;
+      box-shadow: var(--shadow-sm);
+      line-height: 1.55;
+    }
+
+    .bank-title {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-subtle);
+      margin-bottom: 8px;
+      align-self: flex-start;
+    }
+
+    .cause-bank {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 28px;
+      width: 100%;
+      padding: 16px;
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      min-height: 60px;
+      align-content: flex-start;
+    }
+
+    .cause-chip {
+      font-family: var(--font);
+      font-size: 0.82rem;
+      font-weight: 500;
+      padding: 7px 14px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: left;
+      line-height: 1.4;
+    }
+    .cause-chip:hover:not(.used) { border-color: var(--blue-dark); background: var(--blue-tint); }
+    .cause-chip.selected { border-color: var(--blue-dark); background: var(--blue-dark); color: #fff; }
+    .cause-chip.used { opacity: 0; pointer-events: none; position: absolute; }
+    .cause-chip.dragging { opacity: 0.3; }
+
+    .defect-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 520px) {
+      .defect-grid { grid-template-columns: 1fr; }
+    }
+
+    .defect-card {
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      border: 2px solid transparent;
+      transition: border-color 0.2s;
+    }
+    .defect-card.drag-over { border-color: var(--blue-light); }
+
+    .defect-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 10px 14px;
+      border-bottom: 1px solid;
+      line-height: 1.3;
+    }
+    .defect-title.cat-geruch  { background: #fff7ed; color: #9a3412; border-color: #fed7aa; }
+    .defect-title.cat-teig    { background: #dbeeff; color: #1e4e8c; border-color: #bcd4f0; }
+    .defect-title.cat-hefe    { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+    .defect-title.cat-schmelz { background: #f3e8ff; color: #6b21a8; border-color: #e9d5ff; }
+
+    .category-zone {
+      min-height: 64px;
+      padding: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-content: flex-start;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .category-zone:empty::before {
+      content: 'Ursachen hier ablegen...';
+      font-size: 0.78rem;
+      font-style: italic;
+      color: var(--text-subtle);
+    }
+    .defect-card.drag-over .category-zone { background: var(--blue-tint); }
+
+    .zone-chip {
+      font-family: var(--font);
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 5px 11px;
+      border-radius: 16px;
+      border: 1.5px solid var(--border);
+      background: #f8f9fa;
+      color: var(--text);
+      cursor: pointer;
+      line-height: 1.35;
+      transition: all 0.15s;
+    }
+    .zone-chip:hover { background: #fef9c3; border-color: #ca8a04; }
+    .zone-chip.chip-correct { border-color: #38a169; background: #dcfce7; color: #15803d; font-weight: 600; cursor: default; }
+    .zone-chip.chip-wrong   { border-color: var(--red); background: #fee2e2; color: var(--red); }
+
+    .result-msg {
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-align: center;
+      color: var(--text-muted);
+      min-height: 1.4em;
+      margin-bottom: 16px;
+    }
+    .result-msg.success { color: #15803d; }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+<header class="bzwu-header">
+  <div class="header-text">
+    <span class="school-badge">BZWU Wil-Uzwil · Milchpraktiker EBA · Butter</span>
+    <h1>Rahmfehler - Ursachen zuordnen</h1>
+    <p>Ordnen Sie jede Ursache dem passenden Rahmfehler zu.</p>
+  </div>
+  <div class="header-logos">
+    <img src="../assets/logos/bzwu.png" alt="BZWU" class="header-logo">
+    <img src="../assets/logos/milchtechnologen.svg" alt="Milchtechnologen" class="header-logo">
+  </div>
+</header>
+
+<main>
+<div class="zu-wrap">
+  <a class="back-link" href="../index.html">&#8592; Alle Lerntools</a>
+
+  <div class="task-intro">
+    Klicken Sie eine Ursache an. Dann klicken Sie auf den passenden Rahmfehler.<br>
+    Zum Entfernen: Ursache beim Rahmfehler anklicken.
+  </div>
+
+  <div class="bank-title">Ursachen (Wortbank)</div>
+  <div class="cause-bank" id="causeBank"></div>
+
+  <div class="defect-grid" id="defectGrid"></div>
+
+  <div class="result-msg" id="resultMsg"></div>
+  <div class="actions">
+    <button class="btn btn-primary" onclick="checkAnswers()">Zuordnung prüfen</button>
+    <button class="btn btn-ghost" onclick="resetAll()">&#8635; Zurücksetzen</button>
+  </div>
+</div>
+</main>
+
+<script>
+var CATEGORIES = [
+  {
+    id: 'mechanisch',
+    kategorie: 'Mechanischer Rahmfehler (freies Fett, schaumig, ausgebuttert)',
+    color: 'cat-geruch',
+    ursachen: [
+      'Starke mechanische Belastung, z. B. durch Pumpen oder schnell laufende Rührwerke',
+      'Zentrifugation bei zu tiefen Temperaturen',
+      'Ungenügende Rahmkühlung fördert Schaumbildung und Ausbuttern'
+    ]
+  },
+  {
+    id: 'ranzig',
+    kategorie: 'Fettspaltung / Ranzigkeit (ranziger Geruch und Geschmack)',
+    color: 'cat-teig',
+    ursachen: [
+      'Hoher Anteil an freiem Fett',
+      'Ungenügende Kühlung des Rahms',
+      'Erhöhte Menge vom Enzym Lipase'
+    ]
+  },
+  {
+    id: 'talgig',
+    kategorie: 'Fettoxidation / Talgigkeit (talgiger, metallischer Geruch)',
+    color: 'cat-hefe',
+    ursachen: [
+      'Kontamination durch Schwermetalle, z. B. Kupfer oder Eisen',
+      'Lichteinfluss',
+      'Hoher Sauerstoffeintrag, z. B. bei Schaumbildung'
+    ]
+  },
+  {
+    id: 'bakteriologisch',
+    kategorie: 'Bakteriologischer Rahmfehler (erstickt, vorreif, sauer)',
+    color: 'cat-schmelz',
+    ursachen: [
+      'Ungenügende Rahmkühlung begünstigt Bakterienwachstum',
+      'Hoher Bakteriengehalt durch ungenügende Reinigung von Leitungen, Pumpen oder Kannen'
+    ]
+  }
+];
+
+var ALL_URSACHEN = [];
+CATEGORIES.forEach(function(cat) {
+  cat.ursachen.forEach(function(u) {
+    ALL_URSACHEN.push(u);
+  });
+});
+
+var causeTocat = {};
+CATEGORIES.forEach(function(cat) {
+  cat.ursachen.forEach(function(u) { causeTocat[u] = cat.id; });
+});
+
+var selectedChip = null;
+var tdChip  = null;
+var tdGhost = null;
+var tdOffX  = 0, tdOffY = 0;
+
+function shuffle(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+function buildUI() {
+  buildBank();
+  buildGrid();
+}
+
+function buildBank() {
+  var bank = document.getElementById('causeBank');
+  bank.innerHTML = '';
+  shuffle(ALL_URSACHEN.slice()).forEach(function(cause) {
+    var btn = document.createElement('button');
+    btn.className = 'cause-chip';
+    btn.textContent = cause;
+    btn.dataset.cause = cause;
+    btn.id = 'chip-' + cause.replace(/[^a-zA-Z0-9]/g, '_');
+    btn.setAttribute('draggable', 'true');
+    btn.onclick = function() { selectChip(btn); };
+    btn.addEventListener('dragstart', function(e) {
+      e.dataTransfer.setData('text/plain', cause);
+      e.dataTransfer.effectAllowed = 'move';
+      btn.classList.add('dragging');
+    });
+    btn.addEventListener('dragend', function() { btn.classList.remove('dragging'); });
+    btn.addEventListener('touchstart', function(e) {
+      if (btn.classList.contains('used')) return;
+      if (selectedChip) { selectedChip.classList.remove('selected'); selectedChip = null; }
+      tdChip = btn;
+      var r = btn.getBoundingClientRect();
+      tdOffX = e.touches[0].clientX - r.left;
+      tdOffY = e.touches[0].clientY - r.top;
+      tdGhost = document.createElement('span');
+      tdGhost.textContent = cause;
+      tdGhost.style.cssText =
+        'position:fixed;left:' + r.left + 'px;top:' + r.top + 'px;' +
+        'font:500 0.82rem/1.4 var(--font,Inter,sans-serif);padding:7px 14px;' +
+        'border-radius:20px;border:1.5px solid var(--blue-dark);' +
+        'background:var(--blue-dark);color:#fff;max-width:280px;' +
+        'pointer-events:none;z-index:9999;box-shadow:0 6px 16px rgba(0,0,0,0.25);' +
+        'transition:none;';
+      document.body.appendChild(tdGhost);
+      btn.style.opacity = '0.3';
+    }, { passive: true });
+    bank.appendChild(btn);
+  });
+}
+
+function buildGrid() {
+  var grid = document.getElementById('defectGrid');
+  grid.innerHTML = '';
+  CATEGORIES.forEach(function(cat) {
+    var card = document.createElement('div');
+    card.className = 'defect-card';
+    card.id = 'card-' + cat.id;
+
+    var title = document.createElement('div');
+    title.className = 'defect-title ' + cat.color;
+    title.textContent = cat.kategorie;
+
+    var zone = document.createElement('div');
+    zone.className = 'category-zone';
+    zone.id = 'zone-' + cat.id;
+
+    card.addEventListener('click', function(e) {
+      if (!selectedChip) return;
+      if (e.target.classList.contains('zone-chip')) return;
+      if (e.target.classList.contains('defect-title')) return;
+      placeChipInZone(zone, card, selectedChip.dataset.cause, selectedChip);
+    });
+    zone.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      card.classList.add('drag-over');
+    });
+    zone.addEventListener('dragleave', function(e) {
+      if (!card.contains(e.relatedTarget)) card.classList.remove('drag-over');
+    });
+    zone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      card.classList.remove('drag-over');
+      var cause = e.dataTransfer.getData('text/plain');
+      if (!cause) return;
+      var src = null;
+      document.querySelectorAll('.cause-chip').forEach(function(chip) {
+        if (chip.dataset.cause === cause && !chip.classList.contains('used') && !src) src = chip;
+      });
+      if (!src) return;
+      placeChipInZone(zone, card, cause, src);
+    });
+
+    card.appendChild(title);
+    card.appendChild(zone);
+    grid.appendChild(card);
+  });
+}
+
+document.addEventListener('touchmove', function(e) {
+  if (!tdChip || !tdGhost) return;
+  e.preventDefault();
+  var touch = e.touches[0];
+  tdGhost.style.left = (touch.clientX - tdOffX) + 'px';
+  tdGhost.style.top  = (touch.clientY - tdOffY) + 'px';
+  tdGhost.style.visibility = 'hidden';
+  var el = document.elementFromPoint(touch.clientX, touch.clientY);
+  tdGhost.style.visibility = '';
+  document.querySelectorAll('.defect-card').forEach(function(c) { c.classList.remove('drag-over'); });
+  if (el) {
+    var dc = el.closest ? el.closest('.defect-card') : null;
+    if (dc) dc.classList.add('drag-over');
+  }
+}, { passive: false });
+
+document.addEventListener('touchend', function(e) {
+  if (!tdChip) return;
+  tdChip.style.opacity = '';
+  if (tdGhost) { tdGhost.remove(); tdGhost = null; }
+  document.querySelectorAll('.defect-card').forEach(function(c) { c.classList.remove('drag-over'); });
+  var touch = e.changedTouches[0];
+  var el = document.elementFromPoint(touch.clientX, touch.clientY);
+  var dc = el && el.closest ? el.closest('.defect-card') : null;
+  if (dc && !tdChip.classList.contains('used')) {
+    var zone = dc.querySelector('.category-zone');
+    placeChipInZone(zone, dc, tdChip.dataset.cause, tdChip);
+  }
+  tdChip = null;
+}, { passive: true });
+
+function selectChip(el) {
+  if (selectedChip === el) {
+    el.classList.remove('selected');
+    selectedChip = null;
+    return;
+  }
+  if (selectedChip) selectedChip.classList.remove('selected');
+  selectedChip = el;
+  el.classList.add('selected');
+}
+
+function placeChipInZone(zone, card, cause, bankChip) {
+  bankChip.classList.add('used');
+  bankChip.classList.remove('selected', 'dragging');
+  bankChip.style.opacity = '';
+  selectedChip = null;
+  card.classList.remove('drag-over');
+  clearResultMsg();
+
+  var zc = document.createElement('span');
+  zc.className = 'zone-chip';
+  zc.textContent = cause;
+  zc.dataset.cause = cause;
+  zc.onclick = function(e) {
+    e.stopPropagation();
+    if (zc.classList.contains('chip-correct')) return;
+    zc.remove();
+    clearResultMsg();
+    document.querySelectorAll('.cause-chip').forEach(function(chip) {
+      if (chip.dataset.cause === cause) chip.classList.remove('used');
+    });
+  };
+  zone.appendChild(zc);
+}
+
+function clearResultMsg() {
+  document.getElementById('resultMsg').textContent = '';
+  document.getElementById('resultMsg').className = 'result-msg';
+}
+
+function checkAnswers() {
+  var correct = 0;
+  document.querySelectorAll('.category-zone').forEach(function(zone) {
+    var catId = zone.id.replace('zone-', '');
+    zone.querySelectorAll('.zone-chip').forEach(function(chip) {
+      chip.classList.remove('chip-correct', 'chip-wrong');
+      if (causeTocat[chip.dataset.cause] === catId) {
+        chip.classList.add('chip-correct');
+        correct++;
+      } else {
+        chip.classList.add('chip-wrong');
+      }
+    });
+  });
+  var total = ALL_URSACHEN.length;
+  var assigned = document.querySelectorAll('.zone-chip').length;
+  var msg = document.getElementById('resultMsg');
+  if (correct === total && assigned === total) {
+    msg.textContent = 'Perfekt! Alle ' + total + ' Ursachen sind richtig zugeordnet.';
+    msg.className = 'result-msg success';
+  } else {
+    var missing = total - assigned;
+    var text = correct + ' von ' + total + ' Ursachen richtig zugeordnet.';
+    if (missing > 0) text += ' Noch ' + missing + ' nicht zugeordnet.';
+    text += ' Rot = falsch.';
+    msg.textContent = text;
+    msg.className = 'result-msg';
+  }
+}
+
+function resetAll() {
+  document.querySelectorAll('.category-zone').forEach(function(zone) {
+    zone.innerHTML = '';
+  });
+  selectedChip = null;
+  clearResultMsg();
+  buildUI();
+}
+
+buildUI();
+</script>
+<footer class="bzwu-footer">
+  BZWU Wil-Uzwil · Milchpraktiker EBA · Philipp Neukomm
+</footer>
+
+</body>
+</html>

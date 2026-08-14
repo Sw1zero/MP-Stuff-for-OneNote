@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mikrobiologische Rahmreifung – Lernkärtchen</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .lk-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px 56px;
+    }
+
+    /* ---- Fortschritt ---- */
+    .progress-text {
+      font-size: 0.82rem;
+      color: var(--text-subtle);
+      margin-bottom: 6px;
+      text-align: center;
+    }
+    .progress-bar-wrap {
+      width: 440px;
+      max-width: 92vw;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--blue-dark);
+      border-radius: 2px;
+      transition: width 0.3s;
+    }
+
+    /* ---- Flip-Karte ---- */
+    .scene {
+      width: 440px;
+      max-width: 92vw;
+      height: 270px;
+      perspective: 900px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.45s ease;
+      position: relative;
+    }
+
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .card-front {
+      background: var(--surface);
+      justify-content: space-between;
+    }
+
+    .card-back {
+      background: var(--blue-dark);
+      color: #fff;
+      transform: rotateY(180deg);
+      justify-content: flex-start;
+    }
+
+    .card-category-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+      align-self: flex-start;
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .card-back .card-category-badge {
+      background: rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.9);
+    }
+
+    .card-term {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.55;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .card-hint {
+      font-size: 0.73rem;
+      color: var(--text-subtle);
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    .card-explanation {
+      font-size: 0.93rem;
+      line-height: 1.65;
+      color: rgba(255,255,255,0.95);
+      margin-top: 4px;
+    }
+
+    .card-explanation strong {
+      color: #fff;
+    }
+
+    /* ---- Steuerung ---- */
+    .controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .keyboard-hint {
+      font-size: 0.73rem;
+      color: var(--text-subtle);
+      text-align: center;
+      margin-top: 6px;
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+
+<header class="bzwu-header">
+  <div class="header-text">
+    <span class="school-badge">BZWU Wil-Uzwil · Milchpraktiker EBA · Butter</span>
+    <h1>Mikrobiologische Rahmreifung – Lernkärtchen</h1>
+    <p>Karte anklicken oder Leertaste drücken zum Umdrehen.</p>
+  </div>
+  <div class="header-logos">
+    <img src="../assets/logos/bzwu.png" alt="BZWU" class="header-logo">
+    <img src="../assets/logos/milchtechnologen.svg" alt="Milchtechnologen" class="header-logo">
+  </div>
+</header>
+
+<main>
+<div class="lk-wrap">
+<a class="back-link" href="../index.html">&#8592; Alle Lerntools</a>
+
+  <div class="progress-text" id="progressText"></div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressBar"></div>
+  </div>
+
+  <div class="scene" id="scene" onclick="flipCard()">
+    <div class="card" id="card">
+      <div class="card-face card-front">
+        <span class="card-category-badge">Rahmreifung</span>
+        <div class="card-term" id="frontTerm"></div>
+        <div class="card-hint">Karte umdrehen für die Antwort</div>
+      </div>
+      <div class="card-face card-back">
+        <span class="card-category-badge">Rahmreifung</span>
+        <div class="card-explanation" id="backText"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-ghost"    onclick="prevCard()">&#8592; Zurück</button>
+    <button class="btn btn-success"  onclick="flipCard()">Umdrehen</button>
+    <button class="btn btn-ghost"    onclick="nextCard()">Weiter &#8594;</button>
+  </div>
+  <div class="controls">
+    <button class="btn btn-primary" onclick="shuffleCards()">&#8644; Mischen</button>
+  </div>
+  <p class="keyboard-hint">&#8592; &#8594; navigieren &nbsp;|&nbsp; Leertaste umdrehen &nbsp;|&nbsp; S mischen</p>
+
+</div>
+</main>
+
+<script>
+var ALL_CARDS = [
+  { front: 'Was ist die mikrobiologische Rahmreifung?',
+    back:  'Das <strong>Ansäuern des Rahms</strong> mit Bakterien. Das ist etwas anderes als die physikalische Rahmreifung. Dort kristallisiert das Milchfett.'
+  },
+  { front: 'Was ist ein Rahmsäurewecker?',
+    back:  'Eine spezielle <strong>Milchsäurebakterien-Kultur</strong> für die Rahmreifung. Es gibt sie flüssig, gefriergetrocknet oder gefroren.'
+  },
+  { front: 'Was machen Säurebildner (homofermentativ)?',
+    back:  'Sie vergären den Milchzucker <strong>hauptsächlich zu Milchsäure</strong>. Beispiele: Lc lactis ssp. lactis, cremoris, diacetylactis.'
+  },
+  { front: 'Was machen Aromabildner (heterofermentativ)?',
+    back:  'Sie bilden <strong>Milchsäure und zusätzlich Aromastoffe</strong> wie Diacetyl und Kohlendioxid. Beispiel: Ln mesenteroides ssp. cremoris.'
+  },
+  { front: 'Was heisst «mesophil»?',
+    back:  'Das <strong>Temperaturoptimum liegt bei 20–30 °C</strong>. Die Rahmsäurewecker arbeiten in diesem Bereich am besten.'
+  },
+  { front: 'Welche Temperatur braucht die mikrobiologische Rahmreifung?',
+    back:  '<strong>20–24 °C</strong>.'
+  },
+  { front: 'Wie lange dauert die mikrobiologische Rahmreifung mindestens?',
+    back:  '<strong>Mindestens 10 Stunden</strong>.'
+  },
+  { front: 'Auf welchen pH-Wert soll der Rahm sinken?',
+    back:  '<strong>Unter pH 5.0</strong>. Das zeigt: es ist genug Milchsäure entstanden.'
+  },
+  { front: 'Wie stoppt man die Säuerung des Rahms?',
+    back:  'Durch <strong>Kühlen</strong>. Die Bakterien werden dann inaktiv.'
+  },
+  { front: 'Welchen Vorteil hat die mikrobiologische Rahmreifung für den Geschmack?',
+    back:  'Die Butter wird <strong>aromatischer</strong>. Sie hat einen intensiveren Geschmack wegen der Säure und den Aromastoffen.'
+  },
+  { front: 'Welchen Vorteil hat der tiefere pH-Wert für die Haltbarkeit?',
+    back:  'Die Butter <strong>hält länger</strong>. Der tiefere pH-Wert hemmt unerwünschte Bakterien.'
+  }
+];
+
+var deck = ALL_CARDS.slice();
+var currentIndex = 0;
+var isFlipped = false;
+
+function showCard(animate) {
+  var card = document.getElementById('card');
+
+  function render() {
+    isFlipped = false;
+    card.classList.remove('flipped');
+
+    var c = deck[currentIndex];
+    document.getElementById('frontTerm').textContent = c.front;
+    document.getElementById('backText').innerHTML = c.back;
+
+    var total = deck.length;
+    document.getElementById('progressText').textContent = 'Karte ' + (currentIndex + 1) + ' von ' + total;
+    document.getElementById('progressBar').style.width = ((currentIndex + 1) / total * 100) + '%';
+  }
+
+  if (animate) {
+    var scene = document.getElementById('scene');
+    scene.style.opacity = '0';
+    scene.style.transition = 'opacity 0.15s';
+    setTimeout(function() {
+      render();
+      scene.style.opacity = '1';
+    }, 150);
+  } else {
+    render();
+  }
+}
+
+function flipCard() {
+  isFlipped = !isFlipped;
+  document.getElementById('card').classList.toggle('flipped', isFlipped);
+}
+
+function nextCard() {
+  if (currentIndex < deck.length - 1) {
+    currentIndex++;
+    showCard(true);
+  }
+}
+
+function prevCard() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    showCard(true);
+  }
+}
+
+function shuffleCards() {
+  for (var i = deck.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = deck[i]; deck[i] = deck[j]; deck[j] = tmp;
+  }
+  currentIndex = 0;
+  showCard(true);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+  if (e.key === 'ArrowRight') nextCard();
+  if (e.key === 'ArrowLeft')  prevCard();
+  if (e.key === 's' || e.key === 'S') shuffleCards();
+});
+
+showCard(false);
+</script>
+<footer class="bzwu-footer">
+  BZWU Wil-Uzwil · Milchpraktiker EBA · Philipp Neukomm
+</footer>
+
+</body>
+</html>

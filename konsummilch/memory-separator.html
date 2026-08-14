@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory – Separator-Bauteile</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .stats-bar {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+    .stats-bar strong { color: var(--text); }
+
+    .win-screen {
+      display: none;
+      text-align: center;
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 1.5rem;
+      border: 1.5px solid #bbf7d0;
+    }
+    .win-screen.show { display: block; }
+    .win-screen h2 { font-size: 1.3rem; margin-bottom: 0.4rem; color: #15803d; }
+    .win-screen p  { color: var(--text-muted); font-size: 0.88rem; }
+
+    .memory-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.7rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 560px) {
+      .memory-grid { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+    }
+    @media (max-width: 360px) {
+      .memory-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .memory-card {
+      aspect-ratio: 1;
+      cursor: pointer;
+      perspective: 800px;
+      border-radius: var(--radius-md);
+    }
+    .memory-card:focus-visible { outline: 3px solid var(--blue-dark); }
+
+    .card-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.38s ease;
+      border-radius: var(--radius-md);
+    }
+    .memory-card.flipped .card-inner,
+    .memory-card.matched  .card-inner { transform: rotateY(180deg); }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .card-back {
+      background: var(--red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card-back-text {
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.6);
+      text-transform: uppercase;
+    }
+
+    .card-front {
+      transform: rotateY(180deg);
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+    }
+    .card-front.is-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .card-front.is-name {
+      background: var(--blue-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.6rem;
+    }
+    .card-front.is-name span {
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 600;
+      line-height: 1.35;
+      text-align: center;
+    }
+
+    .memory-card.matched .card-face.card-front { opacity: 0.45; }
+    .memory-card.matched { cursor: default; }
+  </style>
+</head>
+<body>
+
+<header class="bzwu-header">
+  <div class="header-text">
+    <span class="school-badge">BZWU Wil-Uzwil · Milchpraktiker EBA · Konsummilch</span>
+    <h1>Memory – Separator-Bauteile</h1>
+    <p>Finden Sie die 11 Bild-Name-Paare</p>
+  </div>
+  <div class="header-logos">
+    <img src="../assets/logos/bzwu.png" alt="BZWU" class="header-logo">
+    <img src="../assets/logos/milchtechnologen.svg" alt="Milchtechnologen" class="header-logo">
+  </div>
+</header>
+
+<main class="page-main">
+  <a class="back-link" href="../index.html">&#8592; Alle Lerntools</a>
+
+  <div class="stats-bar">
+    <span>Gefunden: <strong id="pairsFound">0</strong> / 11</span>
+    <span>Versuche: <strong id="attempts">0</strong></span>
+  </div>
+
+  <div class="win-screen" id="winScreen">
+    <h2>Alle Paare gefunden!</h2>
+    <p id="winMsg"></p>
+    <button type="button" class="btn btn-primary" style="margin-top:1rem" onclick="startGame()">Nochmals spielen</button>
+  </div>
+
+  <div class="memory-grid" id="memoryGrid"></div>
+
+  <div style="text-align:center">
+    <button type="button" class="btn btn-ghost" onclick="startGame()">Neu mischen</button>
+  </div>
+</main>
+
+<footer class="bzwu-footer">
+  BZWU Wil-Uzwil · Milchpraktiker EBA · Philipp Neukomm
+  <br><span style="font-size:0.68rem;">&copy; Biblioth&egrave;que BBZN</span>
+</footer>
+
+<script>
+var PAIRS = [
+  { id: 1,  name: 'Greiferkammerverschlussring',      img: 'images/separator/konsummilch_01_Greiferkammerverschluss.png' },
+  { id: 2,  name: 'Greiferkammerdeckel',               img: 'images/separator/konsummilch_02_Greiferkammerdeckel.png' },
+  { id: 3,  name: 'Magermilchgreifer',                 img: 'images/separator/konsummilch_03_Magermilchgreifer.png' },
+  { id: 4,  name: 'Trommelverschlussring',             img: 'images/separator/konsummilch_04_Trommelverschlussring.png' },
+  { id: 5,  name: 'Trommeldeckel mit Dichtring',       img: 'images/separator/konsummilch_05_06_Trommeldeckel_mit_Dichtring.png' },
+  { id: 6,  name: 'Scheideteller',                     img: 'images/separator/konsummilch_07_Scheideteller.png' },
+  { id: 7,  name: 'Einlaufrohr mit Rahmgreifer',       img: 'images/separator/konsummilch_08_Einlaufrohr_mit_Rahmgreifer.png' },
+  { id: 8,  name: 'Teller/Tellerpaket',                img: 'images/separator/konsummilch_09_Tellerpaket.png' },
+  { id: 9,  name: 'Verteiler',                         img: 'images/separator/konsummilch_10_Verteiler.png' },
+  { id: 10, name: 'Kolbenschieber',                    img: 'images/separator/konsummilch_11_Kolbenschieber.png' },
+  { id: 11, name: 'Trommelunterteil',                  img: 'images/separator/konsummilch_12_Trommelunterteil.png' }
+];
+
+var flipped  = [];
+var matched  = 0;
+var attempts = 0;
+var locked   = false;
+
+function shuffle(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+function startGame() {
+  flipped = []; matched = 0; attempts = 0; locked = false;
+  document.getElementById('pairsFound').textContent = '0';
+  document.getElementById('attempts').textContent   = '0';
+  document.getElementById('winScreen').className    = 'win-screen';
+  buildGrid();
+}
+
+function buildGrid() {
+  var grid = document.getElementById('memoryGrid');
+  grid.innerHTML = '';
+
+  var cards = [];
+  PAIRS.forEach(function(p) {
+    cards.push({ pairId: p.id, type: 'image', img: p.img, name: p.name });
+    cards.push({ pairId: p.id, type: 'name',  img: p.img, name: p.name });
+  });
+
+  shuffle(cards).forEach(function(card) {
+    var el    = document.createElement('div');
+    el.className      = 'memory-card';
+    el.dataset.pairId = card.pairId;
+    el.dataset.type   = card.type;
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('role', 'button');
+
+    var inner = document.createElement('div');
+    inner.className = 'card-inner';
+
+    var back = document.createElement('div');
+    back.className = 'card-face card-back';
+    back.innerHTML = '<span class="card-back-text">Separator</span>';
+
+    var front = document.createElement('div');
+    if (card.type === 'image') {
+      front.className = 'card-face card-front is-image';
+      var img = document.createElement('img');
+      img.src = card.img;
+      img.alt = card.name;
+      front.appendChild(img);
+    } else {
+      front.className = 'card-face card-front is-name';
+      var span = document.createElement('span');
+      span.textContent = card.name;
+      front.appendChild(span);
+    }
+
+    inner.appendChild(back);
+    inner.appendChild(front);
+    el.appendChild(inner);
+
+    el.addEventListener('click', function() { flipCard(el); });
+    el.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flipCard(el); }
+    });
+
+    grid.appendChild(el);
+  });
+}
+
+function flipCard(card) {
+  if (locked) return;
+  if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+  if (flipped.length >= 2) return;
+
+  card.classList.add('flipped');
+  flipped.push(card);
+
+  if (flipped.length === 2) {
+    attempts++;
+    document.getElementById('attempts').textContent = attempts;
+    checkMatch();
+  }
+}
+
+function checkMatch() {
+  var a = flipped[0], b = flipped[1];
+  var isMatch = (a.dataset.pairId === b.dataset.pairId) && (a.dataset.type !== b.dataset.type);
+
+  if (isMatch) {
+    matched++;
+    document.getElementById('pairsFound').textContent = matched;
+    setTimeout(function() {
+      a.classList.replace('flipped', 'matched');
+      b.classList.replace('flipped', 'matched');
+      flipped = [];
+      if (matched === PAIRS.length) showWin();
+    }, 600);
+  } else {
+    locked = true;
+    setTimeout(function() {
+      a.classList.remove('flipped');
+      b.classList.remove('flipped');
+      flipped = [];
+      locked  = false;
+    }, 1100);
+  }
+}
+
+function showWin() {
+  document.getElementById('winMsg').textContent =
+    'Alle 11 Paare in ' + attempts + ' Versuchen gefunden.';
+  document.getElementById('winScreen').className = 'win-screen show';
+}
+
+startGame();
+</script>
+</body>
+</html>

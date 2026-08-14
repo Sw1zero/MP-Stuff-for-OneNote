@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wahr oder Falsch – Mikrobiologische Rahmreifung</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .game-wrap {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* Score bar */
+    .score-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      font-size: 0.84rem;
+      color: var(--text-muted);
+    }
+    .score-bar strong { color: var(--text); font-size: 1rem; }
+    .score-correct { color: #16a34a; font-weight: 700; }
+    .score-wrong   { color: var(--red); font-weight: 700; }
+
+    /* Swipe hint */
+    .swipe-hint {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .hint-left  { color: var(--red);  }
+    .hint-right { color: #16a34a; }
+
+    /* Card stack */
+    .card-stack {
+      position: relative;
+      height: 300px;
+      margin-bottom: 1.5rem;
+      touch-action: none;
+    }
+
+    .swipe-card {
+      position: absolute;
+      inset: 0;
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 2rem 1.75rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      cursor: grab;
+      user-select: none;
+      will-change: transform;
+      transition: box-shadow 0.15s;
+    }
+    .swipe-card:active { cursor: grabbing; }
+
+    /* Background cards (stack effect) */
+    .swipe-card.behind-1 {
+      transform: scale(0.96) translateY(8px);
+      z-index: 1;
+      box-shadow: var(--shadow-sm);
+      pointer-events: none;
+    }
+    .swipe-card.behind-2 {
+      transform: scale(0.92) translateY(16px);
+      z-index: 0;
+      box-shadow: none;
+      pointer-events: none;
+    }
+    .swipe-card.top {
+      z-index: 2;
+      transition: transform 0.08s ease-out, box-shadow 0.15s;
+    }
+    .swipe-card.top.snapping {
+      transition: transform 0.35s cubic-bezier(0.25, 1.4, 0.5, 1), box-shadow 0.15s;
+    }
+    .swipe-card.top.flying-right {
+      transition: transform 0.38s ease-in, opacity 0.38s ease-in;
+    }
+    .swipe-card.top.flying-left {
+      transition: transform 0.38s ease-in, opacity 0.38s ease-in;
+    }
+
+    .card-number {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-bottom: 1rem;
+    }
+    .card-statement {
+      font-size: 1.05rem;
+      font-weight: 500;
+      line-height: 1.5;
+      color: var(--text);
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Vote overlays */
+    .vote-overlay {
+      position: absolute;
+      top: 1.5rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      opacity: 0;
+      transform: rotate(-15deg);
+      pointer-events: none;
+      border: 3px solid;
+    }
+    .vote-wahr {
+      right: 1.5rem;
+      color: #16a34a;
+      border-color: #16a34a;
+      transform: rotate(15deg);
+    }
+    .vote-falsch {
+      left: 1.5rem;
+      color: var(--red);
+      border-color: var(--red);
+      transform: rotate(-15deg);
+    }
+
+    /* Action buttons */
+    .action-btns {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+    .action-btn {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: none;
+      font-size: 1.6rem;
+      cursor: pointer;
+      transition: transform 0.12s, box-shadow 0.12s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .action-btn:hover  { transform: scale(1.1); }
+    .action-btn:active { transform: scale(0.95); }
+    .btn-falsch {
+      background: var(--red-light);
+      color: var(--red);
+      box-shadow: 0 2px 8px rgba(242,0,48,0.18);
+    }
+    .btn-wahr {
+      background: #dcfce7;
+      color: #16a34a;
+      box-shadow: 0 2px 8px rgba(22,163,74,0.18);
+    }
+
+    /* Feedback toast */
+    .feedback-toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      padding: 0.75rem 1.25rem;
+      box-shadow: var(--shadow-lg);
+      font-size: 0.84rem;
+      max-width: 340px;
+      width: 90%;
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+      pointer-events: none;
+      z-index: 100;
+      border-left: 4px solid var(--border);
+    }
+    .feedback-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .feedback-toast.correct { border-left-color: #16a34a; }
+    .feedback-toast.wrong   { border-left-color: var(--red); }
+    .feedback-label {
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+    }
+    .feedback-label.correct { color: #16a34a; }
+    .feedback-label.wrong   { color: var(--red); }
+
+    /* End screen */
+    .end-screen {
+      display: none;
+      text-align: center;
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem 1.5rem;
+      box-shadow: var(--shadow-md);
+    }
+    .end-screen.show { display: block; }
+    .end-score {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--red);
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+    .end-score span { font-size: 1.2rem; color: var(--text-muted); font-weight: 400; }
+    .end-msg {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .keyboard-hint { margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+
+<header class="bzwu-header">
+  <div class="header-text">
+    <span class="school-badge">BZWU Wil-Uzwil · Milchpraktiker EBA · Butter</span>
+    <h1>Wahr oder Falsch?</h1>
+    <p>Mikrobiologische Rahmreifung · Swipe rechts = Wahr · Swipe links = Falsch</p>
+  </div>
+  <div class="header-logos">
+    <img src="../assets/logos/bzwu.png" alt="BZWU" class="header-logo">
+    <img src="../assets/logos/milchtechnologen.svg" alt="Milchtechnologen" class="header-logo">
+  </div>
+</header>
+
+<main class="page-main">
+  <a class="back-link" href="../index.html">← Alle Lerntools</a>
+
+  <div class="game-wrap">
+
+    <div class="score-bar">
+      <span>Karte <strong id="cardNum">1</strong> / 15</span>
+      <span>
+        <span class="score-correct" id="scoreCorrect">0</span> richtig &nbsp;
+        <span class="score-wrong"   id="scoreWrong">0</span> falsch
+      </span>
+    </div>
+
+    <div class="swipe-hint">
+      <span class="hint-left">← Falsch</span>
+      <span class="hint-right">Wahr →</span>
+    </div>
+
+    <div class="card-stack" id="cardStack"></div>
+
+    <div class="action-btns">
+      <button type="button" class="action-btn btn-falsch" onclick="swipe('left')"  title="Falsch">✕</button>
+      <button type="button" class="action-btn btn-wahr"   onclick="swipe('right')" title="Wahr">✓</button>
+    </div>
+
+    <p class="keyboard-hint">
+      <kbd>←</kbd> Falsch &nbsp; <kbd>→</kbd> Wahr
+    </p>
+
+    <div class="end-screen" id="endScreen">
+      <div class="end-score" id="endScore">0 <span>/ 15</span></div>
+      <div class="end-msg"   id="endMsg"></div>
+      <button type="button" class="btn btn-primary" onclick="startGame()">Nochmals spielen</button>
+    </div>
+
+  </div>
+</main>
+
+<div class="feedback-toast" id="feedbackToast">
+  <div class="feedback-label" id="feedbackLabel"></div>
+  <div id="feedbackText"></div>
+</div>
+
+<footer class="bzwu-footer">
+  BZWU Wil-Uzwil · Milchpraktiker EBA · Philipp Neukomm
+</footer>
+
+<script>
+var CARDS = [
+  {
+    statement: 'Bei der mikrobiologischen Rahmreifung wird der Rahm mit Bakterien angesäuert.',
+    answer: true,
+    explanation: 'Richtig. Die Bakterien bilden Milchsäure. Dadurch wird der Rahm sauer.'
+  },
+  {
+    statement: 'Bei der physikalischen Rahmreifung wird der Rahm mit Bakterien angesäuert.',
+    answer: false,
+    explanation: 'Nein. Bei der physikalischen Rahmreifung kristallisiert das Milchfett. Das hat nichts mit Bakterien zu tun.'
+  },
+  {
+    statement: 'Man nennt die Bakterien für die Rahmreifung «Rahmsäurewecker».',
+    answer: true,
+    explanation: 'Richtig. Rahmsäurewecker sind spezielle Milchsäurebakterien für die Rahmreifung.'
+  },
+  {
+    statement: 'Es gibt zwei Gruppen von Rahmsäurewecker: Säurebildner und Aromabildner.',
+    answer: true,
+    explanation: 'Richtig. Säurebildner machen vor allem Säure. Aromabildner machen zusätzlich Aroma.'
+  },
+  {
+    statement: 'Säurebildner machen vor allem Aromastoffe, aber kaum Säure.',
+    answer: false,
+    explanation: 'Nein, umgekehrt: Säurebildner (homofermentativ) machen vor allem Milchsäure.'
+  },
+  {
+    statement: 'Aromabildner machen zusätzlich zur Milchsäure auch Aromastoffe wie Diacetyl.',
+    answer: true,
+    explanation: 'Richtig. Diacetyl und Kohlendioxid geben der Butter mehr Geschmack.'
+  },
+  {
+    statement: 'Rahmsäurewecker bestehen nur aus einer einzigen Bakterienart.',
+    answer: false,
+    explanation: 'Nein. Es gibt mehrere Arten. Man teilt sie in Säurebildner und Aromabildner auf.'
+  },
+  {
+    statement: 'Die Rahmsäurewecker arbeiten am besten bei 20 bis 30 °C.',
+    answer: true,
+    explanation: 'Richtig. Man nennt das mesophil. Das ist ihr Temperaturoptimum.'
+  },
+  {
+    statement: 'Die Rahmsäurewecker arbeiten am besten bei 40 bis 50 °C.',
+    answer: false,
+    explanation: 'Nein. Ihr Temperaturoptimum liegt bei 20-30 °C. Bei 40-50 °C wäre es ihnen zu warm.'
+  },
+  {
+    statement: 'Die mikrobiologische Rahmreifung dauert mindestens 10 Stunden.',
+    answer: true,
+    explanation: 'Richtig. Bei 20-24 °C braucht es mindestens 10 Stunden.'
+  },
+  {
+    statement: 'Die mikrobiologische Rahmreifung dauert nur etwa 1 Stunde.',
+    answer: false,
+    explanation: 'Nein. Sie dauert mindestens 10 Stunden.'
+  },
+  {
+    statement: 'Der pH-Wert soll bei der Rahmreifung unter 5.0 sinken.',
+    answer: true,
+    explanation: 'Richtig. Ein pH-Wert unter 5.0 zeigt: es ist genug Säure entstanden.'
+  },
+  {
+    statement: 'Man stoppt die Säuerung des Rahms, indem man ihn erwärmt.',
+    answer: false,
+    explanation: 'Nein, das Gegenteil ist richtig: man kühlt den Rahm. Kühlen stoppt die Säuerung.'
+  },
+  {
+    statement: 'Durch die mikrobiologische Rahmreifung wird die Butter aromatischer.',
+    answer: true,
+    explanation: 'Richtig. Die Säure und die Aromastoffe geben der Butter mehr Geschmack.'
+  },
+  {
+    statement: 'Butter aus mikrobiologisch gereiftem Rahm hält länger.',
+    answer: true,
+    explanation: 'Richtig. Der tiefere pH-Wert verlängert die Haltbarkeit der Butter.'
+  }
+];
+
+var deck = [];
+var current = 0;
+var scoreCorrect = 0;
+var scoreWrong   = 0;
+
+// Drag state
+var dragging   = false;
+var startX     = 0;
+var currentX   = 0;
+var topCard    = null;
+var toastTimer = null;
+
+function shuffle(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+function startGame() {
+  deck = shuffle(CARDS);
+  current = 0;
+  scoreCorrect = 0;
+  scoreWrong   = 0;
+  document.getElementById('scoreCorrect').textContent = '0';
+  document.getElementById('scoreWrong').textContent   = '0';
+  document.getElementById('endScreen').className = 'end-screen';
+  document.getElementById('cardStack').style.display = '';
+  document.querySelector('.action-btns').style.display = '';
+  buildStack();
+}
+
+function buildStack() {
+  var stack = document.getElementById('cardStack');
+  stack.innerHTML = '';
+
+  // Show up to 3 cards (current, current+1, current+2)
+  for (var i = Math.min(current + 2, deck.length - 1); i >= current; i--) {
+    var card = createCardEl(i);
+    if (i === current) {
+      card.classList.add('top');
+      attachDrag(card);
+      topCard = card;
+    } else if (i === current + 1) {
+      card.classList.add('behind-1');
+    } else {
+      card.classList.add('behind-2');
+    }
+    stack.appendChild(card);
+  }
+
+  document.getElementById('cardNum').textContent = current + 1;
+}
+
+function createCardEl(idx) {
+  var card = document.createElement('div');
+  card.className = 'swipe-card';
+
+  var num = document.createElement('div');
+  num.className = 'card-number';
+  num.textContent = 'Aussage ' + (idx + 1) + ' von ' + deck.length;
+
+  var stmt = document.createElement('div');
+  stmt.className = 'card-statement';
+  stmt.textContent = deck[idx].statement;
+
+  var vW = document.createElement('div');
+  vW.className = 'vote-overlay vote-wahr';
+  vW.textContent = 'WAHR';
+
+  var vF = document.createElement('div');
+  vF.className = 'vote-overlay vote-falsch';
+  vF.textContent = 'FALSCH';
+
+  card.appendChild(num);
+  card.appendChild(stmt);
+  card.appendChild(vW);
+  card.appendChild(vF);
+  return card;
+}
+
+function attachDrag(card) {
+  // Mouse
+  card.addEventListener('mousedown', function(e) {
+    dragging = true;
+    startX   = e.clientX;
+    card.classList.remove('snapping');
+  });
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup',   onEnd);
+
+  // Touch
+  card.addEventListener('touchstart', function(e) {
+    dragging = true;
+    startX   = e.touches[0].clientX;
+    card.classList.remove('snapping');
+  }, {passive: true});
+  document.addEventListener('touchmove', onMoveTouch, {passive: true});
+  document.addEventListener('touchend',  onEndTouch);
+}
+
+function onMove(e) {
+  if (!dragging || !topCard) return;
+  currentX = e.clientX - startX;
+  updateCardPos();
+}
+function onMoveTouch(e) {
+  if (!dragging || !topCard) return;
+  currentX = e.touches[0].clientX - startX;
+  updateCardPos();
+}
+
+function updateCardPos() {
+  var rotate  = currentX / 12;
+  var opacity = Math.min(Math.abs(currentX) / 80, 1);
+  topCard.style.transform = 'translateX(' + currentX + 'px) rotate(' + rotate + 'deg)';
+
+  var vW = topCard.querySelector('.vote-wahr');
+  var vF = topCard.querySelector('.vote-falsch');
+  if (currentX > 0) {
+    vW.style.opacity = opacity;
+    vF.style.opacity = 0;
+  } else {
+    vF.style.opacity = opacity;
+    vW.style.opacity = 0;
+  }
+}
+
+function onEnd() {
+  if (!dragging) return;
+  dragging = false;
+  finishDrag();
+  document.removeEventListener('mousemove', onMove);
+  document.removeEventListener('mouseup',   onEnd);
+}
+function onEndTouch() {
+  if (!dragging) return;
+  dragging = false;
+  finishDrag();
+  document.removeEventListener('touchmove', onMoveTouch);
+  document.removeEventListener('touchend',  onEndTouch);
+}
+
+function finishDrag() {
+  if (!topCard) return;
+  if (Math.abs(currentX) > 80) {
+    swipe(currentX > 0 ? 'right' : 'left');
+  } else {
+    // Snap back
+    topCard.classList.add('snapping');
+    topCard.style.transform = '';
+    topCard.querySelector('.vote-wahr').style.opacity = 0;
+    topCard.querySelector('.vote-falsch').style.opacity = 0;
+  }
+  currentX = 0;
+}
+
+function swipe(dir) {
+  if (!topCard || current >= deck.length) return;
+
+  var answered = dir === 'right'; // true = Wahr, false = Falsch
+  var correct  = answered === deck[current].answer;
+
+  if (correct) scoreCorrect++;
+  else         scoreWrong++;
+
+  document.getElementById('scoreCorrect').textContent = scoreCorrect;
+  document.getElementById('scoreWrong').textContent   = scoreWrong;
+
+  // Show overlays fully
+  topCard.querySelector('.vote-wahr').style.opacity   = dir === 'right' ? 1 : 0;
+  topCard.querySelector('.vote-falsch').style.opacity = dir === 'left'  ? 1 : 0;
+
+  // Fly out
+  var flyClass = dir === 'right' ? 'flying-right' : 'flying-left';
+  topCard.classList.add(flyClass);
+  topCard.style.transform = 'translateX(' + (dir === 'right' ? '150%' : '-150%') + ') rotate(' + (dir === 'right' ? 25 : -25) + 'deg)';
+  topCard.style.opacity   = '0';
+
+  showFeedback(correct, deck[current].explanation);
+
+  current++;
+  var cardRef = topCard;
+  topCard = null;
+
+  setTimeout(function() {
+    cardRef.remove();
+    if (current < deck.length) {
+      buildStack();
+    } else {
+      showEnd();
+    }
+  }, 380);
+}
+
+function showFeedback(correct, text) {
+  var toast = document.getElementById('feedbackToast');
+  var label = document.getElementById('feedbackLabel');
+  var msg   = document.getElementById('feedbackText');
+
+  clearTimeout(toastTimer);
+  toast.className = 'feedback-toast';
+  label.className = 'feedback-label ' + (correct ? 'correct' : 'wrong');
+  label.textContent = correct ? 'Richtig!' : 'Falsch!';
+  msg.textContent   = text;
+
+  requestAnimationFrame(function() {
+    toast.classList.add('show', correct ? 'correct' : 'wrong');
+  });
+
+  toastTimer = setTimeout(function() {
+    toast.classList.remove('show');
+  }, 2800);
+}
+
+function showEnd() {
+  document.getElementById('cardStack').style.display = 'none';
+  document.querySelector('.action-btns').style.display = 'none';
+
+  var pct = Math.round(scoreCorrect / CARDS.length * 100);
+  document.getElementById('endScore').innerHTML = scoreCorrect + ' <span>/ ' + CARDS.length + '</span>';
+  document.getElementById('endMsg').textContent =
+    pct >= 85 ? 'Ausgezeichnet! Sie kennen die mikrobiologische Rahmreifung sehr gut.' :
+    pct >= 60 ? 'Gut gemacht! Einige Punkte nochmals wiederholen.' :
+                'Üben Sie weiter – schauen Sie nochmals ins Lehrmittel.';
+  document.getElementById('endScreen').className = 'end-screen show';
+}
+
+// Keyboard
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight') swipe('right');
+  if (e.key === 'ArrowLeft')  swipe('left');
+});
+
+startGame();
+</script>
+
+</body>
+</html>

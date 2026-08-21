@@ -6,6 +6,15 @@
   <title>Physikalische Rahmreifung + KWK-Verfahren - Quiz</title>
   <link rel="stylesheet" href="../style.css">
   <style>
+    .level-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:1.1rem; justify-content:center; width:100%; }
+    .level-btn {
+      font-family:var(--font); font-size:0.82rem; font-weight:600;
+      padding:7px 16px; border-radius:20px; border:1.5px solid var(--border);
+      background:var(--surface); color:var(--text-muted); cursor:pointer; transition:all 0.15s;
+    }
+    .level-btn:hover { border-color:var(--blue-dark); color:var(--blue-dark); }
+    .level-btn.active { background:var(--blue-dark); border-color:var(--blue-dark); color:#fff; }
+
     .quiz-wrap {
       display: flex;
       flex-direction: column;
@@ -185,7 +194,7 @@
   <div class="header-text">
     <span class="school-badge">BZWU Wil-Uzwil · Milchpraktiker EBA · Butter</span>
     <h1>Physikalische Rahmreifung + KWK-Verfahren - Quiz</h1>
-    <p>Schwierigere Fragen. Wählen Sie die richtige Antwort. Sie erhalten sofort eine Rückmeldung.</p>
+    <p>Wählen Sie die richtige Antwort. Sie erhalten sofort eine Rückmeldung.</p>
   </div>
   <div class="header-logos">
     <img src="../assets/logos/bzwu.png" alt="BZWU" class="header-logo">
@@ -196,6 +205,11 @@
 <main>
 <div class="quiz-wrap">
   <a class="back-link" href="../index.html">&#8592; Alle Lerntools</a>
+
+  <div class="level-bar">
+    <button class="level-btn active" id="lvl-einfach" onclick="setLevel('einfach')">Einfach</button>
+    <button class="level-btn"        id="lvl-schwer"  onclick="setLevel('schwer')">Schwer</button>
+  </div>
 
   <div class="score-bar">
     <div class="score-item">
@@ -242,7 +256,50 @@
 </main>
 
 <script>
-var ALL_QUESTIONS = [
+var EASY_QUESTIONS = [
+  { q: 'Was passiert bei der physikalischen Rahmreifung mit dem Milchfett?',
+    options: ['Es wird angesäuert', 'Es wird kristallisiert', 'Es wird verflüssigt', 'Es wird entfernt'],
+    correct: 1,
+    explanation: 'Bei der physikalischen Rahmreifung wird das Milchfett kristallisiert.'
+  },
+  { q: 'Wie lange dauert die physikalische Rahmreifung mindestens?',
+    options: ['1 Stunde', '6 Stunden', '24 Stunden', '48 Stunden'],
+    correct: 1,
+    explanation: 'Die physikalische Rahmreifung dauert mindestens 6 Stunden.'
+  },
+  { q: 'Welche Temperatur braucht die physikalische Rahmreifung im Sommer?',
+    options: ['5-8°C', '15-20°C', '20-24°C', '30-35°C'],
+    correct: 0,
+    explanation: 'Im Sommer braucht die physikalische Rahmreifung eine Temperatur von 5-8°C.'
+  },
+  { q: 'Wofür steht KWK?',
+    options: ['Kalt-Warm-Kalt', 'Kühl-Wasch-Kühl', 'Kultur-Wasser-Konzentrat', 'Kalt-Wasser-Kontrolle'],
+    correct: 0,
+    explanation: 'KWK steht für Kalt-Warm-Kalt.'
+  },
+  { q: 'Wie viele Phasen hat das KWK-Verfahren?',
+    options: ['2', '3', '4', '5'],
+    correct: 1,
+    explanation: 'Das KWK-Verfahren hat drei Phasen: Kalt, Warm, Kalt.'
+  },
+  { q: 'Welche Temperatur hat die 1. Phase (Kalt) beim KWK-Verfahren?',
+    options: ['ca. 5°C', 'ca. 10°C', 'ca. 20°C', 'ca. 30°C'],
+    correct: 0,
+    explanation: 'Die 1. Phase (Kalt) hat ca. 5°C. Die Fettkügelchen erstarren.'
+  },
+  { q: 'Welche Temperatur hat die 2. Phase (Warm) beim KWK-Verfahren?',
+    options: ['ca. 5°C', 'ca. 10°C', 'ca. 20°C', 'ca. 30°C'],
+    correct: 2,
+    explanation: 'Die 2. Phase (Warm) hat ca. 20°C. Viele Fettmoleküle werden wieder flüssig.'
+  },
+  { q: 'Welchen Vorteil hat das KWK-Verfahren?',
+    options: ['Weichere, streichfähigere Butter', 'Mehr Buttermilch', 'Kürzere Haltbarkeit', 'Weniger Fett in der Butter'],
+    correct: 0,
+    explanation: 'Das KWK-Verfahren führt zu weicherer, streichfähigerer Butter und einer leicht höheren Ausbeute.'
+  }
+];
+
+var HARD_QUESTIONS = [
   { q: 'Was unterscheidet die physikalische von der mikrobiologischen Rahmreifung?',
     options: ['Physikalisch kristallisiert das Fett, mikrobiologisch säuern Bakterien den Rahm an', 'Physikalisch säuert der Rahm, mikrobiologisch kristallisiert das Fett', 'Beide kristallisieren das Fett', 'Beide säuern den Rahm an'],
     correct: 0,
@@ -295,6 +352,7 @@ var ALL_QUESTIONS = [
   }
 ];
 
+var level = 'einfach';
 var deck = [];
 var currentIndex = 0;
 var answered = false;
@@ -303,11 +361,19 @@ var scoreWrong = 0;
 var scoreSerie = 0;
 
 function buildDeck() {
-  deck = ALL_QUESTIONS.slice();
+  var source = (level === 'schwer') ? HARD_QUESTIONS : EASY_QUESTIONS;
+  deck = source.slice();
   for (var i = deck.length - 1; i > 0; i--) {
     var j = Math.floor(Math.random() * (i + 1));
     var tmp = deck[i]; deck[i] = deck[j]; deck[j] = tmp;
   }
+}
+
+function setLevel(l) {
+  level = l;
+  document.getElementById('lvl-einfach').classList.toggle('active', l === 'einfach');
+  document.getElementById('lvl-schwer').classList.toggle('active', l === 'schwer');
+  resetQuiz();
 }
 
 function resetQuiz() {
@@ -441,8 +507,7 @@ function showEndScreen() {
   document.getElementById('endScreen').classList.add('visible');
 }
 
-buildDeck();
-showQuestion();
+setLevel('einfach');
 </script>
 <footer class="bzwu-footer">
   BZWU Wil-Uzwil · Milchpraktiker EBA · Philipp Neukomm

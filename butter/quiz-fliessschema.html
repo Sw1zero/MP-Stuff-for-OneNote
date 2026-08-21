@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fliessschema Butterherstellung - Quiz</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .quiz-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px 56px;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    .score-bar {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 24px;
+      justify-content: center;
+    }
+    .score-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .score-number {
+      font-size: 1.6rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .score-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-subtle);
+    }
+    .score-correct { color: #38a169; }
+    .score-wrong   { color: var(--red); }
+    .score-serie   { color: var(--blue-dark); }
+
+    .progress-text {
+      font-size: 0.82rem;
+      color: var(--text-subtle);
+      margin-bottom: 6px;
+      text-align: center;
+      width: 100%;
+    }
+    .progress-bar-wrap {
+      width: 100%;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .question-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 28px;
+      width: 100%;
+      margin-bottom: 14px;
+    }
+    .question-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+      background: #dcfce7;
+      color: #15803d;
+    }
+    .question-text {
+      font-size: 1.0rem;
+      font-weight: 600;
+      line-height: 1.55;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+
+    .answers {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .answer-btn {
+      font-family: var(--font);
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-align: left;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      line-height: 1.4;
+    }
+    .answer-btn:hover:not(:disabled) {
+      border-color: var(--blue-light);
+      background: var(--blue-tint);
+    }
+    .answer-btn.correct {
+      border-color: #38a169;
+      background: #dcfce7;
+      color: #15803d;
+      font-weight: 600;
+    }
+    .answer-btn.wrong {
+      border-color: var(--red);
+      background: var(--red-light);
+      color: var(--red-dark);
+    }
+    .answer-btn:disabled { cursor: default; }
+
+    .feedback {
+      width: 100%;
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      font-size: 0.88rem;
+      line-height: 1.55;
+      display: none;
+      margin-bottom: 14px;
+    }
+    .feedback.correct {
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      color: #15803d;
+      display: block;
+    }
+    .feedback.wrong {
+      background: var(--red-light);
+      border: 1px solid #fca5a5;
+      color: #991b1b;
+      display: block;
+    }
+    .feedback-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .quiz-nav {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .end-screen {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 40px 28px;
+      width: 100%;
+      text-align: center;
+      display: none;
+    }
+    .end-screen.visible { display: block; }
+    .end-big {
+      font-size: 2.6rem;
+      font-weight: 700;
+      color: var(--blue-dark);
+      margin-bottom: 8px;
+    }
+    .end-text {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+      line-height: 1.55;
+    }
+  </style>
+</head>
+<body>
+
+<header class="bzwu-header">
+  <div class="header-text">
+    <span class="school-badge">BZWU Wil-Uzwil · Milchpraktiker EBA · Butter</span>
+    <h1>Fliessschema Butterherstellung - Quiz</h1>
+    <p>Schwierigere Fragen. Wählen Sie die richtige Antwort. Sie erhalten sofort eine Rückmeldung.</p>
+  </div>
+  <div class="header-logos">
+    <img src="../assets/logos/bzwu.png" alt="BZWU" class="header-logo">
+    <img src="../assets/logos/milchtechnologen.svg" alt="Milchtechnologen" class="header-logo">
+  </div>
+</header>
+
+<main>
+<div class="quiz-wrap">
+  <a class="back-link" href="../index.html">&#8592; Alle Lerntools</a>
+
+  <div class="score-bar">
+    <div class="score-item">
+      <span class="score-number score-correct" id="scoreCorrect">0</span>
+      <span class="score-label">Richtig</span>
+    </div>
+    <div class="score-item">
+      <span class="score-number score-wrong" id="scoreWrong">0</span>
+      <span class="score-label">Falsch</span>
+    </div>
+    <div class="score-item">
+      <span class="score-number score-serie" id="scoreSerie">0</span>
+      <span class="score-label">Serie</span>
+    </div>
+  </div>
+
+  <div class="progress-text" id="progressText"></div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressBar"></div>
+  </div>
+
+  <div class="question-card" id="questionCard">
+    <span class="question-badge">Fliessschema</span>
+    <div class="question-text" id="questionText"></div>
+    <div class="answers" id="answers"></div>
+  </div>
+
+  <div class="feedback" id="feedback">
+    <div class="feedback-title" id="feedbackTitle"></div>
+    <div id="feedbackText"></div>
+  </div>
+
+  <div class="quiz-nav" id="quizNav" style="display:none;">
+    <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Weiter &#8594;</button>
+  </div>
+
+  <div class="end-screen" id="endScreen">
+    <div class="end-big" id="endScore"></div>
+    <div class="end-text" id="endText"></div>
+    <button class="btn btn-primary" onclick="restartQuiz()">Nochmals versuchen</button>
+  </div>
+
+</div>
+</main>
+
+<script>
+var ALL_QUESTIONS = [
+  { q: 'Was ist der erste Schritt im Fliessschema, nachdem der Rahm bereit ist?',
+    options: ['Butterfertiger füllen', 'Rahmtemperatur einstellen', 'Butterkorn herstellen', 'Buttermilch ablassen'],
+    correct: 1,
+    explanation: 'Zuerst wird die Rahmtemperatur eingestellt. Erst danach wird der Butterfertiger gefüllt.'
+  },
+  { q: 'Welche Vorbereitung muss beim Rahm bereits abgeschlossen sein, bevor er ins Fliessschema der Butterherstellung kommt?',
+    options: ['Pasteurisieren und Verpacken', 'Physikalische Rahmreifung und ggf. mikrobiologische Rahmreifung/KWK-Verfahren', 'Kneten und Ausformen', 'Lagern und Kühlen'],
+    correct: 1,
+    explanation: 'Der Rahm muss vorher physikalisch (und ggf. mikrobiologisch, z.B. im KWK-Verfahren) gereift sein. Sonst kann später keine Butter entstehen.'
+  },
+  { q: 'Was passiert direkt nach "Butterkorn herstellen"?',
+    options: ['Buttermilch ablassen', 'Ausformen und verpacken', 'Rahmtemperatur einstellen', 'Lagern'],
+    correct: 0,
+    explanation: 'Nach dem Herstellen des Butterkorns wird die Buttermilch abgelassen.'
+  },
+  { q: 'In welcher Reihenfolge kommen die zwei Knet-Schritte im Fliessschema vor?',
+    options: ['Zuerst Nach- oder Trockenkneten, dann Vor- oder Nasskneten', 'Zuerst Vor- oder Nasskneten, dann Nach- oder Trockenkneten', 'Beide gleichzeitig', 'Kneten kommt vor dem Kühlen'],
+    correct: 1,
+    explanation: 'Zuerst kommt das Vor- oder Nasskneten, danach das Nach- oder Trockenkneten.'
+  },
+  { q: 'Was kommt im Fliessschema direkt vor dem Kneten?',
+    options: ['Butterkörner kühlen', 'Ausformen', 'Lagern', 'Rahmtemperatur einstellen'],
+    correct: 0,
+    explanation: 'Die Butterkörner werden zuerst gekühlt. Erst danach wird geknetet.'
+  },
+  { q: 'Ein Mitarbeiter verpackt die Butter, bevor sie geknetet wurde. Was ist daran falsch?',
+    options: ['Nichts, das ist die richtige Reihenfolge', 'Das Kneten muss laut Fliessschema vor dem Ausformen und Verpacken passieren', 'Die Reihenfolge spielt keine Rolle', 'Verpacken kommt immer zuerst'],
+    correct: 1,
+    explanation: 'Im Fliessschema kommt das Kneten (Vor- und Nachkneten) vor dem Ausformen und Verpacken.'
+  },
+  { q: 'Was ist der letzte Schritt im Fliessschema, bevor aus dem Rahm fertige Butter geworden ist?',
+    options: ['Butterkorn herstellen', 'Lagern', 'Buttermilch ablassen', 'Rahmtemperatur einstellen'],
+    correct: 1,
+    explanation: 'Der letzte Schritt ist das Lagern (unter 5°C). Danach ist die Butter fertig.'
+  },
+  { q: 'Warum kann man sagen, dass das KWK-Verfahren "vor" dem eigentlichen Fliessschema der Butterherstellung abläuft?',
+    options: ['Weil KWK die Rahmreifung vor dem Einfüllen in den Butterfertiger übernimmt', 'Weil KWK erst nach dem Verpacken beginnt', 'Weil KWK dasselbe ist wie Kneten', 'Weil KWK nur beim Lagern verwendet wird'],
+    correct: 0,
+    explanation: 'Das KWK-Verfahren bereitet den Rahm vor (physikalische und ggf. mikrobiologische Rahmreifung). Erst danach beginnt das Fliessschema mit "Rahmtemperatur einstellen".'
+  }
+];
+
+var deck = [];
+var currentIndex = 0;
+var answered = false;
+var scoreCorrect = 0;
+var scoreWrong = 0;
+var scoreSerie = 0;
+
+function buildDeck() {
+  deck = ALL_QUESTIONS.slice();
+  for (var i = deck.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = deck[i]; deck[i] = deck[j]; deck[j] = tmp;
+  }
+}
+
+function resetQuiz() {
+  scoreCorrect = 0;
+  scoreWrong = 0;
+  scoreSerie = 0;
+  updateScoreBar();
+  buildDeck();
+  currentIndex = 0;
+  document.getElementById('endScreen').classList.remove('visible');
+  document.getElementById('questionCard').style.display = '';
+  document.getElementById('progressText').style.display = '';
+  document.getElementById('progressBar').parentElement.style.display = '';
+  showQuestion();
+}
+
+function restartQuiz() {
+  resetQuiz();
+}
+
+function updateScoreBar() {
+  document.getElementById('scoreCorrect').textContent = scoreCorrect;
+  document.getElementById('scoreWrong').textContent = scoreWrong;
+  document.getElementById('scoreSerie').textContent = scoreSerie;
+}
+
+function showQuestion() {
+  answered = false;
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('quizNav').style.display = 'none';
+
+  var q = deck[currentIndex];
+  document.getElementById('questionText').textContent = q.q;
+
+  var answersDiv = document.getElementById('answers');
+  answersDiv.innerHTML = '';
+
+  var indices = [0, 1, 2, 3];
+  for (var i = indices.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = indices[i]; indices[i] = indices[j]; indices[j] = tmp;
+  }
+
+  for (var k = 0; k < indices.length; k++) {
+    (function(optIdx) {
+      var btn = document.createElement('button');
+      btn.className = 'answer-btn';
+      btn.textContent = q.options[optIdx];
+      btn.onclick = function() { checkAnswer(optIdx); };
+      answersDiv.appendChild(btn);
+    })(indices[k]);
+  }
+
+  var total = deck.length;
+  document.getElementById('progressText').textContent = 'Frage ' + (currentIndex + 1) + ' von ' + total;
+  document.getElementById('progressBar').style.width = ((currentIndex + 1) / total * 100) + '%';
+}
+
+function checkAnswer(selectedIdx) {
+  if (answered) return;
+  answered = true;
+
+  var q = deck[currentIndex];
+  var isCorrect = (selectedIdx === q.correct);
+
+  document.querySelectorAll('.answer-btn').forEach(function(b) {
+    b.disabled = true;
+    var idx = q.options.indexOf(b.textContent);
+    if (idx === q.correct) {
+      b.classList.add('correct');
+    } else if (idx === selectedIdx && !isCorrect) {
+      b.classList.add('wrong');
+    }
+  });
+
+  if (isCorrect) {
+    scoreCorrect++;
+    scoreSerie++;
+  } else {
+    scoreWrong++;
+    scoreSerie = 0;
+  }
+  updateScoreBar();
+
+  var feedback = document.getElementById('feedback');
+  var feedbackTitle = document.getElementById('feedbackTitle');
+
+  if (isCorrect) {
+    feedback.className = 'feedback correct';
+    feedbackTitle.textContent = 'Richtig!';
+  } else {
+    feedback.className = 'feedback wrong';
+    feedbackTitle.textContent = 'Falsch. Richtig wäre: ' + q.options[q.correct];
+  }
+  document.getElementById('feedbackText').textContent = q.explanation;
+
+  var nav = document.getElementById('quizNav');
+  nav.style.display = 'flex';
+  document.getElementById('nextBtn').textContent =
+    (currentIndex >= deck.length - 1) ? 'Ergebnis anzeigen' : 'Weiter →';
+}
+
+function nextQuestion() {
+  currentIndex++;
+  if (currentIndex >= deck.length) {
+    showEndScreen();
+  } else {
+    showQuestion();
+  }
+}
+
+function showEndScreen() {
+  document.getElementById('questionCard').style.display = 'none';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('quizNav').style.display = 'none';
+  document.getElementById('progressText').style.display = 'none';
+  document.getElementById('progressBar').parentElement.style.display = 'none';
+
+  var total = deck.length;
+  var pct = Math.round(scoreCorrect / total * 100);
+
+  document.getElementById('endScore').textContent = scoreCorrect + ' von ' + total + ' richtig';
+
+  var msg;
+  if (pct >= 90)      msg = 'Ausgezeichnet! Sie kennen das Fliessschema sehr gut.';
+  else if (pct >= 70) msg = 'Gut gemacht! Noch ein paar Fragen üben und Sie sind top.';
+  else if (pct >= 50) msg = 'Nicht schlecht. Schauen Sie das Fliessschema nochmals an.';
+  else                msg = 'Schauen Sie das Fliessschema nochmals an. Dann klappt es besser.';
+
+  document.getElementById('endText').textContent = pct + ' % richtig. ' + msg;
+  document.getElementById('endScreen').classList.add('visible');
+}
+
+buildDeck();
+showQuestion();
+</script>
+<footer class="bzwu-footer">
+  BZWU Wil-Uzwil · Milchpraktiker EBA · Philipp Neukomm
+</footer>
+
+</body>
+</html>

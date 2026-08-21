@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Physikalische Rahmreifung + KWK-Verfahren</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .tl-wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 32px 16px 56px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .task-intro {
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      padding: 14px 20px;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 24px;
+      width: 100%;
+      box-shadow: var(--shadow-sm);
+      line-height: 1.55;
+    }
+
+    .bank-title {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-subtle);
+      margin-bottom: 8px;
+      align-self: flex-start;
+    }
+
+    .word-bank {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 28px;
+      width: 100%;
+      padding: 16px;
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      min-height: 58px;
+      align-content: flex-start;
+    }
+
+    .word-chip {
+      font-family: var(--font);
+      font-size: 0.80rem;
+      font-weight: 500;
+      padding: 6px 13px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .word-chip:hover:not(.used) { border-color: var(--blue-light); background: var(--blue-tint); }
+    .word-chip.selected { border-color: var(--blue-dark); background: var(--blue-dark); color: #fff; }
+    .word-chip.used { opacity: 0; pointer-events: none; width: 0; padding: 0; margin: 0; border: none; overflow: hidden; }
+    .word-chip.dragging { opacity: 0.3; }
+
+    .blank-cell.drag-over {
+      background: var(--blue-tint) !important;
+      outline: 2px dashed var(--blue-dark);
+      outline-offset: -2px;
+    }
+
+    .table-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--blue-dark);
+      align-self: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .table-wrap { width: 100%; overflow-x: auto; margin-bottom: 24px; }
+
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .compare-table th {
+      padding: 12px 16px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+    }
+    .compare-table th:first-child { background: #475569; text-align: left; font-size: 0.8rem; }
+    .compare-table th.col-a { background: #15803d; }
+    .compare-table th.col-b { background: var(--blue-dark); }
+
+    .compare-table td {
+      border: 1px solid var(--border);
+      padding: 0;
+      vertical-align: middle;
+    }
+    .row-label {
+      padding: 10px 16px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: #f8fafc;
+    }
+
+    .blank-cell {
+      width: 100%;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font);
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text);
+      background: #fafafa;
+      border: none;
+      cursor: pointer;
+      padding: 8px 12px;
+      text-align: center;
+      line-height: 1.4;
+      transition: background 0.15s;
+    }
+    .blank-cell:not(.filled) {
+      background: repeating-linear-gradient(
+        45deg, #f8fafc, #f8fafc 6px, #eef2f7 6px, #eef2f7 12px
+      );
+    }
+    .blank-cell.filled:hover { background: #fef9c3; }
+    .blank-cell.correct { background: #dcfce7 !important; color: #15803d !important; font-weight: 600; }
+    .blank-cell.wrong   { background: #fee2e2 !important; color: var(--red) !important; }
+
+    .result-msg {
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-align: center;
+      color: var(--text-muted);
+      min-height: 1.4em;
+      margin-bottom: 16px;
+    }
+    .result-msg.success { color: #15803d; }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+<header class="bzwu-header">
+  <div class="header-text">
+    <span class="school-badge">BZWU Wil-Uzwil · Milchpraktiker EBA · Butter</span>
+    <h1>Physikalische Rahmreifung + KWK-Verfahren</h1>
+    <p>Füllen Sie die Tabellen aus der Wortbank.</p>
+  </div>
+  <div class="header-logos">
+    <img src="../assets/logos/bzwu.png" alt="BZWU" class="header-logo">
+    <img src="../assets/logos/milchtechnologen.svg" alt="Milchtechnologen" class="header-logo">
+  </div>
+</header>
+
+<main>
+<div class="tl-wrap">
+  <a class="back-link" href="../index.html">&#8592; Alle Lerntools</a>
+
+  <div class="task-intro">
+    Klicken Sie ein Wort in der Wortbank an. Dann klicken Sie die passende Zelle in der Tabelle.<br>
+    Zum Entfernen: ausgefüllte Zelle anklicken.
+  </div>
+
+  <div class="bank-title">Wortbank</div>
+  <div class="word-bank" id="wordBank"></div>
+
+  <div class="table-title">Physikalische Rahmreifung</div>
+  <div class="table-wrap">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th class="col-a">Sommer</th>
+          <th class="col-b">Winter</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="row-label">Temperatur</td>
+          <td><button class="blank-cell" id="c-pr-sommer-temp"  onclick="handleCell(this)"></button></td>
+          <td><button class="blank-cell" id="c-pr-winter-temp"  onclick="handleCell(this)"></button></td>
+        </tr>
+        <tr>
+          <td class="row-label">Dauer</td>
+          <td><button class="blank-cell" id="c-pr-sommer-dauer" onclick="handleCell(this)"></button></td>
+          <td><button class="blank-cell" id="c-pr-winter-dauer" onclick="handleCell(this)"></button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-title">KWK-Verfahren – 3 Phasen</div>
+  <div class="table-wrap">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Phase</th>
+          <th class="col-a">Temperatur</th>
+          <th class="col-b">Was passiert</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="row-label">1. Phase: Kalt</td>
+          <td><button class="blank-cell" id="c-kwk-p1-temp" onclick="handleCell(this)"></button></td>
+          <td><button class="blank-cell" id="c-kwk-p1-was"  onclick="handleCell(this)"></button></td>
+        </tr>
+        <tr>
+          <td class="row-label">2. Phase: Warm</td>
+          <td><button class="blank-cell" id="c-kwk-p2-temp" onclick="handleCell(this)"></button></td>
+          <td><button class="blank-cell" id="c-kwk-p2-was"  onclick="handleCell(this)"></button></td>
+        </tr>
+        <tr>
+          <td class="row-label">3. Phase: Kalt</td>
+          <td><button class="blank-cell" id="c-kwk-p3-temp" onclick="handleCell(this)"></button></td>
+          <td><button class="blank-cell" id="c-kwk-p3-was"  onclick="handleCell(this)"></button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="result-msg" id="resultMsg"></div>
+  <div class="actions">
+    <button class="btn btn-primary" onclick="checkAnswers()">Antworten prüfen</button>
+    <button class="btn btn-ghost"   onclick="resetAll()">&#8635; Zurücksetzen</button>
+  </div>
+</div>
+</main>
+
+<script>
+var ANSWERS = {
+  'c-pr-sommer-temp':  '5-8°C',
+  'c-pr-winter-temp':  '5-10°C',
+  'c-pr-sommer-dauer': 'mind. 6h',
+  'c-pr-winter-dauer': 'mind. 6h',
+  'c-kwk-p1-temp': 'ca. 5°C',
+  'c-kwk-p1-was':  'Die Fettkügelchen erstarren wie in der physikalischen Rahmreifung.',
+  'c-kwk-p2-temp': 'ca. 20°C',
+  'c-kwk-p2-was':  'Viele Fettmoleküle werden wieder flüssig. Hier kann auch die mikrobiologische Rahmreifung stattfinden.',
+  'c-kwk-p3-temp': 'ca. 10°C',
+  'c-kwk-p3-was':  'Die festen Fettmoleküle erstarren am Rand und schliessen die flüssigen Moleküle ein.'
+};
+
+var selectedChip = null;
+var tdChip  = null;
+var tdGhost = null;
+var tdOffX  = 0, tdOffY = 0;
+
+function shuffle(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+function buildWordBank() {
+  var bank = document.getElementById('wordBank');
+  bank.innerHTML = '';
+  var words = shuffle(Object.values(ANSWERS));
+  words.forEach(function(word) {
+    var btn = document.createElement('button');
+    btn.className = 'word-chip';
+    btn.textContent = word;
+    btn.dataset.word = word;
+    btn.setAttribute('draggable', 'true');
+    btn.onclick = function() { selectChip(btn); };
+    btn.addEventListener('dragstart', function(e) {
+      e.dataTransfer.setData('text/plain', word);
+      e.dataTransfer.effectAllowed = 'move';
+      btn.classList.add('dragging');
+    });
+    btn.addEventListener('dragend', function() { btn.classList.remove('dragging'); });
+    btn.addEventListener('touchstart', function(e) {
+      if (btn.classList.contains('used')) return;
+      if (selectedChip) { selectedChip.classList.remove('selected'); selectedChip = null; }
+      tdChip = btn;
+      var r = btn.getBoundingClientRect();
+      tdOffX = e.touches[0].clientX - r.left;
+      tdOffY = e.touches[0].clientY - r.top;
+      tdGhost = document.createElement('span');
+      tdGhost.textContent = word;
+      tdGhost.style.cssText =
+        'position:fixed;left:' + r.left + 'px;top:' + r.top + 'px;' +
+        'font:500 0.80rem/1 var(--font,Inter,sans-serif);padding:6px 13px;' +
+        'border-radius:20px;border:1.5px solid var(--blue-dark);' +
+        'background:var(--blue-dark);color:#fff;white-space:nowrap;' +
+        'pointer-events:none;z-index:9999;box-shadow:0 6px 16px rgba(0,0,0,0.25);' +
+        'transition:none;';
+      document.body.appendChild(tdGhost);
+      btn.style.opacity = '0.3';
+    }, { passive: true });
+    bank.appendChild(btn);
+  });
+}
+
+function buildDropZones() {
+  document.querySelectorAll('.blank-cell').forEach(function(cell) {
+    cell.addEventListener('dragover', function(e) {
+      if (!cell.classList.contains('filled')) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        cell.classList.add('drag-over');
+      }
+    });
+    cell.addEventListener('dragleave', function() { cell.classList.remove('drag-over'); });
+    cell.addEventListener('drop', function(e) {
+      e.preventDefault();
+      cell.classList.remove('drag-over');
+      var word = e.dataTransfer.getData('text/plain');
+      if (!word || cell.classList.contains('filled')) return;
+      var src = null;
+      document.querySelectorAll('.word-chip').forEach(function(chip) {
+        if (chip.dataset.word === word && !chip.classList.contains('used') && !src) src = chip;
+      });
+      if (!src) return;
+      fillCell(cell, word);
+      src.classList.add('used');
+      src.classList.remove('dragging', 'selected');
+      if (selectedChip === src) selectedChip = null;
+    });
+  });
+}
+
+document.addEventListener('touchmove', function(e) {
+  if (!tdChip || !tdGhost) return;
+  e.preventDefault();
+  var touch = e.touches[0];
+  tdGhost.style.left = (touch.clientX - tdOffX) + 'px';
+  tdGhost.style.top  = (touch.clientY - tdOffY) + 'px';
+  tdGhost.style.visibility = 'hidden';
+  var el = document.elementFromPoint(touch.clientX, touch.clientY);
+  tdGhost.style.visibility = '';
+  document.querySelectorAll('.blank-cell').forEach(function(c) { c.classList.remove('drag-over'); });
+  if (el) {
+    var t = el.closest ? el.closest('.blank-cell') : null;
+    if (!t && el.classList && el.classList.contains('blank-cell')) t = el;
+    if (t && !t.classList.contains('filled')) t.classList.add('drag-over');
+  }
+}, { passive: false });
+
+document.addEventListener('touchend', function(e) {
+  if (!tdChip) return;
+  tdChip.style.opacity = '';
+  if (tdGhost) { tdGhost.remove(); tdGhost = null; }
+  document.querySelectorAll('.blank-cell').forEach(function(c) { c.classList.remove('drag-over'); });
+  var touch = e.changedTouches[0];
+  var el = document.elementFromPoint(touch.clientX, touch.clientY);
+  var target = null;
+  if (el) {
+    target = el.closest ? el.closest('.blank-cell') : null;
+    if (!target && el.classList && el.classList.contains('blank-cell')) target = el;
+  }
+  if (target && !target.classList.contains('filled') && !tdChip.classList.contains('used')) {
+    fillCell(target, tdChip.dataset.word);
+    tdChip.classList.add('used');
+    tdChip.classList.remove('selected');
+    if (selectedChip === tdChip) selectedChip = null;
+  }
+  tdChip = null;
+}, { passive: true });
+
+function selectChip(el) {
+  if (selectedChip === el) {
+    el.classList.remove('selected');
+    selectedChip = null;
+    return;
+  }
+  if (selectedChip) selectedChip.classList.remove('selected');
+  selectedChip = el;
+  el.classList.add('selected');
+}
+
+function handleCell(cell) {
+  if (cell.dataset.value) {
+    clearCell(cell);
+  } else if (selectedChip) {
+    fillCell(cell, selectedChip.dataset.word);
+    selectedChip.classList.add('used');
+    selectedChip.classList.remove('selected');
+    selectedChip = null;
+  }
+}
+
+function fillCell(cell, word) {
+  cell.textContent = word;
+  cell.dataset.value = word;
+  cell.classList.add('filled');
+  cell.classList.remove('correct', 'wrong');
+}
+
+function clearCell(cell) {
+  var word = cell.dataset.value;
+  if (!word) return;
+  restoreChip(word);
+  cell.textContent = '';
+  cell.dataset.value = '';
+  cell.classList.remove('filled', 'correct', 'wrong');
+}
+
+function restoreChip(word) {
+  var restored = false;
+  document.querySelectorAll('.word-chip').forEach(function(chip) {
+    if (!restored && chip.dataset.word === word && chip.classList.contains('used')) {
+      chip.classList.remove('used');
+      if (selectedChip === chip) { chip.classList.remove('selected'); selectedChip = null; }
+      restored = true;
+    }
+  });
+}
+
+function checkAnswers() {
+  var correct = 0;
+  var total = Object.keys(ANSWERS).length;
+  Object.keys(ANSWERS).forEach(function(id) {
+    var cell = document.getElementById(id);
+    cell.classList.remove('correct', 'wrong');
+    if (!cell.dataset.value) return;
+    if (cell.dataset.value === ANSWERS[id]) {
+      cell.classList.add('correct');
+      correct++;
+    } else {
+      cell.classList.add('wrong');
+    }
+  });
+  var msg = document.getElementById('resultMsg');
+  if (correct === total) {
+    msg.textContent = 'Perfekt! Alle ' + total + ' Felder sind richtig.';
+    msg.className = 'result-msg success';
+  } else {
+    msg.textContent = correct + ' von ' + total + ' Feldern sind richtig. Rote Zellen korrigieren.';
+    msg.className = 'result-msg';
+  }
+}
+
+function resetAll() {
+  Object.keys(ANSWERS).forEach(function(id) {
+    var cell = document.getElementById(id);
+    cell.textContent = '';
+    cell.dataset.value = '';
+    cell.classList.remove('filled', 'correct', 'wrong');
+  });
+  selectedChip = null;
+  document.getElementById('resultMsg').textContent = '';
+  document.getElementById('resultMsg').className = 'result-msg';
+  buildWordBank();
+  buildDropZones();
+}
+
+buildWordBank();
+buildDropZones();
+</script>
+<footer class="bzwu-footer">
+  BZWU Wil-Uzwil · Milchpraktiker EBA · Philipp Neukomm
+</footer>
+
+</body>
+</html>

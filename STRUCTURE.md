@@ -30,11 +30,11 @@ Diese Datei definiert die kanonischen Namen für Module, Tool-Typen und Ordner.
 |---------------|-------|--------------------------------------------|---------------------------------|--------|
 
 
-> **Animationen** ist eine eigenständige Rubrik (kein Modul). Tools vom Typ `animation` werden
-> mit `data-module="animationen"` ausgezeichnet und in der Sektion `#section-animationen` gesammelt.
-> Die Datei bleibt physisch im Themen-Modulordner (z. B. `frischkaese/`, `halbhartkaese/`); das
-> Modul-Badge auf der Kachel zeigt weiterhin das Thema (frischkaese …). `↗ Anim` in der Status-Spalte
-> oben heisst: Modul hat (nur) Tools, die unter der Rubrik Animationen gelistet sind.
+> **Animation** ist nur ein Tool-Typ, kein eigenes Modul. Eine Animation gehört zu ihrem
+> Themen-Modul (`data-module="butter"` usw.), liegt physisch im Themen-Modulordner und erscheint
+> auf der Startseite in dieser Modul-Sektion — genau wie jedes andere Tool. Nur `data-type="animation"`
+> unterscheidet sie. Die Sektion `#section-animationen` / der Modul-Filter "Animationen" bleiben als
+> Option bestehen, werden aber nicht mehr aktiv befüllt.
 
 ---
 

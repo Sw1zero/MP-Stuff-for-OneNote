@@ -23,8 +23,19 @@
     .nav-row { display:flex; justify-content:center; gap:12px; flex-wrap:wrap; }
 
     .molecule { opacity:0; transition:opacity .5s ease; }
+    .molecule-inner { animation-name:molWobble; animation-timing-function:ease-in-out; animation-iteration-count:infinite; }
+    @keyframes molWobble {
+      0%   { transform:translate(0,0); }
+      25%  { transform:translate(2px,-2px); }
+      50%  { transform:translate(-1.5px,2px); }
+      75%  { transform:translate(-2px,-1px); }
+      100% { transform:translate(0,0); }
+    }
     #ringFest.gliding { animation: spin 7s linear infinite; transform-origin: 200px 300px; }
     @keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+
+    .time-marker { transform-box:fill-box; transform-origin:center; transition:opacity .4s ease; animation:pulse 1.6s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { transform:scale(1); opacity:1; } 50% { transform:scale(1.7); opacity:.35; } }
   </style>
 </head>
 <body>
@@ -111,6 +122,8 @@
         <text id="lbl-warm"  x="329" y="28"  text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="700" fill="#94a3b8">ca. 20 &#176;C</text>
         <text id="lbl-kalt2" x="459" y="84"  text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="700" fill="#94a3b8">ca. 10 &#176;C</text>
 
+        <circle id="timeMarker" class="time-marker" cx="0" cy="0" r="5" fill="#134061" opacity="0"/>
+
         <!-- ============================================================
              FETTKÜGELCHEN (Kreis, y ab 190)
              ============================================================ -->
@@ -176,6 +189,12 @@ function fluessigShape() {
   return svgEl('path', {d:'M-9,3 Q-4.5,-6 0,0 Q4.5,6 9,-3', stroke:'#d97706', 'stroke-width':'2.6', fill:'none', 'stroke-linecap':'round'});
 }
 
+function wobbleStyle() {
+  var dur = (3 + Math.random() * 1.6).toFixed(2) + 's';
+  var delay = (-Math.random() * 4).toFixed(2) + 's';
+  return 'animation-duration:' + dur + ';animation-delay:' + delay + ';';
+}
+
 var moleculeLayer = document.getElementById('moleculeLayer');
 var ringFest = document.getElementById('ringFest');
 var molFest = [], molFluessig = [];
@@ -187,12 +206,16 @@ POINTS.forEach(function(p, i) {
   var rot = (i % 2 === 0) ? 20 : -25;
 
   var gf = svgEl('g', {class:'molecule', transform:'translate('+x+','+y+') rotate('+rot+')'});
-  gf.appendChild(festShape());
+  var gfInner = svgEl('g', {class:'molecule-inner', style:wobbleStyle()});
+  gfInner.appendChild(festShape());
+  gf.appendChild(gfInner);
   ringFest.appendChild(gf);
   molFest.push(gf);
 
   var gl = svgEl('g', {class:'molecule', transform:'translate('+x+','+y+') rotate('+rot+')'});
-  gl.appendChild(fluessigShape());
+  var glInner = svgEl('g', {class:'molecule-inner', style:wobbleStyle()});
+  glInner.appendChild(fluessigShape());
+  gl.appendChild(glInner);
   moleculeLayer.appendChild(gl);
   molFluessig.push(gl);
 });
@@ -213,19 +236,19 @@ var STEPS = [
     types: TYPES_START, glide:false, segs:[]
   },
   {
-    title: '1. Phase &#8211; Kalt (ca. 5 &#176;C)',
-    text:  'Der Rahm wird schnell auf ca. 5 &#176;C abgekühlt. Ein Teil des Milchfetts wird fest. Es bilden sich viele kleine Fettkristalle.',
-    types: TYPES_KALT1, glide:false, segs:['seg-kalt1'], lbl:'lbl-kalt1', color:'#134061'
+    title: '1. Phase &#8211; Kalt (ca. 5 °C)',
+    text:  'Der Rahm wird schnell auf ca. 5 °C abgekühlt. Ein Teil des Milchfetts wird fest. Es bilden sich viele kleine Fettkristalle.',
+    types: TYPES_KALT1, glide:false, segs:['seg-kalt1'], lbl:'lbl-kalt1', color:'#134061', marker:{x:152,y:122}
   },
   {
-    title: '2. Phase &#8211; Warm (ca. 20 &#176;C)',
-    text:  'Der Rahm wird auf ca. 20 &#176;C erwärmt. Die tief schmelzenden Fettmoleküle werden wieder flüssig. Nur wenige bleiben fest.',
-    types: TYPES_WARM, glide:false, segs:['seg-auf1','seg-warm','seg-ab1'], lbl:'lbl-warm', color:'#d97706'
+    title: '2. Phase &#8211; Warm (ca. 20 °C)',
+    text:  'Der Rahm wird auf ca. 20 °C erwärmt. Die tief schmelzenden Fettmoleküle werden wieder flüssig. Nur wenige bleiben fest.',
+    types: TYPES_WARM, glide:false, segs:['seg-auf1','seg-warm','seg-ab1'], lbl:'lbl-warm', color:'#d97706', marker:{x:329,y:38}
   },
   {
-    title: '3. Phase &#8211; Kalt (ca. 10 &#176;C)',
-    text:  'Der Rahm kühlt auf ca. 10 &#176;C ab. Das feste Fett bildet einen Rand am Fettkügelchen. Das flüssige Fett bleibt in der Mitte.',
-    types: TYPES_KALT2, glide:false, segs:['seg-kalt2'], lbl:'lbl-kalt2', color:'#134061'
+    title: '3. Phase &#8211; Kalt (ca. 10 °C)',
+    text:  'Der Rahm kühlt auf ca. 10 °C ab. Das feste Fett bildet einen Rand am Fettkügelchen. Das flüssige Fett bleibt in der Mitte.',
+    types: TYPES_KALT2, glide:false, segs:['seg-kalt2'], lbl:'lbl-kalt2', color:'#134061', marker:{x:459,y:94}
   },
   {
     title: 'Ergebnis: gute Streichfähigkeit',
@@ -255,6 +278,16 @@ function applyStep(idx) {
   ALL_LBLS.forEach(function(id) {
     document.getElementById(id).setAttribute('fill', (s.lbl === id) ? s.color : '#94a3b8');
   });
+
+  var marker = document.getElementById('timeMarker');
+  if (s.marker) {
+    marker.setAttribute('cx', s.marker.x);
+    marker.setAttribute('cy', s.marker.y);
+    marker.setAttribute('fill', s.color);
+    marker.setAttribute('opacity', '1');
+  } else {
+    marker.setAttribute('opacity', '0');
+  }
 
   document.getElementById('stepTitle').innerHTML = s.title;
   document.getElementById('stepText').textContent = s.text;

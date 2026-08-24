@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animation – KWK-Verfahren</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .anim-wrap { width:600px; max-width:100%; margin:0 auto; display:flex; flex-direction:column; gap:16px; }
+
+    .step-dots { display:flex; justify-content:center; gap:12px; margin-bottom:4px; }
+    .step-dot  { width:11px; height:11px; border-radius:50%; background:var(--border); cursor:pointer; transition:background .2s,transform .15s; }
+    .step-dot.active { background:var(--blue-dark); transform:scale(1.25); }
+    .step-dot:hover  { background:#94a3b8; }
+
+    .anim-card { background:#f8fafc; border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); overflow:hidden; }
+    .anim-card svg { display:block; width:100%; height:auto; }
+
+    .step-info { background:var(--surface); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); padding:20px 24px; min-height:96px; }
+    .step-title { font-size:.78rem; font-weight:700; color:var(--blue-dark); text-transform:uppercase; letter-spacing:.07em; margin-bottom:8px; }
+    .step-text  { font-size:.9rem; color:var(--text); line-height:1.65; }
+
+    .nav-row { display:flex; justify-content:center; gap:12px; flex-wrap:wrap; }
+
+    .molecule { opacity:0; transition:opacity .5s ease; }
+    #ringFest.gliding { animation: spin 7s linear infinite; transform-origin: 200px 300px; }
+    @keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<header class="bzwu-header">
+  <div class="header-text">
+    <span class="school-badge">BZWU Wil-Uzwil · Milchpraktiker EBA · Butter</span>
+    <h1>Das KWK-Verfahren</h1>
+    <p>Wie Kälte und Wärme das Milchfett ordnen – Schritt für Schritt</p>
+  </div>
+  <div class="header-logos">
+    <img src="../assets/logos/bzwu.png" alt="BZWU" class="header-logo">
+    <img src="../assets/logos/milchtechnologen.svg" alt="Milchtechnologen" class="header-logo">
+  </div>
+</header>
+
+<main class="page-main">
+
+  <a class="back-link" href="../index.html">&#8592; Alle Lerntools</a>
+
+  <div class="anim-wrap">
+
+    <div class="step-dots" id="stepDots"></div>
+
+    <div class="anim-card">
+      <svg id="animSvg" viewBox="0 0 600 430" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- ============================================================
+             GRAPH: Temperatur über Zeit (x:40-560, y:14-150)
+             ============================================================ -->
+        <text x="14" y="20" font-family="system-ui,sans-serif" font-size="10" fill="#64748b">&#176;C</text>
+        <text x="560" y="168" font-family="system-ui,sans-serif" font-size="10" fill="#64748b" text-anchor="end">Stunden</text>
+
+        <!-- Gitterlinien + Achsenbeschriftung y (0/5/10/15/20/25 °C) -->
+        <g font-family="system-ui,sans-serif" font-size="8.5" fill="#94a3b8">
+          <line x1="40" y1="150" x2="560" y2="150" stroke="#e2e8f0"/>
+          <text x="34" y="153" text-anchor="end">0</text>
+          <line x1="40" y1="122" x2="560" y2="122" stroke="#e2e8f0"/>
+          <text x="34" y="125" text-anchor="end">5</text>
+          <line x1="40" y1="94" x2="560" y2="94" stroke="#e2e8f0"/>
+          <text x="34" y="97" text-anchor="end">10</text>
+          <line x1="40" y1="66" x2="560" y2="66" stroke="#e2e8f0"/>
+          <text x="34" y="69" text-anchor="end">15</text>
+          <line x1="40" y1="38" x2="560" y2="38" stroke="#e2e8f0"/>
+          <text x="34" y="41" text-anchor="end">20</text>
+          <line x1="40" y1="18" x2="560" y2="18" stroke="#e2e8f0"/>
+          <text x="34" y="21" text-anchor="end">25</text>
+        </g>
+        <!-- Achsenbeschriftung x (Stunden) -->
+        <g font-family="system-ui,sans-serif" font-size="8.5" fill="#94a3b8">
+          <text x="40"  y="164" text-anchor="middle">0</text>
+          <text x="152" y="164" text-anchor="middle">6</text>
+          <text x="264" y="164" text-anchor="middle">12</text>
+          <text x="376" y="164" text-anchor="middle">18</text>
+          <text x="488" y="164" text-anchor="middle">24</text>
+        </g>
+        <line x1="40" y1="150" x2="40" y2="14" stroke="#cbd5e1"/>
+        <line x1="40" y1="150" x2="560" y2="150" stroke="#cbd5e1"/>
+
+        <!-- Vorlauf: Rahm ist nach der Pasteurisation warm (ausserhalb der Skala) -->
+        <path d="M18,4 L40,18" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="3,2" fill="none" marker-end="url(#arrowGray)"/>
+        <text x="18" y="12" font-family="system-ui,sans-serif" font-size="7.5" fill="#64748b">warm</text>
+
+        <defs>
+          <marker id="arrowGray" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L8,4 L0,8 Z" fill="#94a3b8"/>
+          </marker>
+        </defs>
+
+        <!-- Kurvensegmente (Basis grau, werden per JS eingefärbt) -->
+        <!-- 1. Kaltphase 0-12h bei 5°C -->
+        <path id="seg-kalt1" d="M40,122 L264,122" stroke="#cbd5e1" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- Anstieg 12-13h -->
+        <path id="seg-auf1" d="M264,122 L282,38" stroke="#cbd5e1" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- 2. Warmphase 13-17h bei 20°C -->
+        <path id="seg-warm" d="M282,38 L376,38" stroke="#cbd5e1" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- Abstieg 17-18h -->
+        <path id="seg-ab1" d="M376,38 L394,94" stroke="#cbd5e1" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- 3. Kaltphase 18-26h bei 10°C -->
+        <path id="seg-kalt2" d="M394,94 L524,94" stroke="#cbd5e1" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M524,94 L546,94" stroke="#cbd5e1" stroke-width="2" fill="none" stroke-dasharray="3,3" marker-end="url(#arrowGray)"/>
+
+        <text id="lbl-kalt1" x="152" y="112" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="700" fill="#94a3b8">ca. 5 &#176;C</text>
+        <text id="lbl-warm"  x="329" y="28"  text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="700" fill="#94a3b8">ca. 20 &#176;C</text>
+        <text id="lbl-kalt2" x="459" y="84"  text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="700" fill="#94a3b8">ca. 10 &#176;C</text>
+
+        <!-- ============================================================
+             FETTKÜGELCHEN (Kreis, y ab 190)
+             ============================================================ -->
+        <circle cx="200" cy="300" r="72" fill="#eef2f7" stroke="#cbd5e1" stroke-width="2"/>
+        <text x="200" y="392" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9.5" font-weight="700" fill="#134061">Fettkügelchen</text>
+
+        <g id="ringFest"></g>
+        <g id="moleculeLayer"></g>
+
+        <!-- Legende -->
+        <rect x="380" y="230" width="176" height="90" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+        <text x="468" y="248" font-family="system-ui,sans-serif" font-size="10" font-weight="700" fill="#134061" text-anchor="middle">Legende</text>
+        <line x1="400" y1="270" x2="420" y2="270" stroke="#134061" stroke-width="4" stroke-linecap="round"/>
+        <text x="428" y="273" font-family="system-ui,sans-serif" font-size="9" fill="#334155">fest (kalt)</text>
+        <path d="M400,296 Q410,288 420,296" stroke="#d97706" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+        <text x="428" y="299" font-family="system-ui,sans-serif" font-size="9" fill="#334155">fl&#252;ssig (warm)</text>
+
+      </svg>
+    </div>
+
+    <div class="step-info">
+      <div class="step-title" id="stepTitle"></div>
+      <div class="step-text"  id="stepText"></div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-ghost"   id="prevBtn" onclick="prevStep()">&#8592; Zur&#252;ck</button>
+      <button class="btn btn-primary" id="playBtn" onclick="toggleAutoplay()">&#9654; Abspielen</button>
+      <button class="btn btn-ghost"   id="nextBtn" onclick="nextStep()">Weiter &#8594;</button>
+    </div>
+    <p class="keyboard-hint"><kbd>&#8592;</kbd> <kbd>&#8594;</kbd> navigieren &#183; <kbd>Leertaste</kbd> abspielen</p>
+
+  </div>
+
+</main>
+
+<footer class="bzwu-footer">
+  BZWU Wil-Uzwil · Milchpraktiker EBA · Philipp Neukomm
+</footer>
+
+<script>
+/* ================================================================
+   14 feste Positionen im Kreis (6 innen, 8 aussen)
+   ================================================================ */
+var CX = 200, CY = 300, MAXR = 58;
+var POINTS = [
+  {r:0.30,a:20},{r:0.40,a:80},{r:0.32,a:140},{r:0.42,a:200},{r:0.30,a:260},{r:0.40,a:320},
+  {r:0.92,a:0},{r:0.95,a:45},{r:0.90,a:90},{r:0.94,a:135},{r:0.91,a:180},{r:0.95,a:225},{r:0.90,a:270},{r:0.94,a:315}
+];
+
+var NS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs) {
+  var e = document.createElementNS(NS, tag);
+  Object.keys(attrs).forEach(function(k) { e.setAttribute(k, attrs[k]); });
+  return e;
+}
+
+/* fest = blaue durchgezogene Linie | fluessig = orange S-Linie */
+function festShape() {
+  return svgEl('line', {x1:'-9', y1:'0', x2:'9', y2:'0', stroke:'#134061', 'stroke-width':'4.5', 'stroke-linecap':'round'});
+}
+function fluessigShape() {
+  return svgEl('path', {d:'M-9,3 Q-4.5,-6 0,0 Q4.5,6 9,-3', stroke:'#d97706', 'stroke-width':'2.6', fill:'none', 'stroke-linecap':'round'});
+}
+
+var moleculeLayer = document.getElementById('moleculeLayer');
+var ringFest = document.getElementById('ringFest');
+var molFest = [], molFluessig = [];
+
+POINTS.forEach(function(p, i) {
+  var rad = p.a * Math.PI / 180;
+  var x = CX + Math.cos(rad) * p.r * MAXR;
+  var y = CY + Math.sin(rad) * p.r * MAXR;
+  var rot = (i % 2 === 0) ? 20 : -25;
+
+  var gf = svgEl('g', {class:'molecule', transform:'translate('+x+','+y+') rotate('+rot+')'});
+  gf.appendChild(festShape());
+  ringFest.appendChild(gf);
+  molFest.push(gf);
+
+  var gl = svgEl('g', {class:'molecule', transform:'translate('+x+','+y+') rotate('+rot+')'});
+  gl.appendChild(fluessigShape());
+  moleculeLayer.appendChild(gl);
+  molFluessig.push(gl);
+});
+
+/* ================================================================
+   SCHRITTE
+   ================================================================ */
+// Verteilung je Schritt: 'f' = fest, 'l' = flüssig, für alle 14 Punkte
+var TYPES_START = ['l','l','l','l','l','l','l','l','l','l','l','l','l','l'];
+var TYPES_KALT1 = ['f','l','f','l','f','l','f','l','f','l','f','l','f','l'];
+var TYPES_WARM  = ['l','l','f','l','l','l','f','l','l','l','f','l','l','l'];
+var TYPES_KALT2 = ['l','l','l','l','l','l','f','f','f','f','f','f','f','f'];
+
+var STEPS = [
+  {
+    title: 'Ausgangslage',
+    text:  'Nach der Pasteurisation ist der Rahm warm. Das Milchfett ist ganz flüssig und ungeordnet. Das KWK-Verfahren (Kalt-Warm-Kalt) ordnet die Fettmoleküle jetzt neu.',
+    types: TYPES_START, glide:false, segs:[]
+  },
+  {
+    title: '1. Phase &#8211; Kalt (ca. 5 &#176;C)',
+    text:  'Der Rahm wird schnell auf ca. 5 &#176;C abgekühlt. Ein Teil des Milchfetts wird fest. Es bilden sich viele kleine Fettkristalle.',
+    types: TYPES_KALT1, glide:false, segs:['seg-kalt1'], lbl:'lbl-kalt1', color:'#134061'
+  },
+  {
+    title: '2. Phase &#8211; Warm (ca. 20 &#176;C)',
+    text:  'Der Rahm wird auf ca. 20 &#176;C erwärmt. Die tief schmelzenden Fettmoleküle werden wieder flüssig. Nur wenige bleiben fest.',
+    types: TYPES_WARM, glide:false, segs:['seg-auf1','seg-warm','seg-ab1'], lbl:'lbl-warm', color:'#d97706'
+  },
+  {
+    title: '3. Phase &#8211; Kalt (ca. 10 &#176;C)',
+    text:  'Der Rahm kühlt auf ca. 10 &#176;C ab. Das feste Fett bildet einen Rand am Fettkügelchen. Das flüssige Fett bleibt in der Mitte.',
+    types: TYPES_KALT2, glide:false, segs:['seg-kalt2'], lbl:'lbl-kalt2', color:'#134061'
+  },
+  {
+    title: 'Ergebnis: gute Streichfähigkeit',
+    text:  'Die flüssigen Fettmoleküle in der Mitte wirken wie ein Kugellager. Die festen Fettmoleküle am Rand gleiten daran vorbei. So wird die Butter weich und streichfähig.',
+    types: TYPES_KALT2, glide:true, segs:[]
+  }
+];
+
+var ALL_SEGS = ['seg-kalt1','seg-auf1','seg-warm','seg-ab1','seg-kalt2'];
+var ALL_LBLS = ['lbl-kalt1','lbl-warm','lbl-kalt2'];
+
+function applyStep(idx) {
+  var s = STEPS[idx];
+
+  for (var i = 0; i < POINTS.length; i++) {
+    molFest[i].style.opacity     = (s.types[i] === 'f') ? '1' : '0';
+    molFluessig[i].style.opacity = (s.types[i] === 'l') ? '1' : '0';
+  }
+
+  ringFest.classList.toggle('gliding', !!s.glide);
+
+  ALL_SEGS.forEach(function(id) {
+    var active = s.segs.indexOf(id) !== -1;
+    document.getElementById(id).setAttribute('stroke', active ? s.color : '#cbd5e1');
+    document.getElementById(id).setAttribute('stroke-width', active ? '5' : '3');
+  });
+  ALL_LBLS.forEach(function(id) {
+    document.getElementById(id).setAttribute('fill', (s.lbl === id) ? s.color : '#94a3b8');
+  });
+
+  document.getElementById('stepTitle').innerHTML = s.title;
+  document.getElementById('stepText').textContent = s.text;
+
+  document.getElementById('prevBtn').disabled = (idx === 0);
+  document.getElementById('nextBtn').disabled = (idx === STEPS.length-1);
+
+  document.querySelectorAll('.step-dot').forEach(function(d,i) {
+    d.classList.toggle('active', i === idx);
+  });
+}
+
+var currentStep = 0;
+function goToStep(newStep) {
+  if (newStep < 0 || newStep >= STEPS.length) return;
+  currentStep = newStep;
+  applyStep(currentStep);
+}
+function nextStep() { goToStep(currentStep+1); }
+function prevStep() { goToStep(currentStep-1); }
+
+var autoplay = false, autoTimer = null;
+function scheduleNext() {
+  autoTimer = setTimeout(function() {
+    if (!autoplay) return;
+    goToStep((currentStep+1) % STEPS.length);
+    scheduleNext();
+  }, 4200);
+}
+function setPlayLabel() {
+  document.getElementById('playBtn').innerHTML = autoplay ? '&#10074;&#10074; Pause' : '&#9654; Abspielen';
+}
+function toggleAutoplay() {
+  autoplay = !autoplay;
+  setPlayLabel();
+  clearTimeout(autoTimer);
+  if (autoplay) {
+    if (currentStep === STEPS.length-1) goToStep(0);
+    scheduleNext();
+  }
+}
+
+var dotsWrap = document.getElementById('stepDots');
+for (var i = 0; i < STEPS.length; i++) {
+  (function(idx) {
+    var d = document.createElement('div');
+    d.className = 'step-dot';
+    d.title = STEPS[idx].title.replace(/&#8211;/g, '-').replace(/&#176;/g, '°');
+    d.addEventListener('click', function() { goToStep(idx); });
+    dotsWrap.appendChild(d);
+  })(i);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight') { nextStep(); }
+  if (e.key === 'ArrowLeft')  { prevStep(); }
+  if (e.key === ' ')          { e.preventDefault(); toggleAutoplay(); }
+});
+
+applyStep(0);
+setPlayLabel();
+</script>
+</body>
+</html>

@@ -22,7 +22,6 @@
 
     .nav-row { display:flex; justify-content:center; gap:12px; flex-wrap:wrap; }
 
-    .molecule { opacity:0; transition:opacity .5s ease; }
     .molecule-inner { animation-name:molWobble; animation-timing-function:ease-in-out; animation-iteration-count:infinite; }
     @keyframes molWobble {
       0%   { transform:translate(0,0); }
@@ -31,7 +30,7 @@
       75%  { transform:translate(-2px,-1px); }
       100% { transform:translate(0,0); }
     }
-    #ringFest.gliding { animation: spin 7s linear infinite; transform-origin: 200px 300px; }
+    #ringOuter.gliding { animation: spin 7s linear infinite; transform-origin: 200px 300px; }
     @keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
 
     .time-marker { transform-box:fill-box; transform-origin:center; opacity:0; }
@@ -127,8 +126,7 @@
         <circle cx="200" cy="300" r="72" fill="#eef2f7" stroke="#cbd5e1" stroke-width="2"/>
         <text x="200" y="392" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9.5" font-weight="700" fill="#134061">Fettkügelchen</text>
 
-        <g id="ringFest"></g>
-        <g id="moleculeLayer"></g>
+        <g id="moleculeRoot"></g>
 
         <!-- Legende -->
         <rect x="380" y="230" width="176" height="90" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
@@ -178,12 +176,25 @@ function svgEl(tag, attrs) {
   return e;
 }
 
-/* fest = blaue durchgezogene Linie | fluessig = orange S-Linie */
-function festShape() {
-  return svgEl('line', {x1:'-9', y1:'0', x2:'9', y2:'0', stroke:'#134061', 'stroke-width':'4.5', 'stroke-linecap':'round'});
+/* Ein Molekül = ein Pfad, der zwischen fest (gerade Linie) und flüssig (S-Linie)
+   MORPHT (nicht verschwindet). p = 0 → fest, p = 1 → flüssig. Anker-Punkte bleiben
+   fix, nur die Kontrollpunkte + Farbe/Breite ändern sich mit p. */
+function lerp(a, b, t) { return a + (b - a) * t; }
+function lerpColor(hex1, hex2, t) {
+  var c1 = [parseInt(hex1.substr(1,2),16), parseInt(hex1.substr(3,2),16), parseInt(hex1.substr(5,2),16)];
+  var c2 = [parseInt(hex2.substr(1,2),16), parseInt(hex2.substr(3,2),16), parseInt(hex2.substr(5,2),16)];
+  var r = Math.round(lerp(c1[0],c2[0],t)), g = Math.round(lerp(c1[1],c2[1],t)), b = Math.round(lerp(c1[2],c2[2],t));
+  return 'rgb('+r+','+g+','+b+')';
 }
-function fluessigShape() {
-  return svgEl('path', {d:'M-9,3 Q-4.5,-6 0,0 Q4.5,6 9,-3', stroke:'#d97706', 'stroke-width':'2.6', fill:'none', 'stroke-linecap':'round'});
+var FEST_COLOR = '#134061', FLUESSIG_COLOR = '#d97706';
+function moleculePath(p) {
+  var c1 = lerp(0, -6, p), c2 = lerp(0, 6, p);
+  return 'M-9,0 Q-4.5,'+c1.toFixed(2)+' 0,0 Q4.5,'+c2.toFixed(2)+' 9,0';
+}
+function updateMoleculeVisual(pathEl, p) {
+  pathEl.setAttribute('d', moleculePath(p));
+  pathEl.setAttribute('stroke', lerpColor(FEST_COLOR, FLUESSIG_COLOR, p));
+  pathEl.setAttribute('stroke-width', lerp(4.5, 2.6, p).toFixed(2));
 }
 
 function wobbleStyle() {
@@ -192,9 +203,14 @@ function wobbleStyle() {
   return 'animation-duration:' + dur + ';animation-delay:' + delay + ';';
 }
 
-var moleculeLayer = document.getElementById('moleculeLayer');
-var ringFest = document.getElementById('ringFest');
-var molFest = [], molFluessig = [];
+var moleculeRoot = document.getElementById('moleculeRoot');
+var ringInner = svgEl('g', {id:'ringInner'});
+var ringOuter = svgEl('g', {id:'ringOuter'});
+moleculeRoot.appendChild(ringInner);
+moleculeRoot.appendChild(ringOuter);
+
+var molPath = [];
+var currentP = [], fromP = [], toP = [];
 
 POINTS.forEach(function(p, i) {
   var rad = p.a * Math.PI / 180;
@@ -202,20 +218,47 @@ POINTS.forEach(function(p, i) {
   var y = CY + Math.sin(rad) * p.r * MAXR;
   var rot = (i % 2 === 0) ? 20 : -25;
 
-  var gf = svgEl('g', {class:'molecule', transform:'translate('+x+','+y+') rotate('+rot+')'});
-  var gfInner = svgEl('g', {class:'molecule-inner', style:wobbleStyle()});
-  gfInner.appendChild(festShape());
-  gf.appendChild(gfInner);
-  ringFest.appendChild(gf);
-  molFest.push(gf);
+  var g = svgEl('g', {transform:'translate('+x+','+y+') rotate('+rot+')'});
+  var inner = svgEl('g', {class:'molecule-inner', style:wobbleStyle()});
+  var path = svgEl('path', {fill:'none', 'stroke-linecap':'round'});
+  updateMoleculeVisual(path, 0);
+  inner.appendChild(path);
+  g.appendChild(inner);
+  (i < 6 ? ringInner : ringOuter).appendChild(g);
 
-  var gl = svgEl('g', {class:'molecule', transform:'translate('+x+','+y+') rotate('+rot+')'});
-  var glInner = svgEl('g', {class:'molecule-inner', style:wobbleStyle()});
-  glInner.appendChild(fluessigShape());
-  gl.appendChild(glInner);
-  moleculeLayer.appendChild(gl);
-  molFluessig.push(gl);
+  molPath.push(path);
+  currentP.push(0); fromP.push(0); toP.push(0);
 });
+
+/* ---- Morph-Übergang: alle Punkte gemeinsam per requestAnimationFrame ---- */
+function easeInOut(t) { return t<.5 ? 2*t*t : -1+(4-2*t)*t; }
+var morphStart = null, MORPH_DURATION = 650, morphRunning = false;
+
+function morphTick(now) {
+  var t = Math.min((now - morphStart) / MORPH_DURATION, 1);
+  var e = easeInOut(t);
+  for (var i = 0; i < POINTS.length; i++) {
+    currentP[i] = fromP[i] + (toP[i] - fromP[i]) * e;
+    updateMoleculeVisual(molPath[i], currentP[i]);
+  }
+  if (t < 1) {
+    requestAnimationFrame(morphTick);
+  } else {
+    morphRunning = false;
+  }
+}
+
+function morphTo(types) {
+  for (var i = 0; i < POINTS.length; i++) {
+    fromP[i] = currentP[i];
+    toP[i] = (types[i] === 'f') ? 0 : 1;
+  }
+  morphStart = performance.now();
+  if (!morphRunning) {
+    morphRunning = true;
+    requestAnimationFrame(morphTick);
+  }
+}
 
 /* ================================================================
    SCHRITTE
@@ -260,12 +303,9 @@ var ALL_LBLS = ['lbl-kalt1','lbl-warm','lbl-kalt2'];
 function applyStep(idx) {
   var s = STEPS[idx];
 
-  for (var i = 0; i < POINTS.length; i++) {
-    molFest[i].style.opacity     = (s.types[i] === 'f') ? '1' : '0';
-    molFluessig[i].style.opacity = (s.types[i] === 'l') ? '1' : '0';
-  }
+  morphTo(s.types);
 
-  ringFest.classList.toggle('gliding', !!s.glide);
+  ringOuter.classList.toggle('gliding', !!s.glide);
 
   ALL_SEGS.forEach(function(id) {
     var active = s.segs.indexOf(id) !== -1;

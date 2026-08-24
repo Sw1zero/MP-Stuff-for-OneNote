@@ -34,7 +34,8 @@
     #ringFest.gliding { animation: spin 7s linear infinite; transform-origin: 200px 300px; }
     @keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
 
-    .time-marker { transform-box:fill-box; transform-origin:center; transition:opacity .4s ease; animation:pulse 1.6s ease-in-out infinite; }
+    .time-marker { transform-box:fill-box; transform-origin:center; opacity:0; }
+    .time-marker.active { animation:pulse 1.6s ease-in-out infinite; }
     @keyframes pulse { 0%,100% { transform:scale(1); opacity:1; } 50% { transform:scale(1.7); opacity:.35; } }
   </style>
 </head>
@@ -280,13 +281,11 @@ function applyStep(idx) {
   });
 
   var marker = document.getElementById('timeMarker');
+  marker.classList.toggle('active', !!s.marker);
   if (s.marker) {
     marker.setAttribute('cx', s.marker.x);
     marker.setAttribute('cy', s.marker.y);
     marker.setAttribute('fill', s.color);
-    marker.setAttribute('opacity', '1');
-  } else {
-    marker.setAttribute('opacity', '0');
   }
 
   document.getElementById('stepTitle').innerHTML = s.title;

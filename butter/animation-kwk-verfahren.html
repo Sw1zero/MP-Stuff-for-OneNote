@@ -99,6 +99,11 @@
           <marker id="arrowGray" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
             <path d="M0,0 L8,4 L0,8 Z" fill="#94a3b8"/>
           </marker>
+          <radialGradient id="gradFestFluessig" cx="50%" cy="50%" r="50%">
+            <stop offset="0%"  stop-color="#fdf1e0"/>
+            <stop offset="55%" stop-color="#eef2f7"/>
+            <stop offset="100%" stop-color="#cfe0ea"/>
+          </radialGradient>
         </defs>
 
         <!-- Kurvensegmente (Basis grau, werden per JS eingefärbt) -->
@@ -124,6 +129,7 @@
              FETTKÜGELCHEN (Kreis, y ab 190)
              ============================================================ -->
         <circle cx="200" cy="300" r="72" fill="#eef2f7" stroke="#cbd5e1" stroke-width="2"/>
+        <circle id="gradientHint" cx="200" cy="300" r="70" fill="url(#gradFestFluessig)" opacity="0" style="transition:opacity .6s ease;"/>
         <text x="200" y="392" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9.5" font-weight="700" fill="#134061">Fettkügelchen</text>
 
         <g id="moleculeRoot"></g>
@@ -248,10 +254,15 @@ function morphTick(now) {
   }
 }
 
+function typeToP(type) {
+  if (type === 'f') return 0;
+  if (type === 'm') return 0.4; // teilweise fest (Übergang ist fliessend, kein scharfer Rand)
+  return 1;
+}
 function morphTo(types) {
   for (var i = 0; i < POINTS.length; i++) {
     fromP[i] = currentP[i];
-    toP[i] = (types[i] === 'f') ? 0 : 1;
+    toP[i] = typeToP(types[i]);
   }
   morphStart = performance.now();
   if (!morphRunning) {
@@ -263,11 +274,13 @@ function morphTo(types) {
 /* ================================================================
    SCHRITTE
    ================================================================ */
-// Verteilung je Schritt: 'f' = fest, 'l' = flüssig, für alle 14 Punkte
+// Verteilung je Schritt: 'f' = fest, 'l' = flüssig, 'm' = teilweise fest (Übergang), für alle 14 Punkte
 var TYPES_START = ['l','l','l','l','l','l','l','l','l','l','l','l','l','l'];
 var TYPES_KALT1 = ['f','l','f','l','f','l','f','l','f','l','f','l','f','l'];
 var TYPES_WARM  = ['l','l','f','l','l','l','f','l','l','l','f','l','l','l'];
-var TYPES_KALT2 = ['l','l','l','l','l','l','f','f','f','f','f','f','f','f'];
+// Rand (Punkte 6-13) fest, Mitte (0-5) flüssig – aber auch in der Mitte bleibt
+// meist noch ein kleiner fester Anteil zurück (Punkt 0 = 'm'), kein scharfer Rand.
+var TYPES_KALT2 = ['m','l','l','l','l','l','f','f','f','f','f','f','f','f'];
 
 var STEPS = [
   {
@@ -287,13 +300,13 @@ var STEPS = [
   },
   {
     title: '3. Phase &#8211; Kalt (ca. 10 °C)',
-    text:  'Der Rahm kühlt auf ca. 10 °C ab. Das feste Fett bildet einen Rand am Fettkügelchen. Das flüssige Fett bleibt in der Mitte.',
-    types: TYPES_KALT2, glide:false, segs:['seg-kalt2'], lbl:'lbl-kalt2', color:'#134061', marker:{x:459,y:94}
+    text:  'Der Rahm kühlt auf ca. 10 °C ab. Das feste Fett bildet einen Rand am Fettkügelchen. Das flüssige Fett bleibt in der Mitte. Der Übergang ist nicht scharf: aussen ist mehr fest, innen mehr flüssig – ganz in der Mitte bleibt meist noch ein kleiner fester Rest.',
+    types: TYPES_KALT2, glide:false, segs:['seg-kalt2'], lbl:'lbl-kalt2', color:'#134061', marker:{x:459,y:94}, gradient:true
   },
   {
     title: 'Ergebnis: gute Streichfähigkeit',
     text:  'Die flüssigen Fettmoleküle in der Mitte wirken wie ein Kugellager. Die festen Fettmoleküle am Rand gleiten daran vorbei. So wird die Butter weich und streichfähig.',
-    types: TYPES_KALT2, glide:true, segs:[]
+    types: TYPES_KALT2, glide:true, segs:[], gradient:true
   }
 ];
 
@@ -306,6 +319,7 @@ function applyStep(idx) {
   morphTo(s.types);
 
   ringOuter.classList.toggle('gliding', !!s.glide);
+  document.getElementById('gradientHint').style.opacity = s.gradient ? '1' : '0';
 
   ALL_SEGS.forEach(function(id) {
     var active = s.segs.indexOf(id) !== -1;

@@ -13,6 +13,9 @@ Diese Datei definiert die kanonischen Namen für Module, Tool-Typen und Ordner.
 ├── style.css                           ← Gemeinsames Design-System (BZWU Grundbildung)
 ├── STRUCTURE.md                        ← Diese Datei
 ├── assets/
+│   ├── quiz-engine.js                   ← Multiple-Choice-Quiz (QuizEngine)
+│   ├── zuordnung3.js                    ← 3-Stufen-Muster (Einfach/Mittel/Schwer)
+│   ├── lernkaertchen-engine.js          ← Flip-Karten + Richtig/Falsch-Bestätigung (LKEngine)
 │   └── logos/
 │       ├── bzwu.png                    ← BZWU-Logo (weisser Hintergrund)
 │       └── milchtechnologen.svg        ← Branchenlogo
@@ -58,6 +61,7 @@ Diese Datei definiert die kanonischen Namen für Module, Tool-Typen und Ordner.
 | `spiel`            | Spiel             | `spiel-homofermentativ.html`            | Geschicklichkeitsspiel (Canvas), Maus/Touch/Tasten, 3 Leben |
 | `animation`        | Animation         | `animation-labgerinnung.html`           | Schrittweise SVG-Animation eines Prozesses mit Nav      |
 | `prozess-entscheid`| Prozess-Entscheid | `prozess-entscheid-jogurt.html`         | Entscheidung pro Prozessschritt mit Fehleranalyse       |
+| `beschriften`      | Beschriften       | `beschriften-oelbrenner.html`           | Bild beschriften, 3 Stufen (Einfach/Mittel/Schwer)      |
 
 ---
 
@@ -113,75 +117,19 @@ Jedes neue Tool **muss** diesen Vorlagen folgen. Abweichungen nur bei technische
 
 ### Lernkärtchen (Canonical Pattern)
 
+Die Engine ist gemeinsam in **`assets/lernkaertchen-engine.js`** ausgelagert (nicht mehr copy-pasten). Referenz: `butter/lernkaertchen-nachbehandlung.html`, `butter/lernkaertchen-rahmreifung.html`, `frischkaese/lernkaertchen-mozzarella.html` (Init-Aufruf `LKEngine.init({...})`).
+
 **Karten-Grösse:**
 - Begriff ↔ Erklärung (kurze Inhalte): `width: 440px; height: 270px`
 - Frage ↔ Antwort (K2-Fragen, längere Inhalte): `width: 440px; height: 310px`
 
-**HTML-Gerüst:**
-```html
-<div class="scene" id="scene" onclick="flipCard()">
-  <div class="card" id="card">
-    <div class="card-face card-front">
-      <span class="card-category-badge" id="frontLabel"></span>
-      <div class="card-term" id="frontTerm"></div>          <!-- oder card-question -->
-      <div class="card-hint">Karte umdrehen für die Erklärung</div>
-    </div>
-    <div class="card-face card-back">
-      <span class="card-category-badge" id="backLabel"></span>
-      <div class="card-explanation" id="backExplanation"></div>  <!-- oder card-answer -->
-    </div>
-  </div>
-</div>
-```
+**Richtig/Falsch-Bestätigung (Pflicht seit 2026-09):** nach dem Umdrehen erscheinen zwei Buttons "Wusste ich" / "Wusste ich nicht". Als "Wusste ich nicht" markierte Karten werden ans Ende des aktuellen Durchgangs angehängt (nicht neu gemischt); der Durchgang wiederholt sich, bis alle Karten in einem Durchgang "gewusst" wurden. Kein Score/Punktesystem — reine Selbsteinschätzung.
 
-**CSS-Klassen (in style.css definiert):**
-- `.scene` – perspektivischer Container
-- `.card` – flip-fähige Karte (`transform-style: preserve-3d`)
-- `.card.flipped` – rotierter Zustand (`transform: rotateY(180deg)`)
-- `.card-face` – gemeinsame Stile für Vorder-/Rückseite
-- `.card-front` – weisser Hintergrund (`var(--surface)`)
-- `.card-back` – blauer Hintergrund (`var(--blue-light)`)
-- `.card-category-badge` – Kategorie-Pill oben links
-- `.card-term` – grosser Begriff (1.42rem, fett)
-- `.card-question` – K2-Frage (0.97rem, fett) – für Frage-Karten
-- `.card-explanation` / `.card-answer` – Erklärungstext Rückseite
-
-**Steuerung (immer gleich):**
-```html
-<div class="controls">
-  <button class="btn btn-ghost"   onclick="prevCard()">← Zurück</button>
-  <button class="btn btn-success" onclick="flipCard()">Umdrehen</button>
-  <button class="btn btn-ghost"   onclick="nextCard()">Weiter →</button>
-</div>
-<div class="controls">
-  <button class="btn btn-primary" onclick="shuffleCards()">⇄ Mischen</button>
-</div>
-<p class="keyboard-hint">
-  ← → navigieren | Leertaste umdrehen | S mischen
-</p>
-```
-
-**Keyboard-Shortcuts (immer identisch):**
-```javascript
-document.addEventListener('keydown', e => {
-  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
-  if (e.key === 'ArrowRight') nextCard();
-  if (e.key === 'ArrowLeft')  prevCard();
-  if (e.key === 's' || e.key === 'S') shuffleCards();
-});
-```
-
-**Fortschrittsanzeige (immer gleich):**
-```html
-<div class="progress-text" id="progressText"></div>
-<div class="progress-bar-wrap">
-  <div class="progress-bar-fill" id="progressBar"></div>
-</div>
-```
-```javascript
-document.getElementById('progressText').textContent = `Karte ${currentIndex + 1} von ${total}`;
-document.getElementById('progressBar').style.width  = `${((currentIndex + 1) / total) * 100}%`;
-```
+**Neues Tool erstellen:**
+1. `<link rel="stylesheet" href="../style.css">` (Card-Flip-/Progress-Bar-CSS ist dort definiert, nicht inline duplizieren).
+2. `<script src="../assets/lernkaertchen-engine.js"></script>` einbinden.
+3. Eigenes Karten-Array + Markup-Grundgerüst übernehmen, `LKEngine.init({cards, ...})` aufrufen.
+4. Steuerung (Vorne/Hinten, Mischen, Kategoriefilter falls gebraucht, Tastatur-Shortcuts ← → Leertaste/Enter S) kommt automatisch aus der Engine.
 
 **Kategorie-Badge-Farben (Standard):**
 ```javascript
@@ -214,6 +162,16 @@ const CATEGORY_COLORS = {
 - Einzelne Strukturen (Organellen, Punkte): `circle`
 - Flächige Bereiche (Cytoplasma, Chromosom): `polygon`
 - Ringe, Linien, Kurven (Membran, Geissel): `polyline`
+
+---
+
+### 3-Stufen-Muster / Beschriften (Canonical Pattern)
+
+Die Engine ist gemeinsam in **`assets/zuordnung3.js`** ausgelagert (nicht mehr copy-pasten). Referenz: `frischkaese/beschriften-oelbrenner.html`, `konsummilch/beschriften-milchsammelwagen.html`, `konsummilch/zuordnung-milchzusammensetzung.html`.
+
+**Aufbau:** ein `level-bar` mit drei Buttons (`Zuordnung3.setLevel('einfach'|'mittel'|'schwer')`), Auswertung über `Zuordnung3.checkLevel()`/`resetLevel()`. Modul-eigene Unterschiede (Bild-Tausch pro Stufe, Klick-Toleranzen, Beschriftungstexte) laufen über die `Zuordnung3.init({...})`-Config, nicht über Kopien der Engine.
+
+Kein Debug-/Kalibrierungscode (`?debug`, `drawDebugZones`) in Produktivdateien — Kalibrierung nur temporär lokal einbauen, nie committen.
 
 ---
 

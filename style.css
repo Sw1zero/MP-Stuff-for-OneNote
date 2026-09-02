@@ -363,3 +363,38 @@ body {
 @media (max-width: 400px) {
   .tool-grid { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   Ergänzungen aus MT-Stuff-for-OneNote übernommen
+   (generische Layout-/Zustands-Fixes, additiv, keine bestehenden
+   MP-Regeln verändert)
+   ============================================================ */
+
+body {
+  overflow-x: hidden;            /* kein seitliches Scrollen (Mobil) */
+}
+
+.tool-grid {
+  grid-auto-rows: 1fr;            /* alle Karten gleich hoch */
+}
+
+.tool-card {
+  min-width: 0;                  /* verhindert Überlauf im Grid */
+  height: 100%;
+}
+
+.tool-card .card-top {
+  flex-wrap: wrap;
+}
+
+.tool-card .card-title {
+  overflow-wrap: break-word;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+}
+
+/* Pastell-Akzente (gleiche Helligkeit wie --blue-tint) */
+.badge-lernpfad  { background: #dcf0e4; color: #1c7a4d; }  /* grün = Lernpfad */
+.badge-challenge { background: #f7dee0; color: #b32a2a; }  /* rot = Challenge */
+
+.btn:disabled { opacity: 0.35; cursor: default; box-shadow: none; transform: none; }

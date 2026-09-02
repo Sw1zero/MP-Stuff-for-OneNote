@@ -32,10 +32,6 @@
     }
     .hs-miss { position:absolute; transform:translate(-50%,-50%); color:var(--red); font-weight:800; font-size:1.4rem; pointer-events:none; animation:hsmiss 0.6s ease forwards; }
     @keyframes hsmiss { 0%{opacity:1;} 100%{opacity:0; transform:translate(-50%,-60%) scale(1.5);} }
-    .hs-zone-dbg { position:absolute; transform:translate(-50%,-50%); border:2px dashed rgba(204,0,39,0.7); border-radius:50%; pointer-events:none; }
-    .hs-zone-dbg span { position:absolute; top:-2px; left:50%; transform:translate(-50%,-100%); font-size:10px; color:#C40027; font-weight:700; }
-    .dbg-readout { font-family:monospace; font-size:0.78rem; color:var(--blue-dark); background:var(--blue-tint); padding:6px 10px; border-radius:var(--radius-sm); margin-bottom:1rem; display:none; }
-    .dbg-readout.active { display:block; }
 
     .hs-prompt { background:var(--blue-tint); border-radius:var(--radius-md); padding:0.8rem 1rem; text-align:center; margin-bottom:1.25rem; font-size:0.9rem; color:var(--text); }
     .hs-prompt b { color:var(--blue-dark); font-size:1.08rem; }
@@ -114,14 +110,12 @@
   <a class="back-link" href="../index.html">&#8592; Alle Lerntools</a>
 
   <div class="level-bar">
-    <button class="level-btn active" id="lvl-einfach" onclick="setLevel('einfach')">Einfach – zuordnen</button>
-    <button class="level-btn"        id="lvl-mittel"  onclick="setLevel('mittel')">Mittel – anklicken</button>
-    <button class="level-btn"        id="lvl-schwer"  onclick="setLevel('schwer')">Schwer – eintippen</button>
+    <button class="level-btn active" id="lvl-einfach" onclick="Zuordnung3.setLevel('einfach')">Einfach – zuordnen</button>
+    <button class="level-btn"        id="lvl-mittel"  onclick="Zuordnung3.setLevel('mittel')">Mittel – anklicken</button>
+    <button class="level-btn"        id="lvl-schwer"  onclick="Zuordnung3.setLevel('schwer')">Schwer – eintippen</button>
   </div>
 
   <p class="instruction" id="instruction"></p>
-
-  <div class="dbg-readout" id="dbgReadout"></div>
 
   <div class="schema-wrap">
     <div class="img-stage" id="imgStage">
@@ -133,8 +127,8 @@
   <div id="modeBody"></div>
 
   <div class="btn-row" id="btnRow">
-    <button type="button" class="btn btn-primary" id="checkBtn" onclick="checkLevel()">Überprüfen</button>
-    <button type="button" class="btn btn-ghost" onclick="resetLevel()">Zurücksetzen</button>
+    <button type="button" class="btn btn-primary" id="checkBtn" onclick="Zuordnung3.checkLevel()">Überprüfen</button>
+    <button type="button" class="btn btn-ghost" onclick="Zuordnung3.resetLevel()">Zurücksetzen</button>
   </div>
 
   <div class="result-banner" id="resultBanner"></div>
@@ -146,6 +140,7 @@
   BZWU Wil-Uzwil · Milchpraktiker EBA · Philipp Neukomm
 </footer>
 
+<script src="../assets/zuordnung3.js"></script>
 <script>
 /* Bar 1: Wasser vs. übrige Bestandteile. Bar 2 zoomt in die übrigen Bestandteile hinein
    (echte Anteile 4.9/4/3.2/0.7/0.2 wären als Breite zu schmal zum Anklicken – deshalb
@@ -177,27 +172,6 @@ var PARTS = [
 SEGS1.forEach(function(s){ if (s.p > 0) { var c = segCenter(s, BAR1_Y); PARTS[s.p-1].zones = [{ cx:c.cx, cy:c.cy, r:7 }]; } });
 SEGS2.forEach(function(s){ var c = segCenter(s, BAR2_Y); PARTS[s.p-1].zones = [{ cx:c.cx, cy:c.cy, r:7 }]; });
 
-var DEBUG = /[?&]debug/.test(location.search);
-var level = 'einfach';
-
-function shuffle(arr) {
-  var a = arr.slice();
-  for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
-  return a;
-}
-function fold(s) {
-  return String(s).toLowerCase()
-    .replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss')
-    .replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
-}
-function matchPart(input, part) {
-  var f = fold(input);
-  if (!f) return false;
-  if (f === fold(part.name)) return true;
-  for (var i = 0; i < part.keys.length; i++) { if (f.indexOf(fold(part.keys[i])) !== -1) return true; }
-  return false;
-}
-
 /* ---- SVG zeichnen ---- */
 function drawStage(showNums) {
   var s = '<svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg" font-family="Inter, system-ui, sans-serif">';
@@ -221,274 +195,20 @@ function drawStage(showNums) {
   document.getElementById('svgHost').innerHTML = s + '</svg>';
 }
 
-function setLevel(l) {
-  level = l;
-  ['einfach','mittel','schwer'].forEach(function(k) { document.getElementById('lvl-' + k).classList.toggle('active', k === l); });
-  drawStage(l !== 'mittel');
-  document.getElementById('dbgReadout').classList.toggle('active', DEBUG && l === 'mittel');
-  resetLevel();
-}
-
-function resetLevel() {
-  var hl = document.getElementById('hotspotLayer');
-  hl.innerHTML = ''; hl.classList.remove('active'); hl.onclick = null;
-  document.getElementById('resultBanner').className = 'result-banner';
-  var body = document.getElementById('modeBody');
-  body.innerHTML = '';
-  var checkBtn = document.getElementById('checkBtn');
-  var instr = document.getElementById('instruction');
-  if (level === 'einfach') {
-    checkBtn.style.display = '';
-    instr.textContent = 'Ziehen Sie die Bestandteile auf die richtige Nummer. Oder tippen Sie einen Bestandteil an und dann das Feld.';
-    buildEinfach(body);
-  } else if (level === 'mittel') {
-    checkBtn.style.display = 'none';
-    instr.textContent = 'Klicken Sie den gesuchten Bestandteil direkt im Diagramm an. Der zweite Balken zeigt die übrigen Bestandteile vergrössert.';
-    buildMittel(body);
-  } else {
-    checkBtn.style.display = '';
-    instr.textContent = 'Schreiben Sie zu jeder Nummer den passenden Bestandteil. Kleine Schreibfehler werden akzeptiert.';
-    buildSchwer(body);
+Zuordnung3.init({
+  parts: PARTS,
+  itemLabel: 'Bestandteil',
+  itemLabelPlural: 'Bestandteile',
+  hitThreshold: 0.25,
+  onLevelChange: function(l) {
+    drawStage(l !== 'mittel');
+  },
+  instructions: {
+    einfach: 'Ziehen Sie die Bestandteile auf die richtige Nummer. Oder tippen Sie einen Bestandteil an und dann das Feld.',
+    mittel: 'Klicken Sie den gesuchten Bestandteil direkt im Diagramm an. Der zweite Balken zeigt die übrigen Bestandteile vergrössert.',
+    schwer: 'Schreiben Sie zu jeder Nummer den passenden Bestandteil. Kleine Schreibfehler werden akzeptiert.'
   }
-}
-
-/* ---- EINFACH ---- */
-var dragWord = null, dragSource = null, selectedWord = null;
-var touchWord = null, touchSource = null;
-var touchCloneEl = document.getElementById('touchClone');
-var touchOffX = 0, touchOffY = 0;
-
-function buildEinfach(body) {
-  body.innerHTML = '<div class="word-bank" id="wordBank"></div><div class="slots-grid" id="slotsGrid"></div>';
-  dragWord = dragSource = selectedWord = touchWord = touchSource = null;
-  var bank = document.getElementById('wordBank');
-  shuffle(PARTS.map(function(p){ return p.name; })).forEach(function(word) {
-    var chip = document.createElement('span');
-    chip.className = 'word-chip'; chip.textContent = word; chip.dataset.word = word; chip.setAttribute('draggable','true');
-    chip.addEventListener('dragstart', function(e) { dragWord = word; dragSource = chip; e.dataTransfer.effectAllowed = 'move'; });
-    chip.addEventListener('touchstart', function(e) { onTouchStart(e, chip, word, false); }, {passive:false});
-    chip.addEventListener('click', function() { selectChip(chip, word); });
-    bank.appendChild(chip);
-  });
-  var grid = document.getElementById('slotsGrid');
-  PARTS.forEach(function(p) {
-    var row = document.createElement('div'); row.className = 'slot-row';
-    var badge = document.createElement('div'); badge.className = 'slot-num'; badge.textContent = p.n;
-    var box = document.createElement('div'); box.className = 'slot-box'; box.dataset.slot = p.n; box.textContent = '—';
-    box.addEventListener('dragover', function(e) { e.preventDefault(); if (!box.classList.contains('correct') && !box.classList.contains('wrong')) box.classList.add('over'); });
-    box.addEventListener('dragleave', function() { box.classList.remove('over'); });
-    box.addEventListener('drop', function(e) { e.preventDefault(); box.classList.remove('over'); dropOnSlot(box); });
-    box.setAttribute('draggable','false');
-    box.addEventListener('dragstart', function(e) { if (!box.dataset.filled) { e.preventDefault(); return; } dragWord = box.dataset.filled; dragSource = box; e.dataTransfer.effectAllowed = 'move'; });
-    box.addEventListener('touchstart', function(e) { if (!box.dataset.filled) return; onTouchStart(e, box, box.dataset.filled, true); }, {passive:false});
-    box.addEventListener('click', function() { clickBox(box); });
-    row.appendChild(badge); row.appendChild(box); grid.appendChild(row);
-  });
-}
-
-function selectChip(chip, word) {
-  if (chip.classList.contains('selected')) { chip.classList.remove('selected'); selectedWord = null; clearReady(); return; }
-  document.querySelectorAll('.word-chip.selected').forEach(function(c){ c.classList.remove('selected'); });
-  chip.classList.add('selected'); selectedWord = word;
-  document.querySelectorAll('.slot-box').forEach(function(b){ b.classList.remove('ready'); if (!b.dataset.filled && !b.classList.contains('correct') && !b.classList.contains('wrong')) b.classList.add('ready'); });
-}
-function clickBox(box) {
-  if (box.classList.contains('correct') || box.classList.contains('wrong')) return;
-  if (box.dataset.filled) { returnWord(box.dataset.filled); clearSlot(box); if (selectedWord) box.classList.add('ready'); return; }
-  if (!selectedWord) return;
-  fillSlot(box, selectedWord); markUsed(selectedWord); selectedWord = null;
-  document.querySelectorAll('.word-chip.selected').forEach(function(c){ c.classList.remove('selected'); });
-  clearReady();
-}
-function clearReady() { document.querySelectorAll('.slot-box').forEach(function(b){ b.classList.remove('ready'); }); }
-function dropOnSlot(box) {
-  if (!dragWord) return;
-  if (box.classList.contains('correct') || box.classList.contains('wrong')) return;
-  var displaced = box.dataset.filled || null;
-  if (dragSource && dragSource.classList.contains('slot-box')) { clearSlot(dragSource); if (displaced) fillSlot(dragSource, displaced); }
-  else { markUsed(dragWord); if (displaced) returnWord(displaced); }
-  fillSlot(box, dragWord); dragWord = dragSource = null;
-}
-function fillSlot(box, word) { box.dataset.filled = word; box.textContent = word; box.className = 'slot-box filled'; box.setAttribute('draggable','true'); }
-function clearSlot(box) { delete box.dataset.filled; box.textContent = '—'; box.className = 'slot-box'; box.setAttribute('draggable','false'); }
-function markUsed(word) { document.querySelectorAll('.word-chip').forEach(function(c){ if (c.dataset.word === word) c.classList.add('used'); }); }
-function returnWord(word) { document.querySelectorAll('.word-chip').forEach(function(c){ if (c.dataset.word === word) c.classList.remove('used'); }); }
-
-function onTouchStart(e, el, word, isSlot) {
-  if (e.touches.length !== 1) return;
-  e.preventDefault();
-  var t = e.touches[0], rect = el.getBoundingClientRect();
-  touchWord = word; touchSource = {el:el, isSlot:isSlot};
-  touchOffX = t.clientX - rect.left; touchOffY = t.clientY - rect.top;
-  touchCloneEl.textContent = word;
-  touchCloneEl.style.left = (t.clientX - touchOffX) + 'px';
-  touchCloneEl.style.top  = (t.clientY - touchOffY) + 'px';
-  touchCloneEl.style.display = 'block';
-  el.style.opacity = '0.25';
-}
-document.addEventListener('touchmove', function(e) {
-  if (!touchWord) return;
-  e.preventDefault();
-  var t = e.touches[0];
-  touchCloneEl.style.left = (t.clientX - touchOffX) + 'px';
-  touchCloneEl.style.top  = (t.clientY - touchOffY) + 'px';
-}, {passive:false});
-document.addEventListener('touchend', function(e) {
-  if (!touchWord) return;
-  var t = e.changedTouches[0];
-  touchCloneEl.style.display = 'none';
-  touchSource.el.style.opacity = '';
-  var under = document.elementFromPoint(t.clientX, t.clientY);
-  var box = under ? under.closest('.slot-box') : null;
-  if (box && !box.classList.contains('correct') && !box.classList.contains('wrong')) {
-    var displaced = box.dataset.filled || null;
-    if (touchSource.isSlot) { clearSlot(touchSource.el); if (displaced) fillSlot(touchSource.el, displaced); }
-    else { markUsed(touchWord); if (displaced) returnWord(displaced); }
-    fillSlot(box, touchWord);
-  }
-  touchWord = touchSource = null;
 });
-
-function checkEinfach() {
-  var correct = 0, filled = 0;
-  document.querySelectorAll('.slot-box').forEach(function(box) {
-    var val = box.dataset.filled; if (!val) return;
-    filled++;
-    var n = parseInt(box.dataset.slot);
-    var part = PARTS[n - 1];
-    box.classList.remove('filled');
-    if (val === part.name) { box.classList.add('correct'); correct++; }
-    else box.classList.add('wrong');
-  });
-  showResult(correct, filled);
-}
-
-/* ---- MITTEL (Hotspot, nächstgelegenes Segment) ---- */
-var hsOrder = [], hsIndex = 0, hsMiss = 0;
-function buildMittel(body) {
-  hsOrder = shuffle(PARTS.slice()); hsIndex = 0; hsMiss = 0;
-  body.innerHTML = '<div class="hs-prompt" id="hsPrompt"></div>';
-  var hl = document.getElementById('hotspotLayer');
-  hl.classList.add('active'); hl.onclick = onHotspotClick;
-  if (DEBUG) drawDebugZones();
-  renderPrompt();
-}
-function renderPrompt() {
-  var prompt = document.getElementById('hsPrompt');
-  if (!prompt) return;
-  if (hsIndex >= hsOrder.length) {
-    prompt.innerHTML = '<span class="hs-progress">Fertig</span>Alle ' + hsOrder.length + ' Bestandteile gefunden!';
-    showResult(hsOrder.length, hsOrder.length, hsMiss);
-    return;
-  }
-  prompt.innerHTML =
-    '<span class="hs-progress">Bestandteil ' + (hsIndex+1) + ' von ' + hsOrder.length + '</span>' +
-    'Klicken Sie auf: <b>' + hsOrder[hsIndex].name + '</b>';
-}
-function onHotspotClick(e) {
-  var hl = document.getElementById('hotspotLayer');
-  var rect = hl.getBoundingClientRect();
-  var W = rect.width, H = rect.height;
-  var cx = e.clientX - rect.left;
-  var cy = e.clientY - rect.top;
-  if (DEBUG) {
-    document.getElementById('dbgReadout').textContent =
-      'Klick: cx:' + (cx/W*100).toFixed(1) + ', cy:' + (cy/H*100).toFixed(1);
-  }
-  if (hsIndex >= hsOrder.length) return;
-  var target = hsOrder[hsIndex];
-  var nearest = null, nearestZone = null, nd = Infinity;
-  PARTS.forEach(function(p) {
-    p.zones.forEach(function(z) {
-      var dx = cx - z.cx/100*W, dy = cy - z.cy/100*H;
-      var d = Math.sqrt(dx*dx + dy*dy);
-      if (d < nd) { nd = d; nearest = p; nearestZone = z; }
-    });
-  });
-  if (nearest === target && nd <= 0.25*W) {
-    var m = document.createElement('div');
-    m.className = 'hs-marker'; m.style.left = nearestZone.cx+'%'; m.style.top = nearestZone.cy+'%';
-    m.textContent = target.n; m.title = target.name;
-    hl.appendChild(m);
-    hsIndex++; renderPrompt();
-  } else {
-    hsMiss++;
-    var miss = document.createElement('div');
-    miss.className = 'hs-miss';
-    miss.style.left = (cx/W*100)+'%'; miss.style.top = (cy/H*100)+'%';
-    miss.textContent = '✗';
-    hl.appendChild(miss);
-    setTimeout(function() { if (miss.parentNode) miss.parentNode.removeChild(miss); }, 600);
-  }
-}
-function drawDebugZones() {
-  var hl = document.getElementById('hotspotLayer');
-  var w = hl.getBoundingClientRect().width || 460;
-  PARTS.forEach(function(p) {
-    p.zones.forEach(function(z) {
-      var d = document.createElement('div');
-      d.className = 'hs-zone-dbg';
-      d.style.left = z.cx+'%'; d.style.top = z.cy+'%';
-      var px = z.r/100*w*2; d.style.width = px+'px'; d.style.height = px+'px';
-      d.innerHTML = '<span>' + p.n + '</span>';
-      hl.appendChild(d);
-    });
-  });
-}
-
-/* ---- SCHWER ---- */
-function buildSchwer(body) {
-  var grid = document.createElement('div'); grid.className = 'slots-grid';
-  PARTS.forEach(function(p) {
-    var row = document.createElement('div'); row.className = 'slot-row';
-    row.innerHTML =
-      '<div class="slot-num">' + p.n + '</div>' +
-      '<div class="type-cell">' +
-        '<input class="type-input" id="ti-' + p.n + '" type="text" autocomplete="off" placeholder="Bestandteil ' + p.n + ' …">' +
-        '<div class="type-sol" id="sol-' + p.n + '" style="display:none;"></div>' +
-      '</div>';
-    grid.appendChild(row);
-  });
-  body.appendChild(grid);
-  PARTS.forEach(function(p) {
-    document.getElementById('ti-' + p.n).addEventListener('keydown', function(e) {
-      if (e.key !== 'Enter') return;
-      e.preventDefault();
-      var nx = document.getElementById('ti-' + (p.n + 1));
-      if (nx) nx.focus(); else checkLevel();
-    });
-  });
-}
-function checkSchwer() {
-  var correct = 0;
-  PARTS.forEach(function(p) {
-    var inp = document.getElementById('ti-' + p.n);
-    var sol = document.getElementById('sol-' + p.n);
-    inp.classList.remove('correct','wrong');
-    if (matchPart(inp.value, p)) { inp.classList.add('correct'); sol.style.display = 'none'; correct++; }
-    else { inp.classList.add('wrong'); sol.textContent = '→ ' + p.name; sol.style.display = 'block'; }
-  });
-  showResult(correct, PARTS.length);
-}
-
-/* ---- gemeinsam ---- */
-function checkLevel() {
-  if (level === 'einfach') checkEinfach();
-  else if (level === 'schwer') checkSchwer();
-}
-function showResult(correct, total, misses) {
-  var banner = document.getElementById('resultBanner');
-  if (correct === total) {
-    var extra = (misses !== undefined && misses > 0) ? ' (' + misses + ' Fehlklick' + (misses === 1 ? '' : 's') + ')' : '';
-    banner.textContent = 'Perfekt! Alle ' + total + ' Bestandteile richtig' + extra + '.';
-    banner.className = 'result-banner show perfect';
-  } else {
-    banner.textContent = correct + ' von ' + total + ' richtig. Schauen Sie sich die markierten nochmals an.';
-    banner.className = 'result-banner show partial';
-  }
-}
-
-setLevel('einfach');
 </script>
 </body>
 </html>

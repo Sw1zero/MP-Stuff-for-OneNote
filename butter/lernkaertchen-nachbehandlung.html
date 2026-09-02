@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kneten, Ausformen, Verpacken – Lernkärtchen</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .lk-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px 56px;
+    }
+
+    /* ---- Fortschritt ---- */
+    .progress-text {
+      font-size: 0.82rem;
+      color: var(--text-subtle);
+      margin-bottom: 6px;
+      text-align: center;
+    }
+    .progress-bar-wrap {
+      width: 440px;
+      max-width: 92vw;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--blue-dark);
+      border-radius: 2px;
+      transition: width 0.3s;
+    }
+
+    /* ---- Flip-Karte (K2-Frage/Antwort, höher wegen längerem Text) ---- */
+    .scene {
+      width: 440px;
+      max-width: 92vw;
+      height: 310px;
+      perspective: 900px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.45s ease;
+      position: relative;
+    }
+
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .card-front {
+      background: var(--surface);
+      justify-content: space-between;
+    }
+
+    .card-back {
+      background: var(--blue-dark);
+      color: #fff;
+      transform: rotateY(180deg);
+      justify-content: flex-start;
+    }
+
+    .card-category-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+      align-self: flex-start;
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .card-back .card-category-badge {
+      background: rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.9);
+    }
+
+    .card-question {
+      font-size: 0.97rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.5;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .card-hint {
+      font-size: 0.73rem;
+      color: var(--text-subtle);
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    .card-answer {
+      font-size: 0.93rem;
+      line-height: 1.65;
+      color: rgba(255,255,255,0.95);
+      margin-top: 4px;
+    }
+
+    .card-answer strong {
+      color: #fff;
+    }
+
+    /* ---- Steuerung ---- */
+    .controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .keyboard-hint {
+      font-size: 0.73rem;
+      color: var(--text-subtle);
+      text-align: center;
+      margin-top: 6px;
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+
+<header class="bzwu-header">
+  <div class="header-text">
+    <span class="school-badge">BZWU Wil-Uzwil · Milchpraktiker EBA · Butter</span>
+    <h1>Kneten, Ausformen, Verpacken – Lernkärtchen</h1>
+    <p>Karte anklicken oder Leertaste drücken zum Umdrehen.</p>
+  </div>
+  <div class="header-logos">
+    <img src="../assets/logos/bzwu.png" alt="BZWU" class="header-logo">
+    <img src="../assets/logos/milchtechnologen.svg" alt="Milchtechnologen" class="header-logo">
+  </div>
+</header>
+
+<main>
+<div class="lk-wrap">
+<a class="back-link" href="../index.html">&#8592; Alle Lerntools</a>
+
+  <div class="progress-text" id="progressText"></div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressBar"></div>
+  </div>
+
+  <div class="scene" id="scene" onclick="flipCard()">
+    <div class="card" id="card">
+      <div class="card-face card-front">
+        <span class="card-category-badge" id="frontLabel"></span>
+        <div class="card-question" id="frontQuestion"></div>
+        <div class="card-hint">Karte umdrehen für die Antwort</div>
+      </div>
+      <div class="card-face card-back">
+        <span class="card-category-badge" id="backLabel"></span>
+        <div class="card-answer" id="backAnswer"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-ghost"    onclick="prevCard()">&#8592; Zurück</button>
+    <button class="btn btn-success"  onclick="flipCard()">Umdrehen</button>
+    <button class="btn btn-ghost"    onclick="nextCard()">Weiter &#8594;</button>
+  </div>
+  <div class="controls">
+    <button class="btn btn-primary" onclick="shuffleCards()">&#8644; Mischen</button>
+  </div>
+  <p class="keyboard-hint">&#8592; &#8594; navigieren &nbsp;|&nbsp; Leertaste umdrehen &nbsp;|&nbsp; S mischen</p>
+
+</div>
+</main>
+
+<script>
+var ALL_CARDS = [
+  { cat: 'Kneten',
+    q: 'Was ist das Ziel des Vorknetens (Nasskneten)?',
+    a: 'Den <strong>Wassergehalt</strong> der Butter einstellen.'
+  },
+  { cat: 'Kneten',
+    q: 'Was ist das Ziel des Nachknetens (Trockenkneten)?',
+    a: 'Das <strong>Wasser fein verteilen</strong> in der Butter.'
+  },
+  { cat: 'Kneten',
+    q: 'Wie gross soll das Butterkorn idealerweise sein?',
+    a: '<strong>3 bis 5 mm</strong> Durchmesser (etwa Erbsengrösse).'
+  },
+  { cat: 'Kneten',
+    q: 'Wie viel Kühlwasser braucht es mindestens für das Butterkorn?',
+    a: '<strong>Mindestens die Hälfte</strong> der Rahmmenge.'
+  },
+  { cat: 'Kneten',
+    q: 'Welche Temperatur darf das Kühlwasser im Sommer und im Winter höchstens haben?',
+    a: 'Sommer: max. <strong>6 °C</strong>. Winter: max. <strong>10 °C</strong>.'
+  },
+  { cat: 'Kneten',
+    q: 'Wie lange muss das Kühlwasser mindestens einwirken?',
+    a: '<strong>Mindestens 5 Minuten</strong>.'
+  },
+  { cat: 'Kneten',
+    q: 'Welche 4 Faktoren müssen immer gleich bleiben, damit die Vorknetzeit den Wassergehalt zuverlässig einstellt?',
+    a: '<strong>Korngrösse, Kühlwassertemperatur, Kühlwassermenge, Kühlwassereinwirkungszeit</strong>.'
+  },
+  { cat: 'Kneten',
+    q: 'Was passiert, wenn man zu lange trockenknetet?',
+    a: 'Der <strong>Wasserfilm im Fertigerinnern löst sich ab</strong>. Die Butter beginnt zu kleben.'
+  },
+  { cat: 'Kneten',
+    q: 'Warum ist eine feine Wasserverteilung in der Butter wichtig?',
+    a: 'In grossen Wasseransammlungen können sich <strong>Mikroorganismen rascher vermehren</strong>. Das lässt die Butter schneller verderben.'
+  },
+  { cat: 'Ausformen',
+    q: 'Warum werden Model, Geräte und Hände zuerst mit heissem, danach mit kaltem Wasser behandelt?',
+    a: '<strong>Heisses Wasser</strong> entfettet die Oberflächen und öffnet die Poren. <strong>Kaltes Wasser</strong> bildet einen Wasserfilm, der das Kleben der Butter verhindert.'
+  },
+  { cat: 'Ausformen',
+    q: 'Welches Holz eignet sich am besten als Unterlage zum Modeln?',
+    a: '<strong>Ahornholz</strong>. Es ist wenig klebend.'
+  },
+  { cat: 'Ausformen',
+    q: 'Nennen Sie 3 Schritte bei der Modelherstellung.',
+    a: 'Mit der Handkante ein Stück Butter abtrennen. Die Oberfläche durch <strong>Rollbewegungen glattmachen</strong>. Die Butter ins Model pressen und mit dem Abstreichholz abstreichen.'
+  },
+  { cat: 'Ausformen',
+    q: 'Nennen Sie 2 Hinweise für ansehnliche Buttermodel.',
+    a: 'Die <strong>Ecken sauber ausformen</strong> und die Butter <strong>in der Verpackungsfolie zentrieren</strong>.'
+  },
+  { cat: 'Verpackung',
+    q: 'Welche 2 Verpackungsarten gibt es für Butter?',
+    a: '<strong>Wickelfolien</strong> (Einwickler) und <strong>Becher oder Schalen</strong>.'
+  },
+  { cat: 'Verpackung',
+    q: 'Nennen Sie 4 Anforderungen an die Verpackung von Butter.',
+    a: '<strong>Lebensmitteltauglich, lichtdicht, wasserdampfdicht, umweltverträglich</strong> zu entsorgen.'
+  },
+  { cat: 'Verpackung',
+    q: 'Warum muss die Verpackung von Butter lichtdicht sein?',
+    a: 'Lichtdicht verhindert die <strong>Oxidation</strong> der Butter (talgiger, oxidativer Geschmack).'
+  },
+  { cat: 'Verpackung',
+    q: 'Warum muss die Verpackung von Butter wasserdampfdicht sein?',
+    a: 'Wasserdampfdicht verhindert das <strong>Austrocknen</strong> der Butter.'
+  },
+  { cat: 'Verpackung',
+    q: 'Nennen Sie die 3 Arbeitsschritte, die nach dem Buttern (Butterkorn herstellen) folgen.',
+    a: '<strong>Kneten, Ausformen, Verpacken</strong>.'
+  }
+];
+
+var CATEGORY_COLORS = {
+  'Kneten':     { bg: '#dbeeff', fg: '#1e4e8c' },
+  'Ausformen':  { bg: '#dcfce7', fg: '#15803d' },
+  'Verpackung': { bg: '#fef9c3', fg: '#854d0e' }
+};
+
+var deck = ALL_CARDS.slice();
+var currentIndex = 0;
+var isFlipped = false;
+
+function applyBadge(el, cat) {
+  var colors = CATEGORY_COLORS[cat] || { bg: '#dcfce7', fg: '#15803d' };
+  el.textContent = cat;
+  el.style.background = colors.bg;
+  el.style.color = colors.fg;
+}
+
+function showCard(animate) {
+  var card = document.getElementById('card');
+
+  function render() {
+    isFlipped = false;
+    card.classList.remove('flipped');
+
+    var c = deck[currentIndex];
+    applyBadge(document.getElementById('frontLabel'), c.cat);
+    applyBadge(document.getElementById('backLabel'), c.cat);
+    document.getElementById('frontQuestion').textContent = c.q;
+    document.getElementById('backAnswer').innerHTML = c.a;
+
+    var total = deck.length;
+    document.getElementById('progressText').textContent = 'Karte ' + (currentIndex + 1) + ' von ' + total;
+    document.getElementById('progressBar').style.width = ((currentIndex + 1) / total * 100) + '%';
+  }
+
+  if (animate) {
+    var scene = document.getElementById('scene');
+    scene.style.opacity = '0';
+    scene.style.transition = 'opacity 0.15s';
+    setTimeout(function() {
+      render();
+      scene.style.opacity = '1';
+    }, 150);
+  } else {
+    render();
+  }
+}
+
+function flipCard() {
+  isFlipped = !isFlipped;
+  document.getElementById('card').classList.toggle('flipped', isFlipped);
+}
+
+function nextCard() {
+  if (currentIndex < deck.length - 1) {
+    currentIndex++;
+    showCard(true);
+  }
+}
+
+function prevCard() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    showCard(true);
+  }
+}
+
+function shuffleCards() {
+  for (var i = deck.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = deck[i]; deck[i] = deck[j]; deck[j] = tmp;
+  }
+  currentIndex = 0;
+  showCard(true);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+  if (e.key === 'ArrowRight') nextCard();
+  if (e.key === 'ArrowLeft')  prevCard();
+  if (e.key === 's' || e.key === 'S') shuffleCards();
+});
+
+showCard(false);
+</script>
+<footer class="bzwu-footer">
+  BZWU Wil-Uzwil · Milchpraktiker EBA · Philipp Neukomm
+</footer>
+
+</body>
+</html>

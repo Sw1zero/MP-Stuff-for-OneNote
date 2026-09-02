@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fettberechnung Butter – Fachrechner</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .calc-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px 56px;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    .score-bar {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 24px;
+      justify-content: center;
+    }
+    .score-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .score-number {
+      font-size: 1.6rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .score-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-subtle);
+    }
+    .score-correct { color: #38a169; }
+    .score-wrong   { color: var(--red); }
+    .score-serie   { color: var(--blue-dark); }
+
+    .question-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 28px;
+      width: 100%;
+      margin-bottom: 16px;
+    }
+    .question-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .milk-table {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+    .milk-col {
+      flex: 1;
+      background: #f8fafc;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 8px;
+      text-align: center;
+    }
+    .milk-col.is-target {
+      border-color: var(--blue-light);
+      background: var(--blue-tint);
+    }
+    .milk-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-subtle);
+      margin-bottom: 8px;
+    }
+    .milk-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .milk-value.dash {
+      color: var(--text-subtle);
+      font-weight: 400;
+    }
+
+    .answer-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .answer-input {
+      font-family: var(--font);
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text);
+      width: 110px;
+      padding: 5px 8px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: #fff;
+      text-align: right;
+      transition: border-color 0.15s;
+    }
+    .answer-input:focus {
+      outline: none;
+      border-color: var(--blue);
+    }
+    .answer-input.correct { border-color: #38a169; background: #f0fff4; }
+    .answer-input.wrong   { border-color: var(--red); background: var(--red-light); }
+
+    .feedback-box {
+      border-radius: var(--radius-md);
+      padding: 13px 16px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      display: none;
+      margin-bottom: 16px;
+    }
+    .feedback-box.correct { display: block; background: #f0fff4; border: 1px solid #9ae6b4; color: #276749; }
+    .feedback-box.wrong   { display: block; background: var(--red-light); border: 1px solid #fca5a5; color: var(--red-dark); }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+
+    .ref-card {
+      width: 100%;
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 18px 22px;
+      margin-top: 20px;
+    }
+    .ref-title {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-subtle);
+      margin-bottom: 10px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ref-body { display: none; font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+    .ref-body.open { display: block; }
+  </style>
+</head>
+<body>
+
+<header class="bzwu-header">
+  <div class="header-text">
+    <span class="school-badge">BZWU Wil-Uzwil · Milchpraktiker EBA · Butter</span>
+    <h1>Fettberechnung – Fachrechner</h1>
+    <p>Berechnen Sie die fehlende Menge und drücken Sie Enter.</p>
+  </div>
+  <div class="header-logos">
+    <img src="../assets/logos/bzwu.png" alt="BZWU" class="header-logo">
+    <img src="../assets/logos/milchtechnologen.svg" alt="Milchtechnologen" class="header-logo">
+  </div>
+</header>
+
+<main>
+<div class="calc-wrap">
+  <a class="back-link" href="../index.html">&#8592; Alle Lerntools</a>
+
+  <div class="score-bar">
+    <div class="score-item">
+      <span class="score-number score-correct" id="scoreCorrect">0</span>
+      <span class="score-label">Richtig</span>
+    </div>
+    <div class="score-item">
+      <span class="score-number score-wrong" id="scoreWrong">0</span>
+      <span class="score-label">Falsch</span>
+    </div>
+    <div class="score-item">
+      <span class="score-number score-serie" id="scoreSerie">0</span>
+      <span class="score-label">Serie</span>
+    </div>
+  </div>
+
+  <div class="question-card">
+    <span class="question-badge">Vollmilch – Rahm – Magermilch</span>
+
+    <div class="milk-table">
+      <div class="milk-col" id="colVollmilch">
+        <div class="milk-label">Vollmilch</div>
+        <div class="milk-value" id="valVollmilch">—</div>
+      </div>
+      <div class="milk-col" id="colRahm">
+        <div class="milk-label">Rahm</div>
+        <div class="milk-value" id="valRahm">—</div>
+      </div>
+      <div class="milk-col" id="colMagermilch">
+        <div class="milk-label">Magermilch</div>
+        <div class="milk-value" id="valMagermilch">—</div>
+      </div>
+    </div>
+
+    <div class="answer-row">
+      <input class="answer-input" type="text" id="answerInput"
+             inputmode="decimal" autocomplete="off"
+             placeholder="?"
+             onkeydown="if(event.key==='Enter') checkAnswer()">
+      <span>kg</span>
+    </div>
+  </div>
+
+  <div class="feedback-box" id="feedbackBox"></div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="checkBtn" onclick="checkAnswer()">Prüfen</button>
+    <button class="btn btn-ghost"   id="nextBtn"  onclick="nextQuestion()" style="display:none">Nächste Aufgabe &#8594;</button>
+  </div>
+
+  <div class="ref-card">
+    <div class="ref-title" onclick="toggleRef()">
+      Anhaltspunkte
+      <span id="refArrow">&#9660;</span>
+    </div>
+    <div class="ref-body" id="refBody">
+      Aus 100 kg Vollmilch gewinnt man rund <strong>11 kg Rahm</strong>.<br>
+      Der Rest bleibt <strong>Magermilch</strong> (rund 89 kg pro 100 kg Vollmilch).<br><br>
+      Rahm ≈ Vollmilch × 0.11<br>
+      Magermilch ≈ Vollmilch × 0.89<br>
+      Vollmilch ≈ Rahm ÷ 0.11 ≈ Magermilch ÷ 0.89
+    </div>
+  </div>
+
+</div>
+</main>
+
+<script>
+var LABELS = { V: 'Vollmilch', R: 'Rahm', M: 'Magermilch' };
+var SCENARIOS = [
+  { given: 'V', ask: 'R' },
+  { given: 'V', ask: 'M' },
+  { given: 'R', ask: 'V' },
+  { given: 'R', ask: 'M' },
+  { given: 'M', ask: 'V' },
+  { given: 'M', ask: 'R' }
+];
+
+var current       = null;
+var answered      = false;
+var scoreCorrect  = 0;
+var scoreWrong    = 0;
+var streak        = 0;
+var lastScenario  = -1;
+
+function fmt(n) {
+  return String(Math.round(n));
+}
+
+function loadQuestion() {
+  answered = false;
+
+  var vollmilch = (2 + Math.floor(Math.random() * 89)) * 100; // 200 - 9000 kg
+  var rahm = Math.round(vollmilch * 0.11);
+  var magermilch = vollmilch - rahm;
+
+  var sIdx;
+  do { sIdx = Math.floor(Math.random() * SCENARIOS.length); } while (SCENARIOS.length > 1 && sIdx === lastScenario);
+  lastScenario = sIdx;
+  var scenario = SCENARIOS[sIdx];
+
+  current = {
+    values: { V: vollmilch, R: rahm, M: magermilch },
+    given: scenario.given,
+    ask: scenario.ask,
+    answer: { V: vollmilch, R: rahm, M: magermilch }[scenario.ask]
+  };
+
+  ['V', 'R', 'M'].forEach(function(key) {
+    var colId = key === 'V' ? 'colVollmilch' : (key === 'R' ? 'colRahm' : 'colMagermilch');
+    var valId = key === 'V' ? 'valVollmilch' : (key === 'R' ? 'valRahm' : 'valMagermilch');
+    var col = document.getElementById(colId);
+    var val = document.getElementById(valId);
+    col.classList.remove('is-target');
+    if (key === current.given) {
+      val.textContent = fmt(current.values[key]) + ' kg';
+      val.classList.remove('dash');
+    } else if (key === current.ask) {
+      val.textContent = '?';
+      val.classList.remove('dash');
+      col.classList.add('is-target');
+    } else {
+      val.textContent = '–';
+      val.classList.add('dash');
+    }
+  });
+
+  var inp = document.getElementById('answerInput');
+  inp.value = '';
+  inp.className = 'answer-input';
+  inp.disabled = false;
+  inp.focus();
+
+  var fb = document.getElementById('feedbackBox');
+  fb.className = 'feedback-box';
+  fb.textContent = '';
+
+  document.getElementById('checkBtn').style.display = '';
+  document.getElementById('nextBtn').style.display = 'none';
+}
+
+function rechenweg() {
+  var g = current.given, a = current.ask, v = current.values;
+  if (g === 'V' && a === 'R') return LABELS.R + ' ≈ 11% von ' + fmt(v.V) + ' kg = ' + fmt(v.R) + ' kg.';
+  if (g === 'V' && a === 'M') return LABELS.M + ' = ' + fmt(v.V) + ' kg − ' + fmt(v.R) + ' kg (Rahm) = ' + fmt(v.M) + ' kg.';
+  if (g === 'R' && a === 'V') return LABELS.V + ' = ' + fmt(v.R) + ' kg ÷ 0.11 = ' + fmt(v.V) + ' kg.';
+  if (g === 'R' && a === 'M') return 'Zuerst ' + LABELS.V + ' (' + fmt(v.R) + ' kg ÷ 0.11 = ' + fmt(v.V) + ' kg), dann ' + LABELS.M + ' = ' + fmt(v.V) + ' − ' + fmt(v.R) + ' = ' + fmt(v.M) + ' kg.';
+  if (g === 'M' && a === 'V') return LABELS.V + ' = ' + fmt(v.M) + ' kg ÷ 0.89 = ' + fmt(v.V) + ' kg.';
+  if (g === 'M' && a === 'R') return 'Zuerst ' + LABELS.V + ' (' + fmt(v.M) + ' kg ÷ 0.89 = ' + fmt(v.V) + ' kg), dann ' + LABELS.R + ' = ' + fmt(v.V) + ' − ' + fmt(v.M) + ' = ' + fmt(v.R) + ' kg.';
+}
+
+function checkAnswer() {
+  if (answered) return;
+
+  var inp = document.getElementById('answerInput');
+  var raw = inp.value.replace(',', '.').trim();
+  var val = parseFloat(raw);
+
+  if (isNaN(val) || raw === '') {
+    inp.focus();
+    return;
+  }
+
+  answered = true;
+  inp.disabled = true;
+
+  var correct = Math.abs(val - current.answer) <= 1;
+  var fb = document.getElementById('feedbackBox');
+
+  if (correct) {
+    scoreCorrect++;
+    streak++;
+    inp.classList.add('correct');
+    fb.className = 'feedback-box correct';
+    fb.innerHTML = '<strong>&#10003; Richtig!</strong> ' + rechenweg();
+  } else {
+    scoreWrong++;
+    streak = 0;
+    inp.classList.add('wrong');
+    fb.className = 'feedback-box wrong';
+    fb.innerHTML = '<strong>&#10007; Nicht ganz.</strong> Lösung: <strong>' + fmt(current.answer) + ' kg</strong><br>' + rechenweg();
+  }
+
+  document.getElementById('checkBtn').style.display = 'none';
+  document.getElementById('nextBtn').style.display = '';
+
+  updateScore();
+}
+
+function nextQuestion() {
+  loadQuestion();
+}
+
+function updateScore() {
+  document.getElementById('scoreCorrect').textContent = scoreCorrect;
+  document.getElementById('scoreWrong').textContent = scoreWrong;
+  document.getElementById('scoreSerie').textContent = streak;
+}
+
+function toggleRef() {
+  var body = document.getElementById('refBody');
+  var arrow = document.getElementById('refArrow');
+  var open = body.classList.toggle('open');
+  arrow.textContent = open ? '▲' : '▼';
+}
+
+loadQuestion();
+</script>
+<footer class="bzwu-footer">
+  BZWU Wil-Uzwil · Milchpraktiker EBA · Philipp Neukomm
+</footer>
+
+</body>
+</html>

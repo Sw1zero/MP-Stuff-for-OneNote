@@ -6,152 +6,7 @@
   <title>Mozzarella – Lernkärtchen</title>
   <link rel="stylesheet" href="../style.css">
   <style>
-    .lk-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 32px 16px 56px;
-    }
-
-    /* ---- Fortschritt ---- */
-    .progress-text {
-      font-size: 0.82rem;
-      color: var(--text-subtle);
-      margin-bottom: 6px;
-      text-align: center;
-    }
-    .progress-bar-wrap {
-      width: 440px;
-      max-width: 92vw;
-      height: 4px;
-      background: var(--border);
-      border-radius: 2px;
-      margin-bottom: 20px;
-      overflow: hidden;
-    }
-    .progress-bar-fill {
-      height: 100%;
-      background: var(--blue-dark);
-      border-radius: 2px;
-      transition: width 0.3s;
-    }
-
-    /* ---- Kategorie-Filter ---- */
-    .filter-wrap {
-      margin-bottom: 24px;
-      width: 440px;
-      max-width: 92vw;
-    }
-
-    /* ---- Flip-Karte ---- */
-    .scene {
-      width: 440px;
-      max-width: 92vw;
-      height: 310px;
-      perspective: 900px;
-      cursor: pointer;
-      margin-bottom: 20px;
-    }
-
-    .card {
-      width: 100%;
-      height: 100%;
-      transform-style: preserve-3d;
-      transition: transform 0.45s ease;
-      position: relative;
-    }
-
-    .card.flipped {
-      transform: rotateY(180deg);
-    }
-
-    .card-face {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-md);
-      padding: 24px 28px;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .card-front {
-      background: var(--surface);
-      justify-content: space-between;
-    }
-
-    .card-back {
-      background: var(--blue-dark);
-      color: #fff;
-      transform: rotateY(180deg);
-      justify-content: flex-start;
-    }
-
-    .card-category-badge {
-      display: inline-block;
-      font-size: 0.65rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      padding: 3px 10px;
-      border-radius: 20px;
-      margin-bottom: 14px;
-      align-self: flex-start;
-    }
-
-    .card-back .card-category-badge {
-      background: rgba(255,255,255,0.18);
-      color: rgba(255,255,255,0.9);
-    }
-
-    .card-term {
-      font-size: 1.05rem;
-      font-weight: 600;
-      color: var(--text);
-      line-height: 1.55;
-      flex: 1;
-      display: flex;
-      align-items: center;
-    }
-
-    .card-hint {
-      font-size: 0.73rem;
-      color: var(--text-subtle);
-      text-align: center;
-      margin-top: 12px;
-    }
-
-    .card-explanation {
-      font-size: 0.93rem;
-      line-height: 1.65;
-      color: rgba(255,255,255,0.95);
-      margin-top: 4px;
-    }
-
-    .card-explanation strong {
-      color: #fff;
-    }
-
-    /* ---- Steuerung ---- */
-    .controls {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
-
-    .keyboard-hint {
-      font-size: 0.73rem;
-      color: var(--text-subtle);
-      text-align: center;
-      margin-top: 6px;
-      margin-bottom: 0;
-    }
+    .scene { height: 310px; }
   </style>
 </head>
 <body>
@@ -186,7 +41,7 @@
     </div>
   </div>
 
-  <div class="scene" id="scene" onclick="flipCard()">
+  <div class="scene" id="scene" onclick="LK.flip()">
     <div class="card" id="card">
       <div class="card-face card-front">
         <span class="card-category-badge" id="frontBadge"></span>
@@ -200,19 +55,30 @@
     </div>
   </div>
 
+  <div class="confirm-row" id="confirmRow" hidden>
+    <button class="btn btn-danger"  onclick="LK.markDontKnow()">Wusste ich nicht</button>
+    <button class="btn btn-success" onclick="LK.markKnown()">Wusste ich</button>
+  </div>
+
+  <div class="lk-done" id="doneMessage" hidden>
+    <p class="lk-done-text">Alle Karten gewusst.</p>
+    <button class="btn btn-primary" onclick="LK.restart()">Nochmals von vorne</button>
+  </div>
+
   <div class="controls">
-    <button class="btn btn-ghost"    onclick="prevCard()">&#8592; Zurück</button>
-    <button class="btn btn-success"  onclick="flipCard()">Umdrehen</button>
-    <button class="btn btn-ghost"    onclick="nextCard()">Weiter &#8594;</button>
+    <button class="btn btn-ghost"    onclick="LK.prev()">&#8592; Zurück</button>
+    <button class="btn btn-success"  onclick="LK.flip()">Umdrehen</button>
+    <button class="btn btn-ghost"    onclick="LK.next()">Weiter &#8594;</button>
   </div>
   <div class="controls">
-    <button class="btn btn-primary" onclick="shuffleCards()">&#8644; Mischen</button>
+    <button class="btn btn-primary" onclick="LK.shuffle()">&#8644; Mischen</button>
   </div>
   <p class="keyboard-hint">&#8592; &#8594; navigieren &nbsp;|&nbsp; Leertaste umdrehen &nbsp;|&nbsp; S mischen</p>
 
 </div>
 </main>
 
+<script src="../assets/lernkaertchen-engine.js"></script>
 <script>
 var CATEGORY_COLORS = {
   'rohstoff':    { bg: '#fef9c3', fg: '#854d0e' },
@@ -316,104 +182,33 @@ var ALL_CARDS = [
 ];
 
 var currentFilter = 'alle';
-var deck = [];
-var currentIndex = 0;
-var isFlipped = false;
+
+function cardsForFilter(f) {
+  return f === 'alle' ? ALL_CARDS.slice() : ALL_CARDS.filter(function(c) { return c.cat === f; });
+}
+
+function renderCard(c) {
+  var col = CATEGORY_COLORS[c.cat];
+
+  var fb = document.getElementById('frontBadge');
+  fb.textContent = CATEGORY_LABELS[c.cat];
+  fb.style.background = col.bg;
+  fb.style.color = col.fg;
+
+  document.getElementById('frontTerm').textContent = c.front;
+
+  document.getElementById('backBadge').textContent = CATEGORY_LABELS[c.cat];
+  document.getElementById('backText').innerHTML = c.back;
+}
 
 function setFilter(f) {
   currentFilter = f;
   document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
   document.getElementById('f-' + f).classList.add('active');
-  buildDeck();
-  currentIndex = 0;
-  showCard(false);
+  LK.setCards(cardsForFilter(f));
 }
 
-function buildDeck() {
-  if (currentFilter === 'alle') {
-    deck = ALL_CARDS.slice();
-  } else {
-    deck = ALL_CARDS.filter(function(c) { return c.cat === currentFilter; });
-  }
-}
-
-function showCard(animate) {
-  var card = document.getElementById('card');
-
-  function render() {
-    isFlipped = false;
-    card.classList.remove('flipped');
-
-    var c = deck[currentIndex];
-    var col = CATEGORY_COLORS[c.cat];
-
-    var fb = document.getElementById('frontBadge');
-    fb.textContent = CATEGORY_LABELS[c.cat];
-    fb.style.background = col.bg;
-    fb.style.color = col.fg;
-
-    document.getElementById('frontTerm').textContent = c.front;
-
-    var bb = document.getElementById('backBadge');
-    bb.textContent = CATEGORY_LABELS[c.cat];
-
-    document.getElementById('backText').innerHTML = c.back;
-
-    var total = deck.length;
-    document.getElementById('progressText').textContent = 'Karte ' + (currentIndex + 1) + ' von ' + total;
-    document.getElementById('progressBar').style.width = ((currentIndex + 1) / total * 100) + '%';
-  }
-
-  if (animate) {
-    var scene = document.getElementById('scene');
-    scene.style.opacity = '0';
-    scene.style.transition = 'opacity 0.15s';
-    setTimeout(function() {
-      render();
-      scene.style.opacity = '1';
-    }, 150);
-  } else {
-    render();
-  }
-}
-
-function flipCard() {
-  isFlipped = !isFlipped;
-  document.getElementById('card').classList.toggle('flipped', isFlipped);
-}
-
-function nextCard() {
-  if (currentIndex < deck.length - 1) {
-    currentIndex++;
-    showCard(true);
-  }
-}
-
-function prevCard() {
-  if (currentIndex > 0) {
-    currentIndex--;
-    showCard(true);
-  }
-}
-
-function shuffleCards() {
-  for (var i = deck.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var tmp = deck[i]; deck[i] = deck[j]; deck[j] = tmp;
-  }
-  currentIndex = 0;
-  showCard(true);
-}
-
-document.addEventListener('keydown', function(e) {
-  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
-  if (e.key === 'ArrowRight') nextCard();
-  if (e.key === 'ArrowLeft')  prevCard();
-  if (e.key === 's' || e.key === 'S') shuffleCards();
-});
-
-buildDeck();
-showCard(false);
+var LK = LKEngine.init({ cards: cardsForFilter(currentFilter), render: renderCard });
 </script>
 <footer class="bzwu-footer">
   BZWU Wil-Uzwil · Milchpraktiker EBA · Philipp Neukomm

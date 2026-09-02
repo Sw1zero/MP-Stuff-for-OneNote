@@ -398,3 +398,199 @@ body {
 .badge-challenge { background: #f7dee0; color: #b32a2a; }  /* rot = Challenge */
 
 .btn:disabled { opacity: 0.35; cursor: default; box-shadow: none; transform: none; }
+
+/* ============================================================
+   Lernkärtchen-Engine (Card-Flip, Fortschritt, Bestätigung)
+   Genutzt von: butter/lernkaertchen-*.html,
+                frischkaese/lernkaertchen-mozzarella.html
+   Alles unter .lk-wrap skaliert, damit .card-face/.controls/... aus
+   anderen Tools (z.B. Memory, Quiz) unberührt bleiben.
+   ============================================================ */
+
+.lk-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px 56px;
+}
+
+/* ---- Fortschritt ---- */
+.lk-wrap .progress-text {
+  font-size: 0.82rem;
+  color: var(--text-subtle);
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.lk-wrap .progress-bar-wrap {
+  width: 440px;
+  max-width: 92vw;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.lk-wrap .progress-bar-fill {
+  height: 100%;
+  background: var(--blue-dark);
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+/* ---- Kategorie-Filter (nur Tools mit Filter) ---- */
+.lk-wrap .filter-wrap {
+  margin-bottom: 24px;
+  width: 440px;
+  max-width: 92vw;
+}
+
+/* ---- Flip-Karte ---- */
+.lk-wrap .scene {
+  width: 440px;
+  max-width: 92vw;
+  perspective: 900px;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.lk-wrap .card {
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.45s ease;
+  position: relative;
+}
+
+.lk-wrap .card.flipped {
+  transform: rotateY(180deg);
+}
+
+.lk-wrap .card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.lk-wrap .card-front {
+  background: var(--surface);
+  justify-content: space-between;
+}
+
+.lk-wrap .card-back {
+  background: var(--blue-dark);
+  color: #fff;
+  transform: rotateY(180deg);
+  justify-content: flex-start;
+}
+
+.lk-wrap .card-category-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+  align-self: flex-start;
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.lk-wrap .card-back .card-category-badge {
+  background: rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.9);
+}
+
+.lk-wrap .card-question,
+.lk-wrap .card-term {
+  color: var(--text);
+  line-height: 1.5;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.lk-wrap .card-question { font-size: 0.97rem; font-weight: 700; }
+.lk-wrap .card-term      { font-size: 1.05rem; font-weight: 600; line-height: 1.55; }
+
+.lk-wrap .card-hint {
+  font-size: 0.73rem;
+  color: var(--text-subtle);
+  text-align: center;
+  margin-top: 12px;
+}
+
+.lk-wrap .card-answer,
+.lk-wrap .card-explanation {
+  font-size: 0.93rem;
+  line-height: 1.65;
+  color: rgba(255,255,255,0.95);
+  margin-top: 4px;
+}
+
+.lk-wrap .card-answer strong,
+.lk-wrap .card-explanation strong {
+  color: #fff;
+}
+
+/* ---- Steuerung ---- */
+.lk-wrap .controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.lk-wrap .keyboard-hint {
+  font-size: 0.73rem;
+  color: var(--text-subtle);
+  text-align: center;
+  margin-top: 6px;
+  margin-bottom: 0;
+}
+
+/* ---- Richtig/Falsch-Bestätigung ---- */
+.lk-wrap .confirm-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.lk-wrap .lk-done {
+  width: 440px;
+  max-width: 92vw;
+  text-align: center;
+  padding: 48px 16px;
+}
+
+.lk-wrap .lk-done-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 18px;
+}
+
+.lk-wrap [hidden] {
+  display: none;
+}
+
+.btn-danger {
+  background: var(--red);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(204,51,51,0.25);
+}
+
+.btn-danger:hover { background: var(--red-dark); }

@@ -248,6 +248,7 @@
 </div>
 </main>
 
+<script src="../assets/quiz-engine.js"></script>
 <script>
 var ALL_QUESTIONS = [
   { q: 'Was passiert bei der mikrobiologischen Rahmreifung?',
@@ -302,154 +303,15 @@ var ALL_QUESTIONS = [
   }
 ];
 
-var deck = [];
-var currentIndex = 0;
-var answered = false;
-var scoreCorrect = 0;
-var scoreWrong = 0;
-var scoreSerie = 0;
-
-function buildDeck() {
-  deck = ALL_QUESTIONS.slice();
-  for (var i = deck.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var tmp = deck[i]; deck[i] = deck[j]; deck[j] = tmp;
+QuizEngine.init({
+  questions: ALL_QUESTIONS,
+  messages: {
+    excellent: 'Ausgezeichnet! Sie kennen die mikrobiologische Rahmreifung sehr gut.',
+    good: 'Gut gemacht! Noch ein paar Fragen üben und Sie sind top.',
+    ok: 'Nicht schlecht. Schauen Sie das Lehrmittel nochmals an.',
+    poor: 'Schauen Sie das Lehrmittel nochmals an. Dann klappt es besser.'
   }
-}
-
-function resetQuiz() {
-  scoreCorrect = 0;
-  scoreWrong = 0;
-  scoreSerie = 0;
-  updateScoreBar();
-  buildDeck();
-  currentIndex = 0;
-  document.getElementById('endScreen').classList.remove('visible');
-  document.getElementById('questionCard').style.display = '';
-  document.getElementById('progressText').style.display = '';
-  document.getElementById('progressBar').parentElement.style.display = '';
-  showQuestion();
-}
-
-function restartQuiz() {
-  resetQuiz();
-}
-
-function updateScoreBar() {
-  document.getElementById('scoreCorrect').textContent = scoreCorrect;
-  document.getElementById('scoreWrong').textContent = scoreWrong;
-  document.getElementById('scoreSerie').textContent = scoreSerie;
-}
-
-function showQuestion() {
-  answered = false;
-  document.getElementById('feedback').className = 'feedback';
-  document.getElementById('quizNav').style.display = 'none';
-
-  var q = deck[currentIndex];
-  document.getElementById('questionText').textContent = q.q;
-
-  var answersDiv = document.getElementById('answers');
-  answersDiv.innerHTML = '';
-
-  var indices = [0, 1, 2, 3];
-  for (var i = indices.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var tmp = indices[i]; indices[i] = indices[j]; indices[j] = tmp;
-  }
-
-  for (var k = 0; k < indices.length; k++) {
-    (function(optIdx) {
-      var btn = document.createElement('button');
-      btn.className = 'answer-btn';
-      btn.textContent = q.options[optIdx];
-      btn.onclick = function() { checkAnswer(optIdx); };
-      answersDiv.appendChild(btn);
-    })(indices[k]);
-  }
-
-  var total = deck.length;
-  document.getElementById('progressText').textContent = 'Frage ' + (currentIndex + 1) + ' von ' + total;
-  document.getElementById('progressBar').style.width = ((currentIndex + 1) / total * 100) + '%';
-}
-
-function checkAnswer(selectedIdx) {
-  if (answered) return;
-  answered = true;
-
-  var q = deck[currentIndex];
-  var isCorrect = (selectedIdx === q.correct);
-
-  document.querySelectorAll('.answer-btn').forEach(function(b) {
-    b.disabled = true;
-    var idx = q.options.indexOf(b.textContent);
-    if (idx === q.correct) {
-      b.classList.add('correct');
-    } else if (idx === selectedIdx && !isCorrect) {
-      b.classList.add('wrong');
-    }
-  });
-
-  if (isCorrect) {
-    scoreCorrect++;
-    scoreSerie++;
-  } else {
-    scoreWrong++;
-    scoreSerie = 0;
-  }
-  updateScoreBar();
-
-  var feedback = document.getElementById('feedback');
-  var feedbackTitle = document.getElementById('feedbackTitle');
-
-  if (isCorrect) {
-    feedback.className = 'feedback correct';
-    feedbackTitle.textContent = 'Richtig!';
-  } else {
-    feedback.className = 'feedback wrong';
-    feedbackTitle.textContent = 'Falsch. Richtig wäre: ' + q.options[q.correct];
-  }
-  document.getElementById('feedbackText').textContent = q.explanation;
-
-  var nav = document.getElementById('quizNav');
-  nav.style.display = 'flex';
-  document.getElementById('nextBtn').textContent =
-    (currentIndex >= deck.length - 1) ? 'Ergebnis anzeigen' : 'Weiter →';
-}
-
-function nextQuestion() {
-  currentIndex++;
-  if (currentIndex >= deck.length) {
-    showEndScreen();
-  } else {
-    showQuestion();
-  }
-}
-
-function showEndScreen() {
-  document.getElementById('questionCard').style.display = 'none';
-  document.getElementById('feedback').className = 'feedback';
-  document.getElementById('quizNav').style.display = 'none';
-  document.getElementById('progressText').style.display = 'none';
-  document.getElementById('progressBar').parentElement.style.display = 'none';
-
-  var total = deck.length;
-  var pct = Math.round(scoreCorrect / total * 100);
-
-  document.getElementById('endScore').textContent = scoreCorrect + ' von ' + total + ' richtig';
-
-  var msg;
-  if (pct >= 90)      msg = 'Ausgezeichnet! Sie kennen die mikrobiologische Rahmreifung sehr gut.';
-  else if (pct >= 70) msg = 'Gut gemacht! Noch ein paar Fragen üben und Sie sind top.';
-  else if (pct >= 50) msg = 'Nicht schlecht. Schauen Sie das Lehrmittel nochmals an.';
-  else                msg = 'Schauen Sie das Lehrmittel nochmals an. Dann klappt es besser.';
-
-  document.getElementById('endText').textContent = pct + ' % richtig. ' + msg;
-  document.getElementById('endScreen').classList.add('visible');
-}
-
-buildDeck();
-showQuestion();
+});
 </script>
 <footer class="bzwu-footer">
   BZWU Wil-Uzwil · Milchpraktiker EBA · Philipp Neukomm

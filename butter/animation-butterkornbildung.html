@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animation – Butterkornbildung</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .anim-wrap { width:600px; max-width:100%; margin:0 auto; display:flex; flex-direction:column; gap:16px; }
+
+    .step-dots { display:flex; justify-content:center; gap:12px; margin-bottom:4px; }
+    .step-dot  { width:11px; height:11px; border-radius:50%; background:var(--border); cursor:pointer; transition:background .2s,transform .15s; }
+    .step-dot.active { background:var(--blue-dark); transform:scale(1.25); }
+    .step-dot:hover  { background:#94a3b8; }
+
+    .anim-card { background:#f8fafc; border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); overflow:hidden; }
+    .anim-card svg { display:block; width:100%; height:auto; }
+
+    .step-info { background:var(--surface); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); padding:20px 24px; min-height:96px; }
+    .step-title { font-size:.78rem; font-weight:700; color:var(--blue-dark); text-transform:uppercase; letter-spacing:.07em; margin-bottom:8px; }
+    .step-text  { font-size:.9rem; color:var(--text); line-height:1.65; }
+
+    .nav-row { display:flex; justify-content:center; gap:12px; flex-wrap:wrap; }
+
+    .phase-group { opacity:0; transition:opacity .5s ease; }
+    .phase-group.active { opacity:1; }
+
+    #liquidRect, #zoomBg { transition:fill .5s ease; }
+    #glasDot { transform-box:fill-box; transform-origin:center; }
+    #glasDot.active { animation:glasPulse 1.4s ease-in-out infinite; }
+    @keyframes glasPulse { 0%,100% { opacity:1; } 50% { opacity:.25; } }
+
+    #grainsBottom, #grainsMerged { transition:opacity .5s ease; }
+  </style>
+</head>
+<body>
+
+<header class="bzwu-header">
+  <div class="header-text">
+    <span class="school-badge">BZWU Wil-Uzwil · Milchpraktiker EBA · Butter</span>
+    <h1>Wie das Butterkorn entsteht</h1>
+    <p>Vom Rahm im Butterfass bis zum fertigen Butterkorn – Schritt für Schritt</p>
+  </div>
+  <div class="header-logos">
+    <img src="../assets/logos/bzwu.png" alt="BZWU" class="header-logo">
+    <img src="../assets/logos/milchtechnologen.svg" alt="Milchtechnologen" class="header-logo">
+  </div>
+</header>
+
+<main class="page-main">
+
+  <a class="back-link" href="../index.html">&#8592; Alle Lerntools</a>
+
+  <div class="anim-wrap">
+
+    <div class="step-dots" id="stepDots"></div>
+
+    <div class="anim-card">
+      <svg id="animSvg" viewBox="0 0 600 350" xmlns="http://www.w3.org/2000/svg">
+
+        <text x="125" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#134061">Butterfertiger</text>
+        <text x="430" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#134061">Nahaufnahme (Mikroskop)</text>
+
+        <!-- ============================================================
+             BARREL (macro): Fass mit Flüssigkeitsstand
+             ============================================================ -->
+        <defs>
+          <clipPath id="barrelClip"><rect x="40" y="55" width="170" height="220" rx="24"/></clipPath>
+        </defs>
+
+        <g clip-path="url(#barrelClip)">
+          <rect id="liquidRect" x="40" width="170" fill="#fdf1e0" y="95" height="180"/>
+          <g id="foamOverlay">
+            <circle cx="70"  cy="100" r="9" fill="#ffffff" opacity=".55"/>
+            <circle cx="105" cy="90"  r="7" fill="#ffffff" opacity=".55"/>
+            <circle cx="140" cy="98"  r="8" fill="#ffffff" opacity=".55"/>
+            <circle cx="175" cy="92"  r="6" fill="#ffffff" opacity=".55"/>
+            <circle cx="60"  cy="120" r="6" fill="#ffffff" opacity=".45"/>
+            <circle cx="120" cy="115" r="9" fill="#ffffff" opacity=".45"/>
+            <circle cx="180" cy="118" r="7" fill="#ffffff" opacity=".45"/>
+          </g>
+          <g id="grainsBottom" style="opacity:0">
+            <circle cx="85"  cy="245" r="11" fill="#f5c26b" stroke="#c9862b" stroke-width="2"/>
+            <circle cx="125" cy="255" r="11" fill="#f5c26b" stroke="#c9862b" stroke-width="2"/>
+            <circle cx="165" cy="248" r="11" fill="#f5c26b" stroke="#c9862b" stroke-width="2"/>
+          </g>
+          <g id="grainsMerged" style="opacity:0">
+            <ellipse cx="125" cy="252" rx="42" ry="20" fill="#f5c26b" stroke="#c9862b" stroke-width="2"/>
+          </g>
+        </g>
+        <rect x="40" y="55" width="170" height="220" rx="24" fill="none" stroke="#134061" stroke-width="3"/>
+        <text x="125" y="300" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10.5" fill="#64748b">Fass mit Rahm / Buttermilch</text>
+
+        <circle cx="215" cy="155" r="15" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+        <circle id="glasDot" cx="215" cy="155" r="5" fill="#134061"/>
+        <text x="215" y="180" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" fill="#64748b">Schauglas</text>
+
+        <!-- ============================================================
+             ZOOM (mikro): Fettkügelchen -> Butterkorn
+             ============================================================ -->
+        <circle id="zoomBg" cx="430" cy="190" r="140" fill="#fffdf5" stroke="#cbd5e1" stroke-width="2"/>
+        <circle cx="430" cy="190" r="140" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4,4"/>
+
+        <!-- Phase 0: Butterungsrahm -->
+        <g class="phase-group active" id="phaseGroup0">
+          <g fill="#fdf1e0" stroke="#cbd5e1" stroke-width="2">
+            <circle cx="360" cy="120" r="14"/><circle cx="430" cy="100" r="14"/><circle cx="500" cy="120" r="14"/>
+            <circle cx="330" cy="190" r="14"/><circle cx="430" cy="190" r="14"/><circle cx="530" cy="190" r="14"/>
+            <circle cx="360" cy="260" r="14"/><circle cx="430" cy="280" r="14"/><circle cx="500" cy="260" r="14"/>
+          </g>
+          <g fill="#d97706">
+            <circle cx="360" cy="120" r="2.5"/><circle cx="430" cy="100" r="2.5"/><circle cx="500" cy="120" r="2.5"/>
+            <circle cx="330" cy="190" r="2.5"/><circle cx="430" cy="190" r="2.5"/><circle cx="530" cy="190" r="2.5"/>
+            <circle cx="360" cy="260" r="2.5"/><circle cx="430" cy="280" r="2.5"/><circle cx="500" cy="260" r="2.5"/>
+          </g>
+        </g>
+
+        <!-- Phase 1: Schaumbildung -->
+        <g class="phase-group" id="phaseGroup1">
+          <g fill="#ffffff" opacity=".5" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,3">
+            <circle cx="370" cy="140" r="36"/><circle cx="490" cy="140" r="36"/>
+            <circle cx="400" cy="230" r="34"/><circle cx="470" cy="235" r="34"/><circle cx="430" cy="175" r="28"/>
+          </g>
+          <g fill="#fdf1e0" stroke="#cbd5e1" stroke-width="2">
+            <circle cx="392" cy="132" r="10"/><circle cx="350" cy="154" r="10"/>
+            <circle cx="512" cy="132" r="10"/><circle cx="470" cy="154" r="10"/>
+            <circle cx="422" cy="222" r="10"/><circle cx="380" cy="244" r="10"/>
+            <circle cx="492" cy="227" r="10"/><circle cx="450" cy="249" r="10"/>
+            <circle cx="452" cy="167" r="10"/><circle cx="410" cy="189" r="10"/>
+          </g>
+        </g>
+
+        <!-- Phase 2: Hüllen brechen, Klümpchenbildung -->
+        <g class="phase-group" id="phaseGroup2">
+          <g fill="none" opacity=".15" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,3">
+            <circle cx="370" cy="140" r="36"/><circle cx="490" cy="140" r="36"/>
+            <circle cx="400" cy="230" r="34"/><circle cx="470" cy="235" r="34"/>
+          </g>
+          <g stroke="#d97706" stroke-width="6" stroke-linecap="round">
+            <line x1="360" y1="135" x2="380" y2="145"/>
+            <line x1="480" y1="135" x2="500" y2="145"/>
+            <line x1="390" y1="225" x2="410" y2="235"/>
+            <line x1="460" y1="230" x2="480" y2="240"/>
+          </g>
+          <g fill="#fdf1e0" stroke="#c9862b" stroke-width="2">
+            <circle cx="360" cy="135" r="13"/><circle cx="380" cy="145" r="13"/>
+            <circle cx="480" cy="135" r="13"/><circle cx="500" cy="145" r="13"/>
+            <circle cx="390" cy="225" r="13"/><circle cx="410" cy="235" r="13"/>
+            <circle cx="460" cy="230" r="13"/><circle cx="480" cy="240" r="13"/>
+          </g>
+          <circle cx="430" cy="185" r="13" fill="#fdf1e0" stroke="#cbd5e1" stroke-width="2"/>
+        </g>
+
+        <!-- Phase 3: Schaum bricht zusammen zu Buttermilch -->
+        <g class="phase-group" id="phaseGroup3">
+          <g fill="#f5c26b" stroke="#c9862b" stroke-width="2.5">
+            <circle cx="370" cy="140" r="30"/><circle cx="490" cy="140" r="30"/>
+            <circle cx="400" cy="230" r="30"/><circle cx="470" cy="235" r="30"/>
+          </g>
+        </g>
+
+        <!-- Phase 4: Erbsengrösse -->
+        <g class="phase-group" id="phaseGroup4">
+          <g fill="#f5c26b" stroke="#c9862b" stroke-width="2.5">
+            <circle cx="390" cy="150" r="34"/><circle cx="470" cy="150" r="34"/><circle cx="430" cy="240" r="34"/>
+          </g>
+          <text x="430" y="300" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" font-weight="700" fill="#134061">&#8776; 3&#8211;5 mm (Erbsengr&#246;sse)</text>
+        </g>
+
+        <!-- Phase 5: fertiges Butterkorn -->
+        <g class="phase-group" id="phaseGroup5">
+          <circle cx="430" cy="190" r="115" fill="#f5c26b" stroke="#c9862b" stroke-width="3"/>
+          <g fill="#7fb8d9">
+            <circle cx="400" cy="150" r="3.5"/><circle cx="455" cy="140" r="3.5"/><circle cx="480" cy="180" r="3.5"/>
+            <circle cx="460" cy="220" r="3.5"/><circle cx="400" cy="230" r="3.5"/><circle cx="370" cy="190" r="3.5"/>
+            <circle cx="430" cy="190" r="3.5"/><circle cx="410" cy="210" r="3.5"/><circle cx="450" cy="170" r="3.5"/>
+            <circle cx="390" cy="175" r="3.5"/>
+          </g>
+        </g>
+
+      </svg>
+    </div>
+
+    <div class="step-info">
+      <div class="step-title" id="stepTitle"></div>
+      <div class="step-text"  id="stepText"></div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-ghost"   id="prevBtn" onclick="prevStep()">&#8592; Zur&#252;ck</button>
+      <button class="btn btn-primary" id="playBtn" onclick="toggleAutoplay()">&#9654; Abspielen</button>
+      <button class="btn btn-ghost"   id="nextBtn" onclick="nextStep()">Weiter &#8594;</button>
+    </div>
+    <p class="keyboard-hint"><kbd>&#8592;</kbd> <kbd>&#8594;</kbd> navigieren &#183; <kbd>Leertaste</kbd> abspielen</p>
+
+  </div>
+
+</main>
+
+<footer class="bzwu-footer">
+  BZWU Wil-Uzwil · Milchpraktiker EBA · Philipp Neukomm
+</footer>
+
+<script>
+var STEPS = [
+  {
+    title: 'Phase 1 &#8211; Butterungsrahm',
+    text:  'Die Fettk&#252;gelchen sind von einer H&#252;lle umschlossen. Darin haben sich schon Spuren von fl&#252;ssigem Butter&#246;l gebildet.',
+    liquid: { y:95,  h:180, fill:'#fdf1e0', foam:true,  grains:'none' }
+  },
+  {
+    title: 'Phase 2 &#8211; Schaumbildung',
+    text:  'Nach kurzer Zeit im Butterfass entsteht Schaum. Die Fettk&#252;gelchen liegen in den d&#252;nnen W&#228;nden der Schaumbl&#228;schen.',
+    liquid: { y:88,  h:187, fill:'#fdf6e6', foam:true,  grains:'none' }
+  },
+  {
+    title: 'Phase 3 &#8211; H&#252;llen brechen auf',
+    text:  'Die H&#252;llen der Fettk&#252;gelchen werden teilweise zerst&#246;rt. Das austretende Butter&#246;l wirkt wie Klebstoff und verbindet die Fettk&#252;gelchen zu kleinen Kl&#252;mpchen.',
+    liquid: { y:88,  h:187, fill:'#fbe9c9', foam:true,  grains:'none' }
+  },
+  {
+    title: 'Phase 4 &#8211; Schaum wird zu Buttermilch',
+    text:  'Die Kl&#252;mpchen werden gr&#246;sser. Der Schaum bricht zu Fl&#252;ssigkeit zusammen (Buttermilch). Das sieht man am Schauglas des Butterfertigers.',
+    liquid: { y:170, h:105, fill:'#f4f8fb', foam:false, grains:'small' },
+    glas: true
+  },
+  {
+    title: 'Phase 5 &#8211; Erbsengr&#246;sse erreicht',
+    text:  'Der Butterfertiger wird gestoppt, sobald die Butterk&#246;rner etwa die Gr&#246;sse einer Erbse (3-5 mm) haben.',
+    liquid: { y:190, h:85,  fill:'#eef6fa', foam:false, grains:'small' }
+  },
+  {
+    title: 'Phase 6 &#8211; Fertiges Butterkorn',
+    text:  'Jedes Butterkorn ist jetzt eine kleine, zusammenh&#228;ngende Buttermasse. Im Inneren ist wenig Buttermilch fein verteilt.',
+    liquid: { y:210, h:65,  fill:'#e3f0f7', foam:false, grains:'merged' }
+  }
+];
+
+function applyStep(idx) {
+  var s = STEPS[idx];
+
+  document.querySelectorAll('.phase-group').forEach(function(g, i) {
+    g.classList.toggle('active', i === idx);
+  });
+
+  var lr = document.getElementById('liquidRect');
+  lr.setAttribute('y', s.liquid.y);
+  lr.setAttribute('height', s.liquid.h);
+  lr.setAttribute('fill', s.liquid.fill);
+
+  document.getElementById('foamOverlay').style.opacity = s.liquid.foam ? '1' : '0';
+  document.getElementById('grainsBottom').style.opacity = (s.liquid.grains === 'small') ? '1' : '0';
+  document.getElementById('grainsMerged').style.opacity = (s.liquid.grains === 'merged') ? '1' : '0';
+
+  document.getElementById('zoomBg').setAttribute('fill', idx < 3 ? '#fffdf5' : '#eef6fa');
+  document.getElementById('glasDot').classList.toggle('active', !!s.glas);
+
+  document.getElementById('stepTitle').innerHTML = s.title;
+  document.getElementById('stepText').innerHTML = s.text;
+
+  document.getElementById('prevBtn').disabled = (idx === 0);
+  document.getElementById('nextBtn').disabled = (idx === STEPS.length-1);
+
+  document.querySelectorAll('.step-dot').forEach(function(d,i) {
+    d.classList.toggle('active', i === idx);
+  });
+}
+
+var currentStep = 0;
+function goToStep(newStep) {
+  if (newStep < 0 || newStep >= STEPS.length) return;
+  currentStep = newStep;
+  applyStep(currentStep);
+}
+function nextStep() { goToStep(currentStep+1); }
+function prevStep() { goToStep(currentStep-1); }
+
+var autoplay = false, autoTimer = null;
+function scheduleNext() {
+  autoTimer = setTimeout(function() {
+    if (!autoplay) return;
+    goToStep((currentStep+1) % STEPS.length);
+    scheduleNext();
+  }, 4200);
+}
+function setPlayLabel() {
+  document.getElementById('playBtn').innerHTML = autoplay ? '&#10074;&#10074; Pause' : '&#9654; Abspielen';
+}
+function toggleAutoplay() {
+  autoplay = !autoplay;
+  setPlayLabel();
+  clearTimeout(autoTimer);
+  if (autoplay) {
+    if (currentStep === STEPS.length-1) goToStep(0);
+    scheduleNext();
+  }
+}
+
+var dotsWrap = document.getElementById('stepDots');
+for (var i = 0; i < STEPS.length; i++) {
+  (function(idx) {
+    var d = document.createElement('div');
+    d.className = 'step-dot';
+    d.title = STEPS[idx].title.replace(/&#\d+;/g, '');
+    d.addEventListener('click', function() { goToStep(idx); });
+    dotsWrap.appendChild(d);
+  })(i);
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight') { nextStep(); }
+  if (e.key === 'ArrowLeft')  { prevStep(); }
+  if (e.key === ' ')          { e.preventDefault(); toggleAutoplay(); }
+});
+
+applyStep(0);
+setPlayLabel();
+</script>
+</body>
+</html>

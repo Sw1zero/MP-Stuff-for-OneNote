@@ -356,7 +356,7 @@ function build() {
 
   if (mode === 'ziehen') {
     intro.innerHTML = 'Ziehen Sie jeden Schritt in das richtige Feld.<br>' +
-      'Auf dem Handy: Schritt antippen, dann das Feld antippen. Feld nochmals antippen = Schritt zurück.';
+      'Auf dem Handy: mit dem Finger ziehen oder Schritt antippen und dann das Feld antippen. Feld nochmals antippen = Schritt zurück.';
     bank.style.display = 'flex';
     help.style.display = 'none';
     buildBank();
@@ -404,6 +404,10 @@ function buildBank() {
       e.dataTransfer.setData('text/plain', String(step.id));
       e.dataTransfer.effectAllowed = 'move';
     });
+    chip.addEventListener('touchstart', function(e) {
+      var t = e.touches[0];
+      touch = { chip: chip, x: t.clientX, y: t.clientY, ghost: null };
+    }, { passive: true });
     bank.appendChild(chip);
   });
   bank.classList.toggle('empty', bank.children.length === 0);
@@ -467,6 +471,51 @@ function buildFlow() {
 
   flow.insertAdjacentHTML('beforeend', '<div class="arrow"></div><div class="terminal">Extra-, Hartkäse</div>');
 }
+
+// Ziehen mit dem Finger: erst ab 8 px Bewegung, sonst bleibt es ein Antippen
+var touch = null;
+
+function slotAt(x, y) {
+  var el = document.elementFromPoint(x, y);
+  return el && el.closest ? el.closest('.step') : null;
+}
+
+document.addEventListener('touchmove', function(e) {
+  if (!touch) return;
+  var t = e.touches[0];
+  if (!touch.ghost) {
+    if (Math.abs(t.clientX - touch.x) + Math.abs(t.clientY - touch.y) < 8) return;
+    var r = touch.chip.getBoundingClientRect();
+    touch.offX = touch.x - r.left;
+    touch.offY = touch.y - r.top;
+    touch.ghost = touch.chip.cloneNode(true);
+    touch.ghost.classList.add('selected');
+    touch.ghost.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;margin:0;' +
+      'box-shadow:0 8px 24px rgba(0,0,0,0.25);max-width:' + r.width + 'px;';
+    document.body.appendChild(touch.ghost);
+    touch.chip.style.opacity = '0.3';
+  }
+  e.preventDefault();
+  touch.ghost.style.left = (t.clientX - touch.offX) + 'px';
+  touch.ghost.style.top = (t.clientY - touch.offY) + 'px';
+  document.querySelectorAll('.step.drag-over').forEach(function(b) { b.classList.remove('drag-over'); });
+  var slot = slotAt(t.clientX, t.clientY);
+  if (slot) slot.classList.add('drag-over');
+}, { passive: false });
+
+document.addEventListener('touchend', function(e) {
+  if (!touch) return;
+  var cur = touch;
+  touch = null;
+  if (!cur.ghost) return;   // kein Ziehen: der normale Klick (Antippen) übernimmt
+  e.preventDefault();       // verhindert den Klick nach dem Ziehen
+  cur.ghost.remove();
+  cur.chip.style.opacity = '';
+  document.querySelectorAll('.step.drag-over').forEach(function(b) { b.classList.remove('drag-over'); });
+  var t = e.changedTouches[0];
+  var slot = slotAt(t.clientX, t.clientY);
+  if (slot) place(parseInt(slot.id.replace('slot-', ''), 10), parseInt(cur.chip.dataset.id, 10));
+}, { passive: false });
 
 function place(slotId, stepId) {
   if (!stepId) return;

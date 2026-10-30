@@ -658,6 +658,7 @@ body {
 .z-hotspots { position: absolute; inset: 0; }
 .z-hotspots.aktiv { cursor: crosshair; }
 .z-hs-mark { position: absolute; transform: translate(-50%, -50%); display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; font-size: 0.8rem; font-weight: 700; color: #fff; background: var(--success); box-shadow: 0 0 0 3px #fff; pointer-events: none; }
+.z-hs-num { background: var(--blue-dark); }
 .z-hs-miss { position: absolute; transform: translate(-50%, -50%); width: 28px; height: 28px; color: var(--red-dark); pointer-events: none; }
 .z-prompt { position: sticky; bottom: 0; margin: 0 0 12px; padding: 12px 16px; text-align: center; background: var(--blue-tint); border-radius: var(--radius-md); color: var(--text); }
 .z-prompt span { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }

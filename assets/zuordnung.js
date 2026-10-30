@@ -14,6 +14,7 @@
      Mittel/Schwer: pro Lücke der Satz mit ____ und Auswahl bzw. Eingabe.
    Beschriften statt gruppen/karten:
      beschriften: { bild, bildLeer?, quelle?, treffer?: 0.25, teile: [{ n, name, keys?, zonen: [{ cx, cy }] }] }   // cx/cy in % des Bildes
+       Nur bildLeer (kein bild): die Engine setzt die Nummern selbst an die erste Zone jedes Teils.
      Stufen meist ['zuordnen', 'zeigen', 'eintippen']: Namen zu Nummern legen / Bauteil im Bild (bildLeer) antippen / Namen eintippen.
      zeigen trifft, wenn der nächste Punkt aller Zonen zum gesuchten Teil gehört und höchstens treffer × Bildbreite entfernt ist.
    Zuordnen: die oberste Karte im Stapel liegt unten bereit, Antippen einer Gruppe legt sie dorthin, Ziehen geht auch.
@@ -147,9 +148,13 @@ var Zuordnung = (function () {
   }
 
   function bild(leer) {
-    var b = cfg.beschriften;
-    return '<figure class="z-figure"><div class="z-bild"><img src="' + esc(leer && b.bildLeer || b.bild) + '" alt="' + esc(b.alt || 'Schema mit nummerierten Bauteilen') + '">' +
-      '<div class="z-hotspots" id="zHot"></div></div>' + (b.quelle ? '<figcaption>' + esc(b.quelle) + '</figcaption>' : '') + '</figure>';
+    var b = cfg.beschriften, src = leer ? b.bildLeer || b.bild : b.bild || b.bildLeer;
+    // ohne Bild mit Nummern: Nummern an die erste Zone jedes Teils setzen
+    var marken = !leer && !b.bild ? cfg.gruppen.map(function (g) {
+      return g.zonen[0] ? '<span class="z-hs-mark z-hs-num" style="left:' + g.zonen[0].cx + '%;top:' + g.zonen[0].cy + '%">' + g.n + '</span>' : '';
+    }).join('') : '';
+    return '<figure class="z-figure"><div class="z-bild"><img src="' + esc(src) + '" alt="' + esc(b.alt || 'Schema mit nummerierten Bauteilen') + '">' +
+      '<div class="z-hotspots" id="zHot">' + marken + '</div></div>' + (b.quelle ? '<figcaption>' + esc(b.quelle) + '</figcaption>' : '') + '</figure>';
   }
   function nummern() {
     return '<ol class="z-nums">' + cfg.gruppen.map(function (g) {

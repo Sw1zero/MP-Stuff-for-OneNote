@@ -668,3 +668,40 @@ body {
   .q-answer { transition: none; }
   .q-answer:active:not(:disabled) { transform: none; }
 }
+
+/* ============================================================
+   Sortierer (assets/sortierer.js) – Knopf und Feedback wie Quiz (.q-next, .q-btn, .q-feedback)
+   ============================================================ */
+.s-wrap { max-width: 640px; margin: 0 auto; padding: 16px 16px 112px; }
+.s-intro { color: var(--text-muted); line-height: 1.5; margin: 8px 0 16px; }
+.s-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.s-item { display: flex; align-items: center; gap: 10px; padding: 6px 6px 6px 0; background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); transition: border-color .15s, background-color .15s, box-shadow .15s; }
+/* Griff mit Platznummer: nur hier ziehen, damit die Seite sonst normal scrollt */
+.s-handle { flex: 0 0 44px; align-self: stretch; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 0; color: var(--text-muted); background: none; border: 0; border-radius: var(--radius-sm); cursor: grab; touch-action: none; }
+.s-handle svg { width: 18px; height: 18px; }
+.s-num { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; font: inherit; font-weight: 700; font-size: 0.85rem; color: var(--blue-dark); background: var(--blue-tint); }
+.s-num svg { width: 16px; height: 16px; }
+.s-img { display: block; width: 100%; max-width: 240px; margin-bottom: 8px; object-fit: contain; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.s-body { flex: 1; min-width: 0; padding: 6px 0; line-height: 1.45; }
+.s-text { display: block; color: var(--text); }
+.s-item.has-detail .s-text { font-weight: 600; }
+.s-detail { display: block; margin-top: 2px; font-size: 0.875rem; color: var(--text-muted); }
+.s-move { flex: 0 0 auto; display: flex; flex-direction: column; gap: 4px; }
+.s-move button { width: 44px; height: 44px; display: grid; place-items: center; font: inherit; font-size: 0.8rem; color: var(--blue-dark); background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; }
+.s-move button:hover { background: var(--blue-tint); border-color: var(--blue-light); }
+.s-move button:focus-visible, .s-handle:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.s-item:first-child .s-up, .s-item:last-child .s-down { visibility: hidden; }
+.s-item.dragging { position: relative; z-index: 2; border-color: var(--blue-light); box-shadow: var(--shadow-lg); }
+.s-item.dragging .s-handle { cursor: grabbing; }
+/* Richtig/Falsch nie nur über Farbe: Rahmen + Symbol im Platz + Wort im Feedback */
+.s-item.is-correct { border-color: var(--success); background: var(--success-tint); }
+.s-item.is-correct .s-num { background: var(--success); color: #fff; }
+.s-item.is-wrong { border-color: var(--red); background: var(--red-light); }
+.s-item.is-wrong .s-num { background: var(--red); color: #fff; }
+.s-wrap .q-feedback { margin-top: 16px; }
+@media (min-width: 700px) {
+  .s-wrap { padding-bottom: 16px; }
+  .s-move { flex-direction: row; }
+  .s-wrap .q-next { position: static; background: none; padding: 16px 0 32px; }
+}
+@media (prefers-reduced-motion: reduce) { .s-item { transition: none; } }

@@ -705,3 +705,75 @@ body {
   .s-wrap .q-next { position: static; background: none; padding: 16px 0 32px; }
 }
 @media (prefers-reduced-motion: reduce) { .s-item { transition: none; } }
+
+/* ============================================================
+   Zuordnung (assets/zuordnung.js) – Stufen, Knopf und Feedback wie Quiz (.q-levels, .q-btn, .q-feedback)
+   ============================================================ */
+.z-wrap { max-width: 640px; margin: 0 auto; padding: 16px 16px 112px; }
+.z-intro { color: var(--text-muted); line-height: 1.5; margin: 8px 0 16px; }
+.z-groups { display: grid; gap: 10px; }
+/* Lange Fachwörter (Greiferkammerverschlussring) trennen statt die Seite zu verbreitern */
+.z-group, .z-row { min-width: 0; hyphens: auto; overflow-wrap: break-word; }
+.z-group { background: var(--surface); border: 2px solid var(--border); border-left: 6px solid var(--z-farbe, var(--blue-dark)); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); transition: border-color .15s, background-color .15s; }
+.z-group.is-over { border-color: var(--blue-light); border-left-color: var(--z-farbe, var(--blue-dark)); background: var(--blue-tint); }
+/* Ganze Kopfzeile ist das Ziel: Antippen legt die bereitliegende Karte hierhin */
+.z-target { display: flex; align-items: center; width: 100%; min-height: 48px; padding: 10px 14px; text-align: left; font: inherit; font-weight: 700; line-height: 1.35; color: var(--blue-dark); background: none; border: 0; border-radius: var(--radius-sm); cursor: pointer; }
+.z-target::after { content: '+'; margin-left: auto; padding-left: 12px; font-size: 1.3rem; font-weight: 400; color: var(--text-muted); }
+.z-target:hover { background: var(--blue-tint); }
+.z-target:focus-visible, .z-card:focus-visible, .z-choice:focus-visible, .z-browse button:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.z-slot { display: grid; gap: 6px; padding: 0 8px; }
+.z-slot:not(:empty) { padding-bottom: 8px; }
+.z-card { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 8px 12px; text-align: left; font: inherit; font-size: 0.95rem; line-height: 1.4; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; }
+.z-card:hover { border-color: var(--blue-light); }
+.z-img { display: block; max-width: 100%; max-height: 96px; object-fit: contain; }
+.z-card .z-img { max-height: 56px; max-width: 72px; }
+.z-text { display: block; }
+.z-mark { margin-left: auto; flex: 0 0 22px; height: 22px; }
+.z-mark:empty { display: none; }
+/* Richtig/Falsch nie nur über Farbe: Rahmen + Symbol + Wort im Feedback */
+.z-card.is-correct { border: 2px solid var(--success); background: var(--success-tint); }
+.z-card.is-correct .z-mark { color: var(--success); }
+.z-card.is-wrong { border: 2px solid var(--red); background: var(--red-light); }
+.z-card.is-wrong .z-mark { color: var(--red-dark); }
+/* Stapel: klebt am unteren Rand, solange Gruppen darüber gescrollt werden */
+.z-dock { position: sticky; bottom: 0; z-index: 10; margin-top: 12px; padding: 16px 0 calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--bg) 16px); }
+.z-dock .q-feedback { margin: 0 0 10px; }
+.z-dock [hidden] { display: none; }
+.z-current { padding: 14px 16px; font-size: 1.05rem; font-weight: 600; line-height: 1.4; color: var(--text); background: var(--surface); border: 2px solid var(--blue-dark); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.z-current .z-img { margin: 0 auto 6px; }
+.z-current .z-img:only-child { margin-bottom: 0; }
+.z-ghost { position: fixed; z-index: 20; margin: 0; pointer-events: none; opacity: 0.92; cursor: grabbing; }
+.z-stack-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; color: var(--text-muted); font-size: 0.875rem; }
+.z-browse { display: flex; gap: 8px; }
+.z-browse button { width: 44px; height: 36px; font: inherit; font-size: 1.2rem; color: var(--blue-dark); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; }
+/* Bildkarten: Gruppen in zwei Spalten, damit die Ziele auf dem Handy sichtbar bleiben */
+.z-groups.has-img { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.z-groups.has-img .z-target { font-size: 0.9rem; }
+/* Mittel und Schwer: eine Zeile pro Karte */
+.z-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.z-row { padding: 12px; background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
+.z-row-card { font-weight: 600; line-height: 1.4; margin-bottom: 10px; }
+.z-row-card .z-img { margin-bottom: 6px; }
+.z-choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.z-choice { display: flex; align-items: center; gap: 6px; flex: 1 1 auto; min-height: 44px; padding: 8px 12px; font: inherit; font-size: 0.95rem; color: var(--blue-dark); background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; }
+.z-choice:hover:not(:disabled) { border-color: var(--blue-light); background: var(--blue-tint); }
+.z-choice:disabled { cursor: default; opacity: 0.55; }
+.z-choice.is-correct, .z-choice.is-wrong { opacity: 1; }
+.z-choice.is-correct { border-color: var(--success); background: var(--success-tint); color: var(--success-dark); }
+.z-choice.is-wrong { border-color: var(--red); background: var(--red-light); color: var(--red-dark); }
+.z-choice .z-mark { flex-basis: 18px; height: 18px; }
+.z-row.is-correct { border-color: var(--success); }
+.z-row.is-wrong { border-color: var(--red); }
+.z-input { width: 100%; min-height: 44px; padding: 8px 12px; font: inherit; color: var(--text); background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius-sm); }
+.z-input:focus { outline: none; border-color: var(--blue-light); box-shadow: var(--focus-ring); }
+.z-row.is-correct .z-input { border-color: var(--success); background: var(--success-tint); }
+.z-row.is-wrong .z-input { border-color: var(--red); background: var(--red-light); }
+.z-solution { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 0.9rem; color: var(--red-dark); }
+.z-solution:empty { display: none; }
+.z-solution svg { flex: 0 0 16px; height: 16px; }
+.z-wrap .q-feedback { margin-top: 16px; }
+@media (min-width: 700px) {
+  .z-wrap { padding-bottom: 16px; }
+  .z-wrap .q-next { position: static; background: none; padding: 16px 0 32px; }
+}
+@media (prefers-reduced-motion: reduce) { .z-group { transition: none; } }

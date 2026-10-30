@@ -123,7 +123,7 @@
     var answersDiv = doc.getElementById('answers');
     answersDiv.innerHTML = '';
 
-    var indices = shuffle([0, 1, 2, 3]);
+    var indices = shuffle(q.options.map(function (_, i) { return i; }));
     indices.forEach(function (optIdx) {
       var btn = doc.createElement('button');
       btn.className = 'answer-btn';

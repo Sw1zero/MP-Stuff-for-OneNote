@@ -8,6 +8,8 @@
    });
    Frage: { question | q, answers | options, correct, explanation, badge?, cat? }
    Antworten werden gemischt, ausser bei ['Wahr', 'Falsch'].
+   wahrFalsch: true  -> Karten { statement, answer: true|false, explanation }, Knöpfe Falsch | Wahr,
+                        Karte nach links/rechts wischen oder Pfeiltasten.
    Markup entsteht in <div id="quiz">, Aussehen nur aus style.css (.q-*).
    Testschnittstelle für pruefe_tools.js: window.LerntoolTest. */
 var Quiz = (function () {
@@ -22,10 +24,11 @@ var Quiz = (function () {
     for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
     return a;
   }
-  function norm(q) {
+  function norm(raw) {
+    var q = cfg.wahrFalsch ? { question: raw.statement, answers: ['Falsch', 'Wahr'], correct: raw.answer ? 1 : 0, explanation: raw.explanation } : raw;
     var answers = q.answers || q.options, order = answers.map(function (_, i) { return i; });
     var wf = answers.length === 2 && answers[0] === 'Wahr' && answers[1] === 'Falsch';
-    if (!wf) order = shuffle(order);
+    if (!wf && !cfg.wahrFalsch) order = shuffle(order);
     var cat = cfg.categories && q.cat;
     return {
       text: q.question || q.q,
@@ -34,7 +37,7 @@ var Quiz = (function () {
       explanation: q.explanation || '',
       badge: q.badge || (cat ? cfg.categories.labels[q.cat] : cfg.badge) || '',
       color: cat ? cfg.categories.colors[q.cat] : null,
-      raw: q
+      raw: raw
     };
   }
 
@@ -56,7 +59,36 @@ var Quiz = (function () {
     [].forEach.call(root.querySelectorAll('.q-level'), function (b) { b.onclick = function () { setLevel(b.dataset.level); }; });
     el('qNextBtn').onclick = function () { pos++; if (pos < deck.length) show(); else end(); };
     el('qRestart').onclick = function () { start(pool); };
+    if (cfg.wahrFalsch) wischen();
     if (levels.length) setLevel(levels[0]); else start(cfg.questions);
+  }
+
+  // Wahr/Falsch: Karte wischen (rechts wahr, links falsch), senkrecht scrollt die Seite normal
+  function wischen() {
+    var card = el('qCard'), x0 = null, dx = 0;
+    root.classList.add('q-wf');
+    function offen() { return !el('qNext').classList.contains('show') && card.style.display !== 'none'; }
+    function setze(d) {
+      dx = d;
+      card.style.transform = d ? 'translateX(' + d + 'px) rotate(' + d / 20 + 'deg)' : '';
+      card.classList.toggle('lean-right', d > 40);
+      card.classList.toggle('lean-left', d < -40);
+    }
+    card.addEventListener('pointerdown', function (e) {
+      if (offen() && !e.target.closest('button')) { x0 = e.clientX; card.classList.add('dragging'); }
+    });
+    document.addEventListener('pointermove', function (e) { if (x0 !== null) setze(e.clientX - x0); });
+    function los() {
+      if (x0 === null) return;
+      var d = dx;
+      x0 = null; card.classList.remove('dragging'); setze(0);
+      if (Math.abs(d) > 80) answer(d > 0 ? 1 : 0);
+    }
+    document.addEventListener('pointerup', los);
+    document.addEventListener('pointercancel', los);
+    document.addEventListener('keydown', function (e) {
+      if (offen() && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) answer(e.key === 'ArrowRight' ? 1 : 0);
+    });
   }
 
   function setLevel(l) {
@@ -88,7 +120,7 @@ var Quiz = (function () {
 
   function show() {
     var q = deck[pos], b = el('qBadge');
-    el('qNum').textContent = 'Frage ' + (pos + 1) + ' von ' + deck.length;
+    el('qNum').textContent = (cfg.wahrFalsch ? 'Aussage ' : 'Frage ') + (pos + 1) + ' von ' + deck.length;
     b.textContent = q.badge;
     b.style.display = q.badge ? '' : 'none';
     b.style.background = q.color ? q.color.bg : '';
@@ -97,7 +129,7 @@ var Quiz = (function () {
     el('qFeedback').className = 'q-feedback';
     el('qNext').classList.remove('show');
     el('qAnswers').innerHTML = q.answers.map(function (a, i) {
-      return '<button class="q-answer" data-i="' + i + '"><span class="q-letter">' + 'ABCDEF'[i] + '</span><span class="q-answer-text">' + esc(a) +
+      return '<button class="q-answer" data-i="' + i + '"><span class="q-letter">' + (cfg.wahrFalsch ? [NOK, OK][i] : 'ABCDEF'[i]) + '</span><span class="q-answer-text">' + esc(a) +
         '</span><span class="q-icon q-icon-ok">' + OK + '</span><span class="q-icon q-icon-nok">' + NOK + '</span></button>';
     }).join('');
     [].forEach.call(root.querySelectorAll('.q-answer'), function (btn) { btn.onclick = function () { answer(+btn.dataset.i); }; });
@@ -112,7 +144,7 @@ var Quiz = (function () {
     });
     results.push(ok);
     fb.className = 'q-feedback show ' + (ok ? 'ok' : 'nok');
-    fb.innerHTML = (ok ? OK : NOK) + '<div><b>' + (ok ? 'Richtig!' : 'Nicht ganz. Richtig ist ' + 'ABCDEF'[q.correct] + '.') +
+    fb.innerHTML = (ok ? OK : NOK) + '<div><b>' + (ok ? 'Richtig!' : 'Nicht ganz.') + (cfg.wahrFalsch ? ' Die Aussage ist ' + q.answers[q.correct].toLowerCase() + '.' : ok ? '' : ' Richtig ist ' + 'ABCDEF'[q.correct] + '.') +
       '</b><span>' + esc(q.explanation) + '</span></div>';
     el('qNextBtn').textContent = pos === deck.length - 1 ? 'Ergebnis anzeigen' : 'Weiter';
     el('qNext').classList.add('show');

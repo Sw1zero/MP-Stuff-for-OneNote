@@ -660,6 +660,16 @@ body {
 .q-end p { color: var(--text-muted); margin: 0 0 18px; }
 .q-review { text-align: left; margin: 0 0 18px; padding: 0; list-style: none; }
 .q-review li { padding: 10px 12px; border-left: 4px solid var(--red); background: var(--red-light); border-radius: var(--radius-sm); margin-bottom: 8px; font-size: 0.95rem; }
+/* Wahr/Falsch (quiz.js mit wahrFalsch): Falsch links, Wahr rechts wie die Wischrichtung */
+.q-wf .q-card:not(.q-end) { touch-action: pan-y; user-select: none; cursor: grab; transition: transform .25s, border-color .15s; border: 2px solid transparent; }
+.q-wf .q-card.dragging { cursor: grabbing; transition: none; }
+.q-wf .q-card.lean-right { border-color: var(--success); }
+.q-wf .q-card.lean-left { border-color: var(--red); }
+.q-wf .q-text { min-height: 4.4em; display: flex; align-items: center; }
+.q-wf .q-answers { grid-template-columns: 1fr 1fr; }
+.q-wf .q-answer { justify-content: center; font-weight: 600; }
+.q-wf .q-answer .q-letter svg { width: 18px; height: 18px; }
+.q-wf .q-answer .q-icon { display: none !important; }
 @media (min-width: 700px) {
   .q-wrap { padding-bottom: 16px; }
   .q-next { position: static; background: none; padding: 16px 0 32px; }

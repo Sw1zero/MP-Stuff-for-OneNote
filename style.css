@@ -846,10 +846,6 @@ body {
 .ls-wrap .video-wrap iframe { position:absolute; top:0; left:0; width:100%; height:100%; border:0; }
 .ls-wrap .pdf-link { display:inline-flex; align-items:center; gap:8px; font-size:0.85rem; font-weight:600; color:var(--blue-dark); background:var(--blue-tint); border:1.5px solid var(--blue-light); border-radius:var(--radius-md); padding:10px 16px; text-decoration:none; transition:all 0.15s; }
 .ls-wrap .pdf-link:hover { background:var(--blue-light); color:#fff; }
-.ls-wrap .fb { font-size:0.82rem; line-height:1.5; margin-top:8px; padding:10px 12px; border-radius:var(--radius-sm); display:none; }
-.ls-wrap .fb.show { display:block; }
-.ls-wrap .fb.ok { background:#f0fff4; color:#276749; }
-.ls-wrap .fb.no { background:var(--red-light); color:var(--red-dark); }
 .ls-wrap .err-intro { font-size:0.84rem; color:var(--text-muted); margin-bottom:12px; }
 .ls-wrap .err-line { display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:9px 0; border-bottom:1px solid var(--border); font-size:0.9rem; }
 .ls-wrap .err-line:last-child { border-bottom:none; }
@@ -883,3 +879,7 @@ body {
 .ls-wrap .gap-mark svg { width: 16px; height: 16px; }
 .ls-wrap .gap-mark.ok { color: var(--success); }
 .ls-wrap .gap-mark.nok { color: var(--red-dark); }
+/* im Zuordnungsfeld: richtiger Begriff auf eigener Zeile, damit er in schmalen Spalten nicht abgeschnitten wird */
+.ls-wrap .lb-slot.correct, .ls-wrap .lb-slot.wrong { flex-wrap: wrap; gap: 2px 4px; }
+.ls-wrap .lb-slot .gap-mark { margin: 0; }
+.ls-wrap .lb-slot .gap-mark.nok { flex-basis: 100%; }

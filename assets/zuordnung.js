@@ -9,6 +9,9 @@
    Tabelle mit Lücken statt gruppen/karten (erste Spalte fest, alle übrigen Zellen sind Lücken):
      tabellen: [{ titel?, spalten: ['Methode', 'Temperatur', …], zeilen: [['Kühlung', '1–5 °C', …] | ['…', { text, keys }, …], …] }, ...]
      Gleicher Text in mehreren Lücken ist erlaubt (zählt in jeder davon). Mittel: pro Lücke aus höchstens 4 Begriffen derselben Spalte wählen.
+   Lückentext statt gruppen/karten: lueckentext: 'Sauermilch entsteht durch die [Milchsäuregärung]. …\n\nNeuer Absatz …'
+     [Begriff] ist eine Lücke, [Begriff|Stichwort|Stichwort] mit Stichworten für «eintippen». Einfach: Begriffe in die Lücken im Text legen,
+     Mittel/Schwer: pro Lücke der Satz mit ____ und Auswahl bzw. Eingabe.
    Zuordnen: die oberste Karte im Stapel liegt unten bereit, Antippen einer Gruppe legt sie dorthin, Ziehen geht auch.
    Abgelegte Karte antippen = zurück auf den Stapel. Bild-Paare (Piktogramm → Bedeutung): Bild als Karte, Bedeutung als Gruppe.
    Markup entsteht in <div id="zuordnung">, Aussehen nur aus style.css (.z-*, Stufen, Knopf und Feedback wie Quiz).
@@ -27,7 +30,7 @@ var Zuordnung = (function () {
     anklicken: 'Wählen Sie für jede Lücke den passenden Begriff.',
     eintippen: 'Füllen Sie jede Lücke aus. Es genügt der Kernbegriff.'
   };
-  var cfg, tab, stufe, order, placed, pos, geprueft, solved, beantwortet;
+  var cfg, tab, text, stufe, order, placed, pos, geprueft, solved, beantwortet;
 
   function el(id) { return document.getElementById(id); }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -90,7 +93,7 @@ var Zuordnung = (function () {
   /* ---------- Einfach: zuordnen ---------- */
   function buildZuordnen() {
     var bilder = cfg.karten.some(function (k) { return k.img; });
-    el('zBody').innerHTML = (tab ? tabellen() :
+    el('zBody').innerHTML = (text ? lueckentext() : tab ? tabellen() :
       '<div class="z-groups' + (bilder ? ' has-img' : '') + '">' + cfg.gruppen.map(function (g) {
         return '<section class="z-group" data-g="' + esc(g.key) + '"' + (g.farbe ? ' style="--z-farbe:' + esc(g.farbe) + '"' : '') + '>' +
           '<button class="z-target" data-g="' + esc(g.key) + '">' + esc(g.label) + '</button><div class="z-slot"></div></section>';
@@ -131,6 +134,17 @@ var Zuordnung = (function () {
           }).join('') + '</tr>';
         }).join('') + '</tbody></table>';
     }).join('');
+  }
+
+  function lueckentext() {
+    var n = 0;
+    return '<div class="z-lt">' + cfg.lueckentext.split(/\n\s*\n/).map(function (absatz) {
+      return '<p>' + absatz.split(/\[[^\]]+\]/).map(function (stueck, j, alle) {
+        if (j === alle.length - 1) return esc(stueck);
+        var key = 'l' + n++;
+        return esc(stueck) + '<span class="z-cell z-gap" data-g="' + key + '"><button class="z-target" data-g="' + key + '" aria-label="' + esc(gruppe(key).label) + '"></button><span class="z-slot"></span></span>';
+      }).join('') + '</p>';
+    }).join('') + '</div>';
   }
 
   function zeichne() {
@@ -215,7 +229,10 @@ var Zuordnung = (function () {
   /* ---------- Mittel: pro Karte die Gruppe anklicken ---------- */
   // Zeilen für Mittel und Schwer: Karten gemischt, bei Tabellen die Lücken in Tabellenreihenfolge
   function zeilen() { return tab ? cfg.gruppen.map(function (g, j) { return j; }) : order; }
-  function frage(i) { return tab ? '<span class="z-text">' + esc(cfg.gruppen[i].label) + '</span>' : karte(i); }
+  function frage(i) {
+    if (text) return '<span class="z-text">' + cfg.gruppen[i].satz + '</span>';
+    return tab ? '<span class="z-text">' + esc(cfg.gruppen[i].label) + '</span>' : karte(i);
+  }
   function optionen(i) {
     if (!tab) return cfg.gruppen.map(function (g) { return { key: g.key, label: g.label }; });
     var g = cfg.gruppen[i], andere = [];
@@ -307,8 +324,25 @@ var Zuordnung = (function () {
   return {
     init: function (c) {
       cfg = c;
-      tab = !!c.tabellen;
-      if (tab) { // Lücken als Gruppen mit je genau einer Karte
+      text = !!c.lueckentext;
+      tab = !!c.tabellen || text;
+      if (text) { // jede [Lücke] als Gruppe mit genau einer Karte, dazu der Satz mit ____ für Mittel und Schwer
+        cfg.gruppen = []; cfg.karten = [];
+        c.lueckentext.split(/\n\s*\n/).forEach(function (absatz) {
+          var luecken = [], roh = absatz.replace(/\[([^\]]+)\]/g, function (_, l) { luecken.push(l.split('|')); return '\u0000'; });
+          // Satzgrenze: Punkt, Frage- oder Ausrufezeichen mit Leerzeichen danach (Zahlen wie 4,5 bleiben ganz)
+          var satz = 0, saetze = roh.split(/(?<=[.!?])\s+/);
+          saetze.forEach(function (s) {
+            var stellen = s.split('\u0000');
+            for (var k = 0; k < stellen.length - 1; k++) {
+              var a = luecken[satz++], key = 'l' + cfg.gruppen.length;
+              var anzeige = stellen.map(function (t, m) { return esc(t) + (m < stellen.length - 1 ? (m === k ? '<span class="z-blank">____</span>' : '…') : ''); }).join('');
+              cfg.gruppen.push({ key: key, label: 'Lücke ' + (cfg.gruppen.length + 1), text: a[0], keys: a.length > 1 ? a.slice(1) : undefined, spalte: 'text', satz: anzeige });
+              cfg.karten.push({ text: a[0], gruppe: key });
+            }
+          });
+        });
+      } else if (tab) { // Lücken als Gruppen mit je genau einer Karte
         cfg.gruppen = []; cfg.karten = [];
         c.tabellen.forEach(function (t, ti) {
           t.zeilen.forEach(function (z, zi) {

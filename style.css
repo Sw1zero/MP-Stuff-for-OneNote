@@ -713,7 +713,8 @@ body {
 .z-intro { color: var(--text-muted); line-height: 1.5; margin: 8px 0 16px; }
 .z-groups { display: grid; gap: 10px; }
 /* Lange Fachwörter (Greiferkammerverschlussring) trennen statt die Seite zu verbreitern */
-.z-group, .z-row { min-width: 0; hyphens: auto; overflow-wrap: break-word; }
+.z-group, .z-row { min-width: 0; overflow-wrap: break-word; }
+.z-target, .z-table th { hyphens: auto; }
 .z-group { background: var(--surface); border: 2px solid var(--border); border-left: 6px solid var(--z-farbe, var(--blue-dark)); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); transition: border-color .15s, background-color .15s; }
 .z-group.is-over { border-color: var(--blue-light); border-left-color: var(--z-farbe, var(--blue-dark)); background: var(--blue-tint); }
 /* Ganze Kopfzeile ist das Ziel: Antippen legt die bereitliegende Karte hierhin */
@@ -727,7 +728,8 @@ body {
 .z-card:hover { border-color: var(--blue-light); }
 .z-img { display: block; max-width: 100%; max-height: 96px; object-fit: contain; }
 .z-card .z-img { max-height: 56px; max-width: 72px; }
-.z-text { display: block; }
+.z-text { display: block; min-width: 0; }
+.z-cell .z-text { hyphens: auto; }
 .z-mark { margin-left: auto; flex: 0 0 22px; height: 22px; }
 .z-mark:empty { display: none; }
 /* Richtig/Falsch nie nur über Farbe: Rahmen + Symbol + Wort im Feedback */
@@ -772,6 +774,28 @@ body {
 .z-solution:empty { display: none; }
 .z-solution svg { flex: 0 0 16px; height: 16px; }
 .z-wrap .q-feedback { margin-top: 16px; }
+/* Tabelle mit Lücken: Desktop als Tabelle, Handy als Karte pro Zeile (Spaltenname über jeder Lücke) */
+.z-table-title { margin: 20px 0 8px; font-size: 1.05rem; color: var(--blue-dark); }
+.z-table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 4px; table-layout: fixed; overflow-wrap: break-word; }
+.z-table th, .z-table td { padding: 8px 10px; text-align: left; vertical-align: top; line-height: 1.4; border-bottom: 1px solid var(--border); }
+.z-table tbody tr:last-child > * { border-bottom: 0; }
+.z-table thead th { font-size: 0.875rem; color: #fff; background: var(--blue-dark); }
+.z-table tbody th { font-weight: 600; color: var(--blue-dark); background: var(--blue-tint); }
+.z-cell .z-target { justify-content: center; min-height: 44px; border: 2px dashed var(--blue-light); background: var(--bg); font-weight: 400; }
+.z-cell .z-target::after { margin: 0; padding: 0; }
+.z-cell .z-target[hidden] { display: none; }
+.z-cell .z-slot { padding: 0; }
+.z-cell.is-over .z-target { background: var(--blue-tint); border-style: solid; }
+.z-merke { margin: 20px 0 0; padding: 14px 16px; line-height: 1.5; background: var(--blue-tint); border-left: 4px solid var(--blue-dark); border-radius: var(--radius-sm); }
+.z-merke strong { color: var(--blue-dark); }
+@media (max-width: 699px) {
+  .z-table, .z-table tbody, .z-table tr, .z-table th, .z-table td { display: block; }
+  .z-table { background: none; border: 0; box-shadow: none; overflow: visible; }
+  .z-table thead { display: none; }
+  .z-table tr { margin-bottom: 10px; background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .z-table td { border-bottom: 0; padding-top: 4px; }
+  .z-table td::before { content: attr(data-label); display: block; margin-bottom: 4px; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+}
 @media (min-width: 700px) {
   .z-wrap { padding-bottom: 16px; }
   .z-wrap .q-next { position: static; background: none; padding: 16px 0 32px; }

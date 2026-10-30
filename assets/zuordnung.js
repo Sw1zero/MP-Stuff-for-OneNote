@@ -6,6 +6,9 @@
      stufen:  ['zuordnen', 'anklicken', 'eintippen'],    // optional, Standard nur 'zuordnen'; erscheinen als Einfach / Mittel / Schwer
      intro:   'Ordnen Sie …' oder { zuordnen, anklicken, eintippen }   // optional, ersetzt den Standard-Aufgabentext
    });
+   Tabelle mit Lücken statt gruppen/karten (erste Spalte fest, alle übrigen Zellen sind Lücken):
+     tabellen: [{ titel?, spalten: ['Methode', 'Temperatur', …], zeilen: [['Kühlung', '1–5 °C', …] | ['…', { text, keys }, …], …] }, ...]
+     Gleicher Text in mehreren Lücken ist erlaubt (zählt in jeder davon). Mittel: pro Lücke aus höchstens 4 Begriffen derselben Spalte wählen.
    Zuordnen: die oberste Karte im Stapel liegt unten bereit, Antippen einer Gruppe legt sie dorthin, Ziehen geht auch.
    Abgelegte Karte antippen = zurück auf den Stapel. Bild-Paare (Piktogramm → Bedeutung): Bild als Karte, Bedeutung als Gruppe.
    Markup entsteht in <div id="zuordnung">, Aussehen nur aus style.css (.z-*, Stufen, Knopf und Feedback wie Quiz).
@@ -19,12 +22,17 @@ var Zuordnung = (function () {
     anklicken: 'Wählen Sie zu jeder Karte die passende Gruppe.',
     eintippen: 'Schreiben Sie zu jeder Karte die passende Gruppe auf. Es genügt der Kernbegriff.'
   };
-  var cfg, stufe, order, placed, pos, geprueft, solved, beantwortet;
+  var INTRO_TAB = {
+    zuordnen: 'Tippen Sie auf die Lücke, in die der Begriff unten gehört, oder ziehen Sie ihn dorthin.',
+    anklicken: 'Wählen Sie für jede Lücke den passenden Begriff.',
+    eintippen: 'Füllen Sie jede Lücke aus. Es genügt der Kernbegriff.'
+  };
+  var cfg, tab, stufe, order, placed, pos, geprueft, solved, beantwortet;
 
   function el(id) { return document.getElementById(id); }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function gruppe(key) { return cfg.gruppen.filter(function (g) { return g.key === key; })[0]; }
-  function richtig(i, key) { return cfg.karten[i].gruppe === key; }
+  function richtig(i, key) { return tab ? cfg.karten[i].text === gruppe(key).text : cfg.karten[i].gruppe === key; }
   function shuffled(n) {
     var a = [];
     for (var i = 0; i < n; i++) a.push(i);
@@ -69,7 +77,7 @@ var Zuordnung = (function () {
       b.classList.toggle('active', b.dataset.level === s);
       b.setAttribute('aria-pressed', b.dataset.level === s);
     });
-    el('zIntro').textContent = (typeof cfg.intro === 'string' ? cfg.intro : (cfg.intro || {})[s]) || INTRO[s];
+    el('zIntro').textContent = (typeof cfg.intro === 'string' ? cfg.intro : (cfg.intro || {})[s]) || (tab ? INTRO_TAB : INTRO)[s];
     start();
   }
 
@@ -82,11 +90,11 @@ var Zuordnung = (function () {
   /* ---------- Einfach: zuordnen ---------- */
   function buildZuordnen() {
     var bilder = cfg.karten.some(function (k) { return k.img; });
-    el('zBody').innerHTML =
+    el('zBody').innerHTML = (tab ? tabellen() :
       '<div class="z-groups' + (bilder ? ' has-img' : '') + '">' + cfg.gruppen.map(function (g) {
         return '<section class="z-group" data-g="' + esc(g.key) + '"' + (g.farbe ? ' style="--z-farbe:' + esc(g.farbe) + '"' : '') + '>' +
           '<button class="z-target" data-g="' + esc(g.key) + '">' + esc(g.label) + '</button><div class="z-slot"></div></section>';
-      }).join('') + '</div>' +
+      }).join('') + '</div>') +
       '<div class="z-dock"><div class="q-feedback" id="zFeedback" role="status" aria-live="polite"></div>' +
       '<div class="z-stack" id="zStack"></div><button class="q-btn" id="zCheck">Überprüfen</button></div>';
     [].forEach.call(document.querySelectorAll('.z-target'), function (b) {
@@ -105,13 +113,32 @@ var Zuordnung = (function () {
 
   function rest() { return order.filter(function (i) { return !(i in placed); }); }
 
-  function ablegen(i, key) { placed[i] = key; pos = 0; geprueft = false; zeichne(); }
+  function ablegen(i, key) {
+    // Tabelle: eine Karte pro Lücke, die bisherige geht zurück auf den Stapel
+    if (tab) Object.keys(placed).forEach(function (j) { if (placed[j] === key) delete placed[j]; });
+    placed[i] = key; pos = 0; geprueft = false; zeichne();
+  }
+
+  function tabellen() {
+    return cfg.tabellen.map(function (t, ti) {
+      return (t.titel ? '<h2 class="z-table-title">' + esc(t.titel) + '</h2>' : '') + '<table class="z-table"><thead><tr>' +
+        t.spalten.map(function (s) { return '<th scope="col">' + esc(s) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+        t.zeilen.map(function (z, zi) {
+          return '<tr><th scope="row">' + esc(z[0]) + '</th>' + z.slice(1).map(function (_, si) {
+            var key = ti + '-' + zi + '-' + si;
+            return '<td class="z-cell" data-g="' + key + '" data-label="' + esc(t.spalten[si + 1]) + '">' +
+              '<button class="z-target" data-g="' + key + '" aria-label="Lücke ' + esc(gruppe(key).label) + '"></button><div class="z-slot"></div></td>';
+          }).join('') + '</tr>';
+        }).join('') + '</tbody></table>';
+    }).join('');
+  }
 
   function zeichne() {
     var r = rest();
     if (pos >= r.length) pos = 0;
-    [].forEach.call(document.querySelectorAll('.z-group'), function (sec) {
+    [].forEach.call(document.querySelectorAll('.z-group, .z-cell'), function (sec) {
       var drin = order.filter(function (i) { return placed[i] === sec.dataset.g; });
+      if (tab) sec.querySelector('.z-target').hidden = drin.length > 0;
       sec.querySelector('.z-slot').innerHTML = drin.map(function (i) {
         var cls = geprueft ? (richtig(i, placed[i]) ? ' is-correct' : ' is-wrong') : '';
         return '<button class="z-card' + cls + '" data-i="' + i + '" aria-label="Zurück auf den Stapel: ' + esc(cfg.karten[i].text || cfg.karten[i].alt || '') + '">' +
@@ -124,7 +151,7 @@ var Zuordnung = (function () {
     var st = el('zStack');
     st.innerHTML = r.length ?
       '<div class="z-current" id="zCurrent">' + karte(r[pos]) + '</div>' +
-      '<div class="z-stack-meta"><span>Noch ' + r.length + (r.length === 1 ? ' Karte' : ' Karten') + '</span>' +
+      '<div class="z-stack-meta"><span>Noch ' + r.length + (tab ? (r.length === 1 ? ' Begriff' : ' Begriffe') : (r.length === 1 ? ' Karte' : ' Karten')) + '</span>' +
       (r.length > 1 ? '<span class="z-browse"><button id="zPrev" aria-label="Vorherige Karte">‹</button><button id="zNext" aria-label="Nächste Karte">›</button></span>' : '') + '</div>' : '';
     if (r.length) {
       if (r.length > 1) {
@@ -142,8 +169,8 @@ var Zuordnung = (function () {
     var n = cfg.karten.length, k = Object.keys(placed).filter(function (i) { return richtig(+i, placed[i]); }).length;
     geprueft = true; solved = k === n;
     zeichne();
-    if (solved) feedback(true, 'Richtig!', 'Alle ' + n + ' Karten liegen in der richtigen Gruppe.');
-    else feedback(false, 'Nicht ganz.', k + ' von ' + n + ' Karten liegen richtig. Die rot markierten kommen zurück auf den Stapel.');
+    if (solved) feedback(true, 'Richtig!', tab ? 'Alle ' + n + ' Lücken sind richtig ausgefüllt.' : 'Alle ' + n + ' Karten liegen in der richtigen Gruppe.');
+    else feedback(false, 'Nicht ganz.', k + ' von ' + n + (tab ? ' Lücken sind richtig.' : ' Karten liegen richtig.') + ' Die rot markierten kommen zurück auf den Stapel.');
     el('zCheck').textContent = solved ? 'Neu mischen' : 'Falsche zurücklegen';
   }
 
@@ -154,7 +181,7 @@ var Zuordnung = (function () {
       var x0 = e.clientX, y0 = e.clientY, geist = null, ziel = null;
       function treffer(e) {
         var t = document.elementFromPoint(e.clientX, e.clientY);
-        return t && t.closest('.z-group');
+        return t && t.closest('.z-group, .z-cell');
       }
       function mv(e) {
         if (!geist) {
@@ -186,12 +213,24 @@ var Zuordnung = (function () {
   }
 
   /* ---------- Mittel: pro Karte die Gruppe anklicken ---------- */
+  // Zeilen für Mittel und Schwer: Karten gemischt, bei Tabellen die Lücken in Tabellenreihenfolge
+  function zeilen() { return tab ? cfg.gruppen.map(function (g, j) { return j; }) : order; }
+  function frage(i) { return tab ? '<span class="z-text">' + esc(cfg.gruppen[i].label) + '</span>' : karte(i); }
+  function optionen(i) {
+    if (!tab) return cfg.gruppen.map(function (g) { return { key: g.key, label: g.label }; });
+    var g = cfg.gruppen[i], andere = [];
+    cfg.gruppen.forEach(function (h) { if (h.spalte === g.spalte && h.text !== g.text && andere.indexOf(h.text) < 0) andere.push(h.text); });
+    var wahl = shuffled(andere.length).slice(0, 3).map(function (j) { return andere[j]; }).concat(g.text);
+    return shuffled(wahl.length).map(function (j) { return { key: wahl[j], label: wahl[j] }; });
+  }
+  function trifft(i, key) { return tab ? cfg.gruppen[i].text === key : richtig(i, key); }
+
   function buildAnklicken() {
     solved = 0;
-    el('zBody').innerHTML = '<ol class="z-list">' + order.map(function (i) {
-      return '<li class="z-row" data-i="' + i + '"><div class="z-row-card">' + karte(i) + '</div><div class="z-choices">' +
-        cfg.gruppen.map(function (g) {
-          return '<button class="z-choice" data-g="' + esc(g.key) + '"><span>' + esc(g.label) + '</span><span class="z-mark"></span></button>';
+    el('zBody').innerHTML = '<ol class="z-list">' + zeilen().map(function (i) {
+      return '<li class="z-row" data-i="' + i + '"><div class="z-row-card">' + frage(i) + '</div><div class="z-choices">' +
+        optionen(i).map(function (o) {
+          return '<button class="z-choice" data-g="' + esc(o.key) + '"><span>' + esc(o.label) + '</span><span class="z-mark"></span></button>';
         }).join('') + '</div></li>';
     }).join('') + '</ol>' + schluss('Neu mischen');
     el('zCheck').parentNode.classList.remove('show');
@@ -202,9 +241,9 @@ var Zuordnung = (function () {
         b.onclick = function () {
           row.querySelectorAll('.z-choice').forEach(function (c) {
             c.disabled = true;
-            if (richtig(i, c.dataset.g)) { c.classList.add('is-correct'); c.querySelector('.z-mark').innerHTML = OK; }
+            if (trifft(i, c.dataset.g)) { c.classList.add('is-correct'); c.querySelector('.z-mark').innerHTML = OK; }
           });
-          var ok = richtig(i, b.dataset.g);
+          var ok = trifft(i, b.dataset.g);
           if (!ok) { b.classList.add('is-wrong'); b.querySelector('.z-mark').innerHTML = NOK; }
           row.classList.add(ok ? 'is-correct' : 'is-wrong');
           if (ok) solved++;
@@ -216,16 +255,16 @@ var Zuordnung = (function () {
 
   /* ---------- Schwer: Gruppe eintippen ---------- */
   function buildEintippen() {
-    el('zBody').innerHTML = '<ol class="z-list">' + order.map(function (i) {
-      return '<li class="z-row" data-i="' + i + '"><div class="z-row-card">' + karte(i) + '</div>' +
-        '<input class="z-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Gruppe">' +
+    el('zBody').innerHTML = '<ol class="z-list">' + zeilen().map(function (i) {
+      return '<li class="z-row" data-i="' + i + '"><div class="z-row-card">' + frage(i) + '</div>' +
+        '<input class="z-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Antwort">' +
         '<div class="z-solution"></div></li>';
     }).join('') + '</ol>' + schluss('Überprüfen');
     el('zCheck').onclick = function () {
       if (solved === true) return start();
       var k = 0;
       [].forEach.call(document.querySelectorAll('.z-row'), function (row) {
-        var g = gruppe(cfg.karten[+row.dataset.i].gruppe), inp = row.querySelector('.z-input'), ok = passt(inp.value, g);
+        var g = loesung(+row.dataset.i), inp = row.querySelector('.z-input'), ok = passt(inp.value, g);
         if (ok) k++;
         row.classList.toggle('is-correct', ok);
         row.classList.toggle('is-wrong', !ok);
@@ -236,6 +275,9 @@ var Zuordnung = (function () {
     };
   }
 
+  // Was bei «eintippen» passt: Gruppe der Karte bzw. Text der Lücke, je mit Stichworten
+  function loesung(i) { return tab ? { label: cfg.gruppen[i].text, keys: cfg.gruppen[i].keys } : gruppe(cfg.karten[i].gruppe); }
+
   function schluss(knopf) {
     return '<div class="q-feedback" id="zFeedback" role="status" aria-live="polite"></div>' +
       '<div class="q-next show"><button class="q-btn" id="zCheck">' + knopf + '</button></div>';
@@ -243,9 +285,9 @@ var Zuordnung = (function () {
 
   function ende(k) {
     var n = cfg.karten.length;
-    if (k === n) feedback(true, 'Richtig!', 'Alle ' + n + ' Karten richtig zugeordnet.');
+    if (k === n) feedback(true, 'Richtig!', tab ? 'Alle ' + n + ' Lücken richtig ausgefüllt.' : 'Alle ' + n + ' Karten richtig zugeordnet.');
     else feedback(false, 'Nicht ganz.', k + ' von ' + n + ' richtig. ' + (stufe === 'eintippen'
-      ? 'Korrigieren Sie die rot markierten und prüfen Sie nochmals.' : 'Die richtige Gruppe ist jeweils grün markiert.'));
+      ? 'Korrigieren Sie die rot markierten und prüfen Sie nochmals.' : 'Die richtige Antwort ist jeweils grün markiert.'));
     el('zCheck').parentNode.classList.add('show');
     el('zFeedback').scrollIntoView({ block: 'end', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   }
@@ -254,15 +296,30 @@ var Zuordnung = (function () {
     typ: 'zuordnung',
     stufen: function () { return cfg.stufen || ['zuordnen']; },
     stufe: function () { return stufe; },
-    // zuordnen: key der richtigen Gruppe für die bereitliegende Karte; anklicken/eintippen: pro Zeile in Anzeigereihenfolge
+    // zuordnen: richtiges Ziel der bereitliegenden Karte und ob sie in ein anderes Ziel auch passt (gleicher Text)
     ziel: function () { var r = rest(); return r.length ? cfg.karten[r[pos]].gruppe : null; },
-    ziele: function () { return order.map(function (i) { return cfg.karten[i].gruppe; }); },
-    eingabe: function (key) { var g = gruppe(key); return (g.keys || [g.label])[0]; }
+    passt: function (key) { var r = rest(); return richtig(r[pos], key); },
+    // anklicken: ob der Knopf (data-g) in Zeile i der Seite richtig ist; eintippen: passende Eingabe pro Zeile
+    trifft: function (zeile, key) { return trifft(zeilen()[zeile], key); },
+    eingaben: function () { return zeilen().map(function (i) { var g = loesung(i); return (g.keys || [g.label])[0]; }); }
   };
 
   return {
     init: function (c) {
       cfg = c;
+      tab = !!c.tabellen;
+      if (tab) { // Lücken als Gruppen mit je genau einer Karte
+        cfg.gruppen = []; cfg.karten = [];
+        c.tabellen.forEach(function (t, ti) {
+          t.zeilen.forEach(function (z, zi) {
+            z.slice(1).forEach(function (zelle, si) {
+              var a = typeof zelle === 'string' ? { text: zelle } : zelle, key = ti + '-' + zi + '-' + si;
+              cfg.gruppen.push({ key: key, label: z[0] + ' · ' + t.spalten[si + 1], text: a.text, keys: a.keys, spalte: ti + '-' + si });
+              cfg.karten.push({ text: a.text, gruppe: key });
+            });
+          });
+        });
+      }
       build();
     }
   };

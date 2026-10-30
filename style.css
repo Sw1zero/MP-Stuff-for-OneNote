@@ -663,37 +663,6 @@ body {
    damit gleich benannte Klassen anderer Tools (.q-text, .opt, .fb …) unberührt bleiben.
    ============================================================ */
 .ls-wrap { max-width:640px; margin:0 auto; }
-.ls-wrap .hud { display:flex; align-items:center; justify-content:space-between; gap:12px; background:var(--blue-dark); color:#fff; border-radius:var(--radius-md); padding:10px 14px; margin-bottom:14px; box-shadow:var(--shadow-sm); }
-.ls-wrap .hud-xp { display:flex; align-items:baseline; gap:5px; flex-shrink:0; }
-.ls-wrap .hud-label { font-size:0.6rem; font-weight:700; letter-spacing:0.1em; opacity:0.8; }
-.ls-wrap .hud-val { font-size:1.15rem; font-weight:800; display:inline-block; }
-.ls-wrap .hud-val.pop { animation:xppop 0.4s ease; }
-@keyframes xppop { 0%{transform:scale(1);} 40%{transform:scale(1.45); color:#9ad1e8;} 100%{transform:scale(1);} }
-.ls-wrap .hud-bar { flex:1; height:8px; background:rgba(255,255,255,0.2); border-radius:4px; overflow:hidden; }
-.ls-wrap .hud-bar-fill { height:100%; width:0%; background:linear-gradient(90deg,#69A9C9,#9ad1e8); border-radius:4px; transition:width 0.4s ease; }
-.ls-wrap .hud-bar-fill.on-fire { animation:barpulse 0.9s ease-in-out infinite; }
-@keyframes barpulse { 0%,100%{box-shadow:0 0 4px 1px rgba(154,209,232,0.4);} 50%{box-shadow:0 0 10px 3px rgba(154,209,232,0.85);} }
-.ls-wrap .hud-streak { position:relative; display:flex; align-items:center; gap:8px; font-size:0.84rem; font-weight:700; background:rgba(255,255,255,0.14); padding:3px 9px; border-radius:12px; white-space:nowrap; flex-shrink:0; transition:transform 0.15s, background 0.3s; }
-.ls-wrap .streak-num-fire { color:#ff8c00; text-shadow:0 0 6px rgba(255,100,0,0.8); }
-.ls-wrap .hud-streak.pulse { transform:scale(1.25); }
-.ls-wrap .streak-pop { position:absolute; top:-4px; right:-4px; font-size:0.72rem; font-weight:800; color:#ffa040; pointer-events:none; white-space:nowrap; animation:streakPopAnim 0.9s ease-out forwards; }
-@keyframes streakPopAnim { 0%{opacity:1;transform:translateY(0) scale(1);} 70%{opacity:1;} 100%{opacity:0;transform:translateY(-20px) scale(0.75);} }
-.ls-wrap .hud-fire-wrap { display:inline-block; position:relative; width:22px; height:22px; vertical-align:middle; overflow:visible; flex-shrink:0; }
-.ls-wrap .hud-fire-wrap .fire { position:absolute; width:100px; height:100px; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.22); transform-origin:center center; background:transparent; }
-@keyframes scaleUpDown { 0%,100%{transform:scaleY(1) scaleX(1);} 50%,90%{transform:scaleY(1.1);} 75%{transform:scaleY(0.95);} 80%{transform:scaleX(0.95);} }
-@keyframes shake { 0%,100%{transform:skewX(0) scale(1);} 50%{transform:skewX(5deg) scale(0.9);} }
-@keyframes particleUp { 0%{opacity:0;} 20%{opacity:1;} 80%{opacity:1;} 100%{opacity:0;top:-100%;transform:scale(0.5);} }
-@keyframes glow { 0%,100%{background-color:#ef5a00;} 50%{background-color:#ff7800;} }
-.ls-wrap .hud-fire-wrap .fire-center { position:absolute; height:100%; width:100%; animation:scaleUpDown 3s ease-out infinite both; }
-.ls-wrap .hud-fire-wrap .fire-center .main-fire { position:absolute; width:100%; height:100%; background-image:radial-gradient(farthest-corner at 10px 0,#d43300 0%,#ef5a00 95%); transform:scaleX(0.8) rotate(45deg); border-radius:0 40% 60% 40%; filter:drop-shadow(0 0 10px #d43322); }
-.ls-wrap .hud-fire-wrap .fire-center .particle-fire { position:absolute; top:60%; left:45%; width:10px; height:10px; background:#ef5a00; border-radius:50%; filter:drop-shadow(0 0 10px #d43322); animation:particleUp 2s ease-out infinite both; }
-.ls-wrap .hud-fire-wrap .fire-right { height:100%; width:100%; position:absolute; animation:shake 2s ease-out infinite both; }
-.ls-wrap .hud-fire-wrap .fire-right .main-fire { position:absolute; top:15%; right:-25%; width:80%; height:80%; background:#ef5a00; transform:scaleX(0.8) rotate(45deg); border-radius:0 40% 60% 40%; filter:drop-shadow(0 0 10px #d43322); }
-.ls-wrap .hud-fire-wrap .fire-right .particle-fire { position:absolute; top:45%; left:50%; width:15px; height:15px; background:#ef5a00; transform:scaleX(0.8) rotate(45deg); border-radius:50%; filter:drop-shadow(0 0 10px #d43322); animation:particleUp 2s ease-out infinite both; }
-.ls-wrap .hud-fire-wrap .fire-left { position:absolute; height:100%; width:100%; animation:shake 3s ease-out infinite both; }
-.ls-wrap .hud-fire-wrap .fire-left .main-fire { position:absolute; top:15%; left:-20%; width:80%; height:80%; background:#ef5a00; transform:scaleX(0.8) rotate(45deg); border-radius:0 40% 60% 40%; filter:drop-shadow(0 0 10px #d43322); }
-.ls-wrap .hud-fire-wrap .fire-left .particle-fire { position:absolute; top:10%; left:20%; width:10%; height:10%; background:#ef5a00; border-radius:50%; filter:drop-shadow(0 0 10px #d43322); animation:particleUp 3s ease-out infinite both; }
-.ls-wrap .hud-fire-wrap .fire-bottom .main-fire { position:absolute; top:30%; left:20%; width:75%; height:75%; background:#ff7800; transform:scaleX(0.8) rotate(45deg); border-radius:0 40% 100% 40%; filter:blur(10px); animation:glow 2s ease-out infinite both; }
 .ls-wrap .ls-meta { font-size:0.8rem; font-weight:600; color:var(--text-muted); text-align:center; margin-bottom:6px; }
 .ls-wrap .ls-select-hint { display:none; text-align:center; margin-bottom:12px; }
 .ls-wrap .ls-select-hint.show { display:block; }
@@ -782,8 +751,6 @@ body {
 .ls-wrap .tf-btn.sel-correct { background:#38a169; border-color:#38a169; color:#fff; }
 .ls-wrap .tf-btn.sel-wrong { background:var(--red); border-color:var(--red); color:#fff; }
 .ls-wrap .tf-btn.reveal { border-color:#38a169; color:#276749; }
-.ls-wrap .tf-exp { font-size:0.78rem; color:var(--text-muted); margin-top:8px; display:none; }
-.ls-wrap .tf-exp.show { display:block; }
 .ls-wrap .gap-text { font-size:0.95rem; line-height:2.1; }
 .ls-wrap .gap-text select, .ls-wrap .lp-select { font-family:var(--font); font-size:0.85rem; font-weight:600; border:1.5px solid var(--blue-light); border-radius:var(--radius-sm); padding:3px 6px; background:var(--blue-tint); color:var(--blue-dark); }
 .ls-wrap .gap-text select.correct, .ls-wrap .lp-select.correct { border-color:#38a169; background:#f0fff4; color:#276749; }
@@ -831,13 +798,8 @@ body {
 .ls-wrap .exp-rate-btn.rated.picked-good { border-color:#38a169; color:#276749; opacity:0.85; }
 .ls-wrap .exp-rate-btn.rated.picked-bad { border-color:var(--red); color:var(--red-dark); opacity:0.85; }
 .ls-wrap .finish { text-align:center; }
-.ls-wrap .finish .rank { font-size:1.25rem; font-weight:800; color:var(--blue-dark); margin:4px 0 2px; }
 .ls-wrap .finish .big-score { font-size:2.4rem; font-weight:800; color:var(--blue-dark); margin:6px 0 2px; }
 .ls-wrap .finish .score-sub { font-size:0.86rem; color:var(--text-muted); margin-bottom:16px; }
-.ls-wrap .badges { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:0 auto 18px; max-width:520px; }
-.ls-wrap .badge-chip { display:inline-flex; align-items:center; gap:5px; font-size:0.76rem; font-weight:600; padding:6px 12px; border-radius:20px; border:1.5px solid var(--border); background:#f8fafc; color:var(--text-subtle); }
-.ls-wrap .badge-chip.earned { background:#fff7e6; border-color:#f0c36d; color:#92400e; }
-.ls-wrap .badge-chip .lock { opacity:0.6; }
 .ls-wrap .finish ul { text-align:left; max-width:500px; margin:0 auto 20px; font-size:0.86rem; color:var(--text); line-height:1.6; }
 .ls-wrap .finish li { margin-bottom:6px; }
 .ls-wrap .score-breakdown { list-style:none; text-align:left; max-width:420px; margin:0 auto 18px; font-size:0.84rem; color:var(--text); padding:0; }
@@ -915,3 +877,9 @@ body {
 .ls-wrap .rs-check { display:flex; gap:8px; align-items:flex-start; font-size:0.86rem; margin-bottom:6px; cursor:pointer; }
 .ls-wrap .rs-check input { margin-top:3px; }
 .ls-wrap .ls-video { width:100%; display:block; border-radius:var(--radius-md); box-shadow:var(--shadow-sm); background:#000; }
+/* Rückmeldung in Wahr/Falsch, Quiz und Lückentext: .q-feedback aus dem Quiz, hier etwas kompakter */
+.ls-wrap .q-feedback { margin-top: 10px; padding: 10px 12px; font-size: 0.9rem; }
+.ls-wrap .gap-mark { display: inline-flex; align-items: center; gap: 2px; margin: 0 4px 0 2px; vertical-align: middle; font-size: 0.85rem; font-weight: 600; }
+.ls-wrap .gap-mark svg { width: 16px; height: 16px; }
+.ls-wrap .gap-mark.ok { color: var(--success); }
+.ls-wrap .gap-mark.nok { color: var(--red-dark); }

@@ -650,6 +650,33 @@ body {
 .z-gap .z-slot { display: inline-block; }
 .z-gap .z-card { display: inline-flex; width: auto; min-height: 40px; padding: 6px 10px; }
 .z-blank { font-weight: 700; color: var(--blue-dark); letter-spacing: 0.05em; }
+/* Beschriften (zuordnung.js mit beschriften): Bild, darunter die Nummern als Lücken */
+.z-figure { margin: 0 0 16px; background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 12px; }
+.z-figure figcaption { margin-top: 6px; font-size: 0.75rem; color: var(--text-muted); text-align: right; }
+.z-bild { position: relative; }
+.z-bild img { display: block; width: 100%; height: auto; border-radius: var(--radius-sm); }
+.z-hotspots { position: absolute; inset: 0; }
+.z-hotspots.aktiv { cursor: crosshair; }
+.z-hs-mark { position: absolute; transform: translate(-50%, -50%); display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; font-size: 0.8rem; font-weight: 700; color: #fff; background: var(--success); box-shadow: 0 0 0 3px #fff; pointer-events: none; }
+.z-hs-miss { position: absolute; transform: translate(-50%, -50%); width: 28px; height: 28px; color: var(--red-dark); pointer-events: none; }
+.z-prompt { position: sticky; bottom: 0; margin: 0 0 12px; padding: 12px 16px; text-align: center; background: var(--blue-tint); border-radius: var(--radius-md); color: var(--text); }
+.z-prompt span { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+.z-prompt b { color: var(--blue-dark); font-size: 1.1rem; }
+.z-prompt:empty { display: none; }
+.z-nums { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.z-nums li { display: flex; align-items: center; gap: 10px; }
+.z-nums .z-cell { flex: 1; min-width: 0; }
+.z-num { flex: 0 0 32px; width: 32px; height: 32px; display: inline-grid; place-items: center; border-radius: 50%; font-size: 0.9rem; font-weight: 700; color: #fff; background: var(--blue-dark); }
+/* Mittel/Schwer beim Beschriften: Nummer links, Eingabe bzw. Auswahl rechts in derselben Zeile */
+.z-bes .z-row { display: grid; grid-template-columns: 32px minmax(0, 1fr); column-gap: 10px; align-items: center; padding: 8px 10px; }
+.z-bes .z-row-card { margin: 0; }
+.z-bes .z-choices, .z-bes .z-solution { grid-column: 2; }
+/* Desktop: Bild mitlaufend links, Nummern rechts, damit beides gleichzeitig sichtbar ist */
+@media (min-width: 900px) {
+  main.z-wrap:has(.z-bes) { max-width: 1080px; }
+  .z-bes { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 20px; align-items: start; }
+  .z-bes .z-figure { position: sticky; top: 16px; margin: 0; }
+}
 .z-merke { margin: 20px 0 0; padding: 14px 16px; line-height: 1.5; background: var(--blue-tint); border-left: 4px solid var(--blue-dark); border-radius: var(--radius-sm); }
 .z-merke strong { color: var(--blue-dark); }
 @media (max-width: 699px) {

@@ -12,6 +12,10 @@
    Lückentext statt gruppen/karten: lueckentext: 'Sauermilch entsteht durch die [Milchsäuregärung]. …\n\nNeuer Absatz …'
      [Begriff] ist eine Lücke, [Begriff|Stichwort|Stichwort] mit Stichworten für «eintippen». Einfach: Begriffe in die Lücken im Text legen,
      Mittel/Schwer: pro Lücke der Satz mit ____ und Auswahl bzw. Eingabe.
+   Beschriften statt gruppen/karten:
+     beschriften: { bild, bildLeer?, quelle?, treffer?: 0.25, teile: [{ n, name, keys?, zonen: [{ cx, cy }] }] }   // cx/cy in % des Bildes
+     Stufen meist ['zuordnen', 'zeigen', 'eintippen']: Namen zu Nummern legen / Bauteil im Bild (bildLeer) antippen / Namen eintippen.
+     zeigen trifft, wenn der nächste Punkt aller Zonen zum gesuchten Teil gehört und höchstens treffer × Bildbreite entfernt ist.
    Zuordnen: die oberste Karte im Stapel liegt unten bereit, Antippen einer Gruppe legt sie dorthin, Ziehen geht auch.
    Abgelegte Karte antippen = zurück auf den Stapel. Bild-Paare (Piktogramm → Bedeutung): Bild als Karte, Bedeutung als Gruppe.
    Markup entsteht in <div id="zuordnung">, Aussehen nur aus style.css (.z-*, Stufen, Knopf und Feedback wie Quiz).
@@ -19,7 +23,7 @@
 var Zuordnung = (function () {
   var OK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
   var NOK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>';
-  var NAME = { zuordnen: 'Einfach', anklicken: 'Mittel', eintippen: 'Schwer' };
+  var NAME = { zuordnen: 'Einfach', anklicken: 'Mittel', zeigen: 'Mittel', eintippen: 'Schwer' };
   var INTRO = {
     zuordnen: 'Tippen Sie auf die Gruppe, zu der die Karte unten gehört, oder ziehen Sie die Karte dorthin.',
     anklicken: 'Wählen Sie zu jeder Karte die passende Gruppe.',
@@ -30,7 +34,13 @@ var Zuordnung = (function () {
     anklicken: 'Wählen Sie für jede Lücke den passenden Begriff.',
     eintippen: 'Füllen Sie jede Lücke aus. Es genügt der Kernbegriff.'
   };
-  var cfg, tab, text, stufe, order, placed, pos, geprueft, solved, beantwortet;
+  var INTRO_BILD = {
+    zuordnen: 'Tippen Sie auf die Nummer, zu der der Begriff unten gehört, oder ziehen Sie ihn dorthin.',
+    anklicken: 'Wählen Sie zu jeder Nummer das passende Bauteil.',
+    zeigen: 'Tippen Sie im Bild auf das gesuchte Bauteil.',
+    eintippen: 'Schreiben Sie zu jeder Nummer das Bauteil auf. Es genügt der Kernbegriff.'
+  };
+  var cfg, tab, text, bes, stufe, zeigen, order, placed, pos, geprueft, solved, beantwortet;
 
   function el(id) { return document.getElementById(id); }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -80,20 +90,20 @@ var Zuordnung = (function () {
       b.classList.toggle('active', b.dataset.level === s);
       b.setAttribute('aria-pressed', b.dataset.level === s);
     });
-    el('zIntro').textContent = (typeof cfg.intro === 'string' ? cfg.intro : (cfg.intro || {})[s]) || (tab ? INTRO_TAB : INTRO)[s];
+    el('zIntro').textContent = (typeof cfg.intro === 'string' ? cfg.intro : (cfg.intro || {})[s]) || (bes ? INTRO_BILD : tab ? INTRO_TAB : INTRO)[s];
     start();
   }
 
   function start() {
     order = shuffled(cfg.karten.length);
-    placed = {}; pos = 0; geprueft = solved = false; beantwortet = 0;
-    ({ zuordnen: buildZuordnen, anklicken: buildAnklicken, eintippen: buildEintippen })[stufe]();
+    placed = {}; pos = 0; geprueft = solved = false; beantwortet = 0; zeigen = null;
+    ({ zuordnen: buildZuordnen, anklicken: buildAnklicken, zeigen: buildZeigen, eintippen: buildEintippen })[stufe]();
   }
 
   /* ---------- Einfach: zuordnen ---------- */
   function buildZuordnen() {
     var bilder = cfg.karten.some(function (k) { return k.img; });
-    el('zBody').innerHTML = (text ? lueckentext() : tab ? tabellen() :
+    el('zBody').innerHTML = (bes ? '<div class="z-bes">' + bild(false) + nummern() + '</div>' : text ? lueckentext() : tab ? tabellen() :
       '<div class="z-groups' + (bilder ? ' has-img' : '') + '">' + cfg.gruppen.map(function (g) {
         return '<section class="z-group" data-g="' + esc(g.key) + '"' + (g.farbe ? ' style="--z-farbe:' + esc(g.farbe) + '"' : '') + '>' +
           '<button class="z-target" data-g="' + esc(g.key) + '">' + esc(g.label) + '</button><div class="z-slot"></div></section>';
@@ -134,6 +144,18 @@ var Zuordnung = (function () {
           }).join('') + '</tr>';
         }).join('') + '</tbody></table>';
     }).join('');
+  }
+
+  function bild(leer) {
+    var b = cfg.beschriften;
+    return '<figure class="z-figure"><div class="z-bild"><img src="' + esc(leer && b.bildLeer || b.bild) + '" alt="' + esc(b.alt || 'Schema mit nummerierten Bauteilen') + '">' +
+      '<div class="z-hotspots" id="zHot"></div></div>' + (b.quelle ? '<figcaption>' + esc(b.quelle) + '</figcaption>' : '') + '</figure>';
+  }
+  function nummern() {
+    return '<ol class="z-nums">' + cfg.gruppen.map(function (g) {
+      return '<li><span class="z-num" aria-hidden="true">' + g.n + '</span><div class="z-cell" data-g="' + g.key + '">' +
+        '<button class="z-target" data-g="' + g.key + '" aria-label="' + esc(g.label) + '"></button><div class="z-slot"></div></div></li>';
+    }).join('') + '</ol>';
   }
 
   function lueckentext() {
@@ -230,6 +252,7 @@ var Zuordnung = (function () {
   // Zeilen für Mittel und Schwer: Karten gemischt, bei Tabellen die Lücken in Tabellenreihenfolge
   function zeilen() { return tab ? cfg.gruppen.map(function (g, j) { return j; }) : order; }
   function frage(i) {
+    if (bes) return '<span class="z-num">' + cfg.gruppen[i].n + '</span>';
     if (text) return '<span class="z-text">' + cfg.gruppen[i].satz + '</span>';
     return tab ? '<span class="z-text">' + esc(cfg.gruppen[i].label) + '</span>' : karte(i);
   }
@@ -244,12 +267,12 @@ var Zuordnung = (function () {
 
   function buildAnklicken() {
     solved = 0;
-    el('zBody').innerHTML = '<ol class="z-list">' + zeilen().map(function (i) {
+    el('zBody').innerHTML = (bes ? '<div class="z-bes">' + bild(false) : '') + '<ol class="z-list">' + zeilen().map(function (i) {
       return '<li class="z-row" data-i="' + i + '"><div class="z-row-card">' + frage(i) + '</div><div class="z-choices">' +
         optionen(i).map(function (o) {
           return '<button class="z-choice" data-g="' + esc(o.key) + '"><span>' + esc(o.label) + '</span><span class="z-mark"></span></button>';
         }).join('') + '</div></li>';
-    }).join('') + '</ol>' + schluss('Neu mischen');
+    }).join('') + '</ol>' + (bes ? '</div>' : '') + schluss('Neu mischen');
     el('zCheck').parentNode.classList.remove('show');
     el('zCheck').onclick = start;
     [].forEach.call(document.querySelectorAll('.z-row'), function (row) {
@@ -272,11 +295,11 @@ var Zuordnung = (function () {
 
   /* ---------- Schwer: Gruppe eintippen ---------- */
   function buildEintippen() {
-    el('zBody').innerHTML = '<ol class="z-list">' + zeilen().map(function (i) {
+    el('zBody').innerHTML = (bes ? '<div class="z-bes">' + bild(false) : '') + '<ol class="z-list">' + zeilen().map(function (i) {
       return '<li class="z-row" data-i="' + i + '"><div class="z-row-card">' + frage(i) + '</div>' +
         '<input class="z-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Antwort">' +
         '<div class="z-solution"></div></li>';
-    }).join('') + '</ol>' + schluss('Überprüfen');
+    }).join('') + '</ol>' + (bes ? '</div>' : '') + schluss('Überprüfen');
     el('zCheck').onclick = function () {
       if (solved === true) return start();
       var k = 0;
@@ -290,6 +313,47 @@ var Zuordnung = (function () {
       ende(k);
       if (k === cfg.karten.length) { solved = true; el('zCheck').textContent = 'Neu mischen'; }
     };
+  }
+
+  /* ---------- Mittel beim Beschriften: Bauteil im Bild antippen ---------- */
+  function buildZeigen() {
+    zeigen = { reihe: order.slice(), k: 0, fehl: 0 };
+    el('zBody').innerHTML = bild(true) + '<div class="z-prompt" id="zPrompt" aria-live="polite"></div>' + schluss('Neu mischen');
+    el('zCheck').onclick = start;
+    el('zHot').classList.add('aktiv');
+    el('zHot').onclick = function (e) {
+      if (zeigen.k >= zeigen.reihe.length) return;
+      var box = el('zHot').getBoundingClientRect(), x = (e.clientX - box.left) / box.width * 100, y = (e.clientY - box.top) / box.height * 100;
+      var g = cfg.gruppen[zeigen.reihe[zeigen.k]], best = null, nd = Infinity;
+      cfg.gruppen.forEach(function (h) {
+        h.zonen.forEach(function (z) {
+          var dx = (x - z.cx) / 100 * box.width, dy = (y - z.cy) / 100 * box.height, d = Math.sqrt(dx * dx + dy * dy);
+          if (d < nd) { nd = d; best = { g: h, z: z }; }
+        });
+      });
+      var m = document.createElement('span');
+      if (best.g === g && nd <= (cfg.beschriften.treffer || 0.25) * box.width) {
+        m.className = 'z-hs-mark'; m.style.left = best.z.cx + '%'; m.style.top = best.z.cy + '%'; m.textContent = g.n; m.title = g.text;
+        zeigen.k++; frageZeigen();
+      } else {
+        zeigen.fehl++;
+        m.className = 'z-hs-miss'; m.style.left = x + '%'; m.style.top = y + '%'; m.innerHTML = NOK;
+        setTimeout(function () { m.remove(); }, 700);
+      }
+      el('zHot').appendChild(m);
+    };
+    frageZeigen();
+  }
+  function frageZeigen() {
+    var n = zeigen.reihe.length;
+    if (zeigen.k < n) {
+      el('zPrompt').innerHTML = '<span>Bauteil ' + (zeigen.k + 1) + ' von ' + n + '</span>Tippen Sie auf: <b>' + esc(cfg.gruppen[zeigen.reihe[zeigen.k]].text) + '</b>';
+      return;
+    }
+    el('zPrompt').innerHTML = '';
+    if (!zeigen.fehl) feedback(true, 'Richtig!', 'Alle ' + n + ' Bauteile beim ersten Versuch gefunden.');
+    else feedback(false, 'Alle gefunden.', zeigen.fehl + (zeigen.fehl === 1 ? ' Fehlklick' : ' Fehlklicks') + ' bei ' + n + ' Bauteilen. Mit «Neu mischen» üben Sie nochmals.');
+    el('zCheck').parentNode.classList.add('show');
   }
 
   // Was bei «eintippen» passt: Gruppe der Karte bzw. Text der Lücke, je mit Stichworten
@@ -318,6 +382,10 @@ var Zuordnung = (function () {
     passt: function (key) { var r = rest(); return richtig(r[pos], key); },
     // anklicken: ob der Knopf (data-g) in Zeile i der Seite richtig ist; eintippen: passende Eingabe pro Zeile
     trifft: function (zeile, key) { return trifft(zeilen()[zeile], key); },
+    // zeigen: Mitte der ersten Zone des gesuchten Teils (in % des Bildes) und eine Zone eines anderen Teils für den Fehlklick
+    zeigeZiel: function () { return zeigen && zeigen.k < zeigen.reihe.length ? cfg.gruppen[zeigen.reihe[zeigen.k]].zonen[0] : null; },
+    zeigeFalsch: function () { var g = cfg.gruppen[zeigen.reihe[zeigen.k]]; return cfg.gruppen.filter(function (h) { return h !== g; })[0].zonen[0]; },
+    fehlklicks: function () { return zeigen.fehl; },
     eingaben: function () { return zeilen().map(function (i) { var g = loesung(i); return (g.keys || [g.label])[0]; }); }
   };
 
@@ -325,8 +393,14 @@ var Zuordnung = (function () {
     init: function (c) {
       cfg = c;
       text = !!c.lueckentext;
-      tab = !!c.tabellen || text;
-      if (text) { // jede [Lücke] als Gruppe mit genau einer Karte, dazu der Satz mit ____ für Mittel und Schwer
+      bes = !!c.beschriften;
+      tab = !!c.tabellen || text || bes;
+      if (bes) { // jede Nummer als Lücke mit genau einem Namen
+        cfg.gruppen = c.beschriften.teile.map(function (t) {
+          return { key: 'b' + t.n, n: t.n, label: 'Nummer ' + t.n, text: t.name, keys: t.keys, spalte: 'b', zonen: t.zonen || [] };
+        });
+        cfg.karten = cfg.gruppen.map(function (g) { return { text: g.text, gruppe: g.key }; });
+      } else if (text) { // jede [Lücke] als Gruppe mit genau einer Karte, dazu der Satz mit ____ für Mittel und Schwer
         cfg.gruppen = []; cfg.karten = [];
         c.lueckentext.split(/\n\s*\n/).forEach(function (absatz) {
           var luecken = [], roh = absatz.replace(/\[([^\]]+)\]/g, function (_, l) { luecken.push(l.split('|')); return '\u0000'; });

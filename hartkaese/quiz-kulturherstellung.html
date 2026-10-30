@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kulturen herstellen - Quiz</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .quiz-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px 56px;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* Score-Leiste */
+    .score-bar {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 24px;
+      justify-content: center;
+    }
+    .score-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .score-number {
+      font-size: 1.6rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .score-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-subtle);
+    }
+    .score-correct { color: #38a169; }
+    .score-wrong   { color: var(--red); }
+    .score-serie   { color: var(--blue-dark); }
+
+    /* Fortschritt */
+    .progress-text {
+      font-size: 0.82rem;
+      color: var(--text-subtle);
+      margin-bottom: 6px;
+      text-align: center;
+      width: 100%;
+    }
+    .progress-bar-wrap {
+      width: 100%;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    /* Fragekarte */
+    .question-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 28px;
+      width: 100%;
+      margin-bottom: 14px;
+    }
+    .question-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+      background: #dcfce7;
+      color: #15803d;
+    }
+    .question-text {
+      font-size: 1.0rem;
+      font-weight: 600;
+      line-height: 1.55;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+
+    /* Antwort-Buttons */
+    .answers {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .answer-btn {
+      font-family: var(--font);
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-align: left;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      line-height: 1.4;
+    }
+    .answer-btn:hover:not(:disabled) {
+      border-color: var(--blue-light);
+      background: var(--blue-tint);
+    }
+    .answer-btn.correct {
+      border-color: #38a169;
+      background: #dcfce7;
+      color: #15803d;
+      font-weight: 600;
+    }
+    .answer-btn.wrong {
+      border-color: var(--red);
+      background: var(--red-light);
+      color: var(--red-dark);
+    }
+    .answer-btn:disabled { cursor: default; }
+
+    /* Rückmeldung */
+    .feedback {
+      width: 100%;
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      font-size: 0.88rem;
+      line-height: 1.55;
+      display: none;
+      margin-bottom: 14px;
+    }
+    .feedback.correct {
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      color: #15803d;
+      display: block;
+    }
+    .feedback.wrong {
+      background: var(--red-light);
+      border: 1px solid #fca5a5;
+      color: #991b1b;
+      display: block;
+    }
+    .feedback-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    /* Weiter-Button */
+    .quiz-nav {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    /* Ergebnis-Bildschirm */
+    .end-screen {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 40px 28px;
+      width: 100%;
+      text-align: center;
+      display: none;
+    }
+    .end-screen.visible { display: block; }
+    .end-big {
+      font-size: 2.6rem;
+      font-weight: 700;
+      color: var(--blue-dark);
+      margin-bottom: 8px;
+    }
+    .end-text {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+      line-height: 1.55;
+    }
+  </style>
+</head>
+<body>
+
+<header class="bzwu-header">
+  <div class="header-text">
+    <span class="school-badge">BZWU Wil-Uzwil · Milchpraktiker EBA · Hartkäse</span>
+    <h1>Kulturen herstellen - Quiz</h1>
+    <p>Wählen Sie die richtige Antwort. Sie erhalten sofort eine Rückmeldung.</p>
+  </div>
+  <div class="header-logos">
+    <img src="../assets/logos/bzwu.png" alt="BZWU" class="header-logo">
+    <img src="../assets/logos/milchtechnologen.svg" alt="Milchtechnologen" class="header-logo">
+  </div>
+</header>
+
+<main>
+<div class="quiz-wrap">
+  <a class="back-link" href="../index.html">&#8592; Alle Lerntools</a>
+
+  <div class="score-bar">
+    <div class="score-item">
+      <span class="score-number score-correct" id="scoreCorrect">0</span>
+      <span class="score-label">Richtig</span>
+    </div>
+    <div class="score-item">
+      <span class="score-number score-wrong" id="scoreWrong">0</span>
+      <span class="score-label">Falsch</span>
+    </div>
+    <div class="score-item">
+      <span class="score-number score-serie" id="scoreSerie">0</span>
+      <span class="score-label">Serie</span>
+    </div>
+  </div>
+
+  <div class="progress-text" id="progressText"></div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressBar"></div>
+  </div>
+
+  <div class="question-card" id="questionCard">
+    <span class="question-badge">Kulturherstellung</span>
+    <div class="question-text" id="questionText"></div>
+    <div class="answers" id="answers"></div>
+  </div>
+
+  <div class="feedback" id="feedback">
+    <div class="feedback-title" id="feedbackTitle"></div>
+    <div id="feedbackText"></div>
+  </div>
+
+  <div class="quiz-nav" id="quizNav" style="display:none;">
+    <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Weiter &#8594;</button>
+  </div>
+
+  <div class="end-screen" id="endScreen">
+    <div class="end-big" id="endScore"></div>
+    <div class="end-text" id="endText"></div>
+    <button class="btn btn-primary" onclick="restartQuiz()">Nochmals versuchen</button>
+  </div>
+
+</div>
+</main>
+
+<script src="../assets/quiz-engine.js"></script>
+<script>
+var ALL_QUESTIONS = [
+  { q: 'Wahr oder falsch? Sc thermophilus ist typisch für Hartkäse.',
+    options: ['Wahr', 'Falsch'],
+    correct: 0,
+    explanation: 'Wahr. Sc thermophilus ist typisch für Hartkäse.'
+  },
+  { q: 'Wahr oder falsch? Lc lactis ssp lactis wächst am besten bei 40 bis 45 °C.',
+    options: ['Wahr', 'Falsch'],
+    correct: 1,
+    explanation: 'Falsch. Lc lactis ssp lactis wächst am besten bei 25 bis 30 °C.'
+  },
+  { q: 'Mit welchen Geräten sterilisieren Sie die Magermilch?',
+    options: ['Mit Kühlschrank oder Tiefkühler', 'Mit Autoklav oder Dampfkochtopf', 'Mit Mixer oder Rührwerk', 'Mit Zentrifuge oder Separator'],
+    correct: 1,
+    explanation: 'Sie sterilisieren die Magermilch im Autoklav oder im Dampfkochtopf.'
+  },
+  { q: 'Auf welche Temperatur kalten Sie die Magermilch vor dem Impfen ab?',
+    options: ['Unter 45 °C', 'Unter 10 °C', 'Unter 80 °C', 'Sie impfen die kochende Milch.'],
+    correct: 0,
+    explanation: 'Die Magermilch muss unter 45 °C abgekaltet sein. Erst dann impfen Sie.'
+  },
+  { q: 'Sie haben die Magermilch geimpft. Was machen Sie sofort?',
+    options: ['Die Flasche verschliessen', 'Die Kultur probieren', 'Die Flasche schütteln und offen lassen', 'Die Flasche in den Kühlschrank stellen'],
+    correct: 0,
+    explanation: 'Sie verschliessen die Flasche sofort. So kommen keine fremden Keime hinein.'
+  },
+  { q: 'Womit desinfizieren Sie die sauberen, trockenen Hände vor dem Impfen?',
+    options: ['Mit Wasser', 'Mit Alkohol', 'Mit Lauge', 'Mit Milch'],
+    correct: 1,
+    explanation: 'Sie desinfizieren die Hände mit Alkohol.'
+  },
+  { q: 'Wo impfen Sie die Kultur?',
+    options: ['An einem sauberen, trockenen Ort', 'Neben dem Abfluss', 'Im feuchten Fabrikationsraum', 'Draussen vor der Käserei'],
+    correct: 0,
+    explanation: 'Sie impfen an einem sauberen, trockenen Ort.'
+  },
+  { q: 'Wann nehmen Sie die Impfkultur aus dem Kühlschrank?',
+    options: ['Am Vorabend', 'Eine Stunde vorher', 'Kurz vor dem Impfen', 'Gar nicht, Sie impfen im Kühlschrank.'],
+    correct: 2,
+    explanation: 'Sie nehmen die Impfkultur erst kurz vor dem Impfen aus dem Kühlschrank.'
+  },
+  { q: 'Was kontrollieren Sie bei der fertigen Kultur?',
+    options: ['Gewicht und Farbe der Flasche', 'Säuregrad, Ausflockung, Geruch und Geschmack', 'Nur das Datum', 'Fettgehalt und Salzgehalt'],
+    correct: 1,
+    explanation: 'Sie kontrollieren den Säuregrad, die Ausflockung und Geruch und Geschmack (Sinnenprobe).'
+  },
+  { q: 'Warum sieben Sie die Kultur aus Glasflaschen?',
+    options: ['Es können Glasrückstände drin sein.', 'Um das Fett zu entfernen', 'Um die Kultur zu kühlen', 'Um die Säure zu senken'],
+    correct: 0,
+    explanation: 'In der Kultur können Glasrückstände sein. Das Sieb hält sie zurück. Das Sieb muss sauber und steril sein.'
+  },
+  { q: 'Ihre Kultur ist nach dem Bebrüten ausgeflockt und riecht fremd. Was machen Sie?',
+    options: ['Ich verwende sie trotzdem.', 'Ich gebe einfach mehr Kultur in die Milch.', 'Ich verwende sie nicht.', 'Ich bebrüte sie nochmals.'],
+    correct: 2,
+    explanation: 'Die Kultur hat bei der Kontrolle einen Fehler gezeigt. Man darf nur einwandfreie Kulturen verwenden.'
+  }
+];
+
+QuizEngine.init({
+  questions: ALL_QUESTIONS,
+  messages: {
+    excellent: 'Ausgezeichnet! Sie wissen, wie man Kulturen sauber herstellt.',
+    good: 'Gut gemacht! Noch ein paar Fragen üben und Sie sind top.',
+    ok: 'Nicht schlecht. Schauen Sie das Arbeitsblatt nochmals an.',
+    poor: 'Schauen Sie das Arbeitsblatt nochmals an. Dann klappt es besser.'
+  }
+});
+</script>
+<footer class="bzwu-footer">
+  BZWU Wil-Uzwil · Milchpraktiker EBA · Philipp Neukomm
+</footer>
+
+</body>
+</html>

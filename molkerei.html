@@ -87,9 +87,9 @@ const kachel = href => KACHELN.get(href) || (fehlend.push(href), { href, titel: 
 // bereich: true = Tools zum ganzen Bereich, nur Beschriftung ohne Körper.
 const RAEUME = [
   { name: 'Milchannahme', r: [0, 0, 8, 9], maschinen: [
-    { name: 'Milchsammelwagen', bau: 'wagen', p: [3.6, 2.6], tools: [
+    { name: 'Milchsammelwagen', bau: 'wagen', p: [-1.6, 4.5], tools: [   // draussen vor der Wand
       'konsummilch/beschriften-milchsammelwagen.html'] },
-    { name: 'Milchlagertank', bau: 'lagertank', p: [5.8, 6.6], tools: [
+    { name: 'Milchlagertank', bau: 'lagertank', p: [5.2, 6.6], tools: [
       'hartkaese/quiz-milch-lagern-fettgehalt.html'] },
   ] },
   { name: 'Milchbehandlung', r: [0, 9, 8, 15], maschinen: [
@@ -147,14 +147,25 @@ const RAEUME = [
   ] },
 ];
 
+// Grundriss gestreckt, Anlagen behalten ihre Grösse: mehr Platz zwischen den Anlagen
+const S = 1.4, BX = 30 * S, BZ = 20 * S;
+for (const r of RAEUME) {
+  r.r = r.r.map(v => v * S);
+  for (const m of r.maschinen) m.p = m.p.map(v => v * S);
+}
+// Rohre hängen an den Anlagen: Punkt = Anlage + Versatz, Wände bei Vielfachen von S
+const ANL = Object.fromEntries(RAEUME.flatMap(r => r.maschinen.map(m => [m.bau || m.name, m.p])));
+const W = ANL.wagen, L = ANL.lagertank, SEP = ANL.separator, R = ANL.tanks, K = ANL.kessi, D = ANL.kessel, F = ANL.filata;
+const wandX = 8 * S, wandZ = 9 * S;
+
 // Rohre: Weg der Milch durch den Betrieb, Inhalt fliesst sichtbar
 const ROHRE = [
-  { farbe: ['#ffffff', '#cfe3ee'], punkte: [[2.7, 2.9, 2.6], [2.7, 6, 2.6], [2.7, 6, 6.6], [5.8, 6, 6.6], [5.8, 5.6, 6.6]] },          // Rohmilch: Wagen → Lagertank
-  { farbe: ['#ffffff', '#cfe3ee'], punkte: [[6.8, 1.2, 6.6], [7.4, 1.2, 6.6], [7.4, 4.8, 6.6], [7.4, 4.8, 10.8], [4, 4.8, 10.8], [4, 4.8, 12], [4, 3.33, 12]] }, // Lagertank → Separator
-  { farbe: ['#fff3c4', '#f0d77c'], punkte: [[4.9, 2.92, 12], [4.9, 5.4, 12], [4.9, 5.4, 3.4], [9.7, 5.4, 3.4], [9.7, 5, 3.4]] },   // Rahm → Rahmreifung
-  { farbe: ['#ffffff', '#cfe3ee'], punkte: [[3, 2.92, 12], [3, 4.2, 12], [3, 4.2, 10.2], [9.6, 4.2, 10.2], [9.6, 4.2, 14.5], [9.6, 3.4, 14.5]] }, // Käsereimilch → Käsefertiger, Einlauf am Rand wie im Foto
-  { farbe: ['#f4f4f4', '#e39a9a'], punkte: [[26.5, 3.9, 4.5], [26.5, 6, 4.5], [26.5, 6, 10.5], [15.4, 6, 10.5], [15.4, 6, 14.5], [15.4, 2.6, 14.5]] }, // Dampf → Käserei
-  { farbe: ['#f4f4f4', '#e39a9a'], punkte: [[23.5, 3.9, 4.5], [23.5, 5.6, 4.5], [23.5, 5.6, 13.6], [25.9, 5.6, 13.6], [25.9, 2.5, 14.3]] }, // Dampf → Filiermaschine
+  { farbe: ['#ffffff', '#cfe3ee'], punkte: [[W[0] + 1.9, 1.7, W[1] - 4.1], [W[0] + 1.9, 8, W[1] - 4.1], [W[0] + 1.9, 8, L[1]], [L[0], 8, L[1]], [L[0], 7.35, L[1]]] },          // Rohmilch: Pumpenschrank am Wagen → über die Wand → Lagertank
+  { farbe: ['#ffffff', '#cfe3ee'], punkte: [[L[0] + 2.7, 1.15, L[1]], [wandX - 0.6, 1.15, L[1]], [wandX - 0.6, 4.8, L[1]], [wandX - 0.6, 4.8, wandZ + 1.8], [SEP[0], 4.8, wandZ + 1.8], [SEP[0], 4.8, SEP[1]], [SEP[0], 3.33, SEP[1]]] }, // Lagertank → Separator
+  { farbe: ['#fff3c4', '#f0d77c'], punkte: [[SEP[0] + 0.9, 2.92, SEP[1]], [SEP[0] + 0.9, 5.4, SEP[1]], [SEP[0] + 0.9, 5.4, R[1]], [R[0] - 1.0, 5.4, R[1]], [R[0] - 1.0, 4.0, R[1]]] },   // Rahm → Rahmreifung
+  { farbe: ['#ffffff', '#cfe3ee'], punkte: [[SEP[0] - 1, 2.92, SEP[1]], [SEP[0] - 1, 4.2, SEP[1]], [SEP[0] - 1, 4.2, wandZ + 1.2], [K[0] - 2.4, 4.2, wandZ + 1.2], [K[0] - 2.4, 4.2, K[1]], [K[0] - 2.4, 3.4, K[1]]] }, // Käsereimilch → Käsefertiger, Einlauf am Rand wie im Foto
+  { farbe: ['#f4f4f4', '#e39a9a'], punkte: [[D[0] + 1.5, 3.9, D[1]], [D[0] + 1.5, 6, D[1]], [D[0] + 1.5, 6, wandZ + 1.5], [K[0] + 3.4, 6, wandZ + 1.5], [K[0] + 3.4, 6, K[1]], [K[0] + 3.4, 2.6, K[1]]] }, // Dampf → Käserei
+  { farbe: ['#f4f4f4', '#e39a9a'], punkte: [[D[0] - 1.5, 3.9, D[1]], [D[0] - 1.5, 5.6, D[1]], [D[0] - 1.5, 5.6, F[1] - 1.05], [F[0] + 0.8, 5.6, F[1] - 1.05], [F[0] + 0.8, 0.8, F[1] - 1.05], [F[0] + 0.8, 0.8, F[1] - 0.7]] }, // Dampf → Heisswasserbehälter der Filiermaschine
 ];
 
 // ---- Szene ---------------------------------------------------------
@@ -172,11 +183,11 @@ renderer.domElement.setAttribute('aria-hidden', 'true');
 const scene = new THREE.Scene();
 scene.add(new THREE.HemisphereLight(0xffffff, 0x8ea6b8, 2.0));
 const sonne = new THREE.DirectionalLight(0xfff4e6, 2.2);
-sonne.position.set(4, 30, 22);
-sonne.target.position.set(15, 0, 10);
+sonne.position.set(4 * S, 30, 22 * S);
+sonne.target.position.set(BX / 2, 0, BZ / 2);
 sonne.castShadow = true;
 sonne.shadow.mapSize.set(handy ? 1024 : 2048, handy ? 1024 : 2048);
-Object.assign(sonne.shadow.camera, { left: -24, right: 24, top: 20, bottom: -20, near: 1, far: 80 });
+Object.assign(sonne.shadow.camera, { left: -24 * S, right: 24 * S, top: 20 * S, bottom: -20 * S, near: 1, far: 100 });
 sonne.shadow.radius = 4;
 sonne.shadow.bias = -0.0008;
 scene.add(sonne, sonne.target);
@@ -214,16 +225,24 @@ const bewegt = [];
 
 // Maschinen aus einfachen Körpern, Ursprung = Mitte am Boden
 const BAU = {
+  // nach Foto sammelwagen_1 (Zweiachser Sennerei Lingenau), 7 m lang, 3.2 m hoch; steht draussen an der Annahme.
+  // Auf 70 % verkleinert (Philipp 31.10.2026): echte Grösse dominiert das Bild
   wagen(g) {
-    box(g, 1.6, 1.6, 2.2, 2.6, 0.5, 0, mat(0xffffff));                     // Kabine
-    box(g, 1.3, 0.5, 0.05, 2.75, 1.4, 1.1, mat(0x9ec9de, { metalness: 0.3 }));  // Scheibe
-    box(g, 5.4, 0.35, 2, -0.7, 0.45, 0, SCHWARZ);
-    liegend(g, 1, 4.4, -0.9, 1.85, 0);
-    for (const x of [2.4, -1.6, -2.6]) for (const z of [-1, 1]) {
-      const rad = mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.35, 20), SCHWARZ, x, 0.45, z, g, false);
+    const t = new THREE.Group();
+    t.rotation.y = -Math.PI / 2;                                             // Kabine nach vorn (+z)
+    t.scale.setScalar(0.7);
+    g.add(t);
+    box(t, 13.6, 0.5, 3.4, -0.2, 1.0, 0, SCHWARZ);                           // Rahmen
+    box(t, 2.7, 4.6, 4.8, 5.6, 1.0, 0, mat(0xffffff));                       // Kabine
+    box(t, 0.05, 1.5, 4.0, 6.97, 3.7, 0, mat(0x9ec9de, { metalness: 0.3 }));  // Frontscheibe
+    box(t, 8.6, 3.6, 4.8, -0.2, 1.5, 0);                                     // Tank
+    box(t, 8.2, 0.4, 4.2, -0.2, 5.1, 0);                                     // gerundeter Abschluss oben
+    box(t, 2.6, 3.9, 4.8, -5.8, 1.5, 0, mat(0xbfc8d0, { metalness: 0.4, roughness: 0.4 }));  // Pumpenschrank
+    box(t, 0.05, 2.6, 2.6, -7.12, 2.0, 0, WAND);                             // Rolltor
+    for (const x of [5.2, -3.4]) for (const z of [-2.0, 2.0]) {
+      const rad = mesh(new THREE.CylinderGeometry(1.05, 1.05, 0.7, 24), SCHWARZ, x, 1.05, z, t, false);
       rad.rotation.x = Math.PI / 2;
     }
-    zyl(g, 0.2, 0.25, -0.9, 2.8, 0, BLAU);
   },
   // nach Foto references/_inbox/molkerei/zentrifuge_1+2 (SPX), 160 cm hoch: 1 Einheit = 50 cm
   separator(g) {
@@ -264,26 +283,30 @@ const BAU = {
     box(g, 0.34, 0.38, 0.28, 0.98, 1.38, 0, STAHL);                          // Steuerkasten rechts
     // Trommel dreht unsichtbar in der Haube: kein Scheindrehen, Bewegung zeigen die Rohre
   },
+  // nach lagertank_1 (stehender Tank), 10'000 L: 2.4 m Durchmesser, 3.5 m hoch
   lagertank(g) {
-    zyl(g, 1.2, 3.6, 0, 0.6, 0);
-    mesh(new THREE.SphereGeometry(1.2, 32, 12, 0, Math.PI * 2, 0, Math.PI / 2), STAHL, 0, 4.2, 0, g);
-    zyl(g, 0.35, 0.12, 0, 5.35, 0, BLAU);
-    beine(g, [[-0.8, -0.8], [0.8, -0.8], [0, 0.9]], 0.6);
-    box(g, 0.3, 0.3, 0.5, 1.1, 0.95, 0, STAHL);   // Auslauf
+    beine(g, [[-1.6, -1.6], [1.6, -1.6], [-1.6, 1.6], [1.6, 1.6]], 0.8, STAHL);
+    zyl(g, 2.4, 5.6, 0, 0.8, 0);
+    const dach = mesh(new THREE.SphereGeometry(2.4, 32, 12, 0, Math.PI * 2, 0, Math.PI / 2), STAHL, 0, 6.4, 0, g);
+    dach.scale.y = 0.35;
+    zyl(g, 0.4, 0.15, 0, 7.2, 0, BLAU);                                      // Mannloch
+    box(g, 0.5, 0.5, 0.5, 2.45, 0.9, 0);                                     // Auslauf
+    liegend(g, 0.3, 0.6, -2.6, 1.6, 0, BLAU);                                // Rührwerk-Motor unten
+    box(g, 0.08, 4.2, 0.25, 0, 1.6, 2.42, WAND);                             // Füllstandsanzeige
   },
+  // nach rahmreifer_1 + _2: Zylinder auf Füssen, Antrieb vom Rührwerk oben, 1.6 m Durchmesser, 2 m hoch
   tanks(g) {
-    for (const dx of [-1.3, 1.3]) {
-      zyl(g, 1.1, 3.2, dx, 0.6, 0);
-      mesh(new THREE.SphereGeometry(1.1, 32, 12, 0, Math.PI * 2, 0, Math.PI / 2), STAHL, dx, 3.8, 0, g);
-      zyl(g, 0.35, 0.12, dx, 4.75, 0, BLAU);                                  // Mannloch
-      beine(g, [[dx - 0.7, -0.7], [dx + 0.7, -0.7], [dx, 0.8]], 0.6);
-    }
-    bedienfeld(g, 0, 0, 1.3);
+    beine(g, [[-1.1, -1.1], [1.1, -1.1], [-1.1, 1.1], [1.1, 1.1]], 0.7, STAHL);
+    zyl(g, 1.6, 3.0, 0, 0.7, 0);
+    mesh(new THREE.ConeGeometry(1.6, 0.4, 32), STAHL, 0, 3.9, 0, g);         // Deckel
+    box(g, 1.2, 0.6, 0.8, 0, 3.9, 0, mat(0xbfc8d0, { metalness: 0.4 }));  // Antrieb
+    for (const y of [1.2, 3.1]) box(g, 0.4, 0.15, 0.15, 1.75, y, 0, BLAU);   // Kühl-/Heizmantel Ein- und Ausgang
+    bedienfeld(g, 0, 0, 1.9);
   },
   fertiger(g) {
     box(g, 4, 1.2, 1.8, 0, 0, 0, BLAU);
     const fass = liegend(g, 1, 2.6, -0.5, 2.2, 0);
-    box(fass, 0.3, 2.62, 0.3, 0.95, 0, 0, BLAU);                              // Leiste: zeigt das Drehen
+    box(fass, 0.3, 2.62, 0.3, 0.95, -1.31, 0, BLAU);                          // Leiste: zeigt das Drehen (y = Unterkante, mittig)
     box(g, 1.3, 1.2, 1.4, 1.4, 1.2, 0);
     box(g, 0.9, 0.5, 0.9, 1.4, 2.4, 0, mat(0xb0bac4, { metalness: 0.4 }));
     bewegt.push((t, dt) => { fass.rotation.x += dt * 2.2; });
@@ -349,32 +372,42 @@ const BAU = {
       oberflaeche.position.y = 1.825 + Math.sin(t * 2) * 0.02;
     });
   },
+  // nach kulturen_1: Mutter-, Zwischen- und Betriebskultur, je ein Tank, der grösste 1.2 m hoch
   kulturen(g) {
-    box(g, 3.2, 0.3, 1.1, 0, 0, 0, BLAU);
-    for (const x of [-1, 0, 1]) {
-      zyl(g, 0.4, 1.4, x, 0.3, 0);
-      mesh(new THREE.ConeGeometry(0.4, 0.3, 20), STAHL, x, 1.85, 0, g);
+    box(g, 3.6, 0.3, 1.5, 0, 0, 0, BLAU);
+    for (const [x, r, h] of [[-1.35, 0.3, 0.9], [-0.35, 0.45, 1.4], [1.05, 0.65, 2.0]]) {
+      zyl(g, r, h, x, 0.3, 0);
+      const kopf = mesh(new THREE.SphereGeometry(r, 24, 8, 0, Math.PI * 2, 0, Math.PI / 2), STAHL, x, 0.3 + h, 0, g);
+      kopf.scale.y = 0.35;
     }
   },
+  // nach filiermaschine_1 (Schnecke steigt schräg aus der Wanne), für die Dorfkäserei kleiner: 2.5 m lang, 1.6 m hoch
   filata(g) {
-    box(g, 3.4, 1.5, 1.6, 0, 0, 0);
-    const schnecke = liegend(g, 0.45, 3, 0, 1.95, 0, BLAU);
-    box(schnecke, 0.5, 3.02, 0.12, 0, 0, 0, STAHL);
-    const trichter = mesh(new THREE.ConeGeometry(0.8, 1.1, 24), STAHL, -1.1, 2.9, 0, g);
+    for (const x of [-2.2, 2.2]) for (const z of [-0.8, 0.8]) box(g, 0.15, 1.3, 0.15, x, 0, z);
+    for (const z of [-0.8, 0.8]) box(g, 4.6, 0.12, 0.12, 0, 1.2, z);
+    box(g, 1.8, 0.9, 1.4, 0.8, 0.25, 0);                                     // Heisswasserbehälter
+    const schraeg = new THREE.Group();
+    schraeg.position.set(0, 2.1, 0);
+    schraeg.rotation.z = 0.31;
+    g.add(schraeg);
+    box(schraeg, 4.2, 0.8, 1.6, 0.4, -0.75, 0);                              // Wanne
+    const rohr = liegend(schraeg, 0.35, 4.2, 0.4, 0.3, 0, BLAU);              // Schnecke im Rohr
+    box(rohr, 0.45, 4.22, 0.1, 0, -2.11, 0, STAHL);   // box() setzt y an die Unterkante: mittig ins Rohr
+    const trichter = mesh(new THREE.ConeGeometry(0.7, 0.9, 20), STAHL, -1.1, 1.0, 0, schraeg);
     trichter.rotation.x = Math.PI;
-    bedienfeld(g, 1.2, 0.3, 0.88);
-    const kugeln = [0, 1, 2].map(i => mesh(new THREE.SphereGeometry(0.22, 16, 10), MILCH, 0, 1.75, 0, g, false));
+    box(schraeg, 0.6, 0.6, 0.6, 2.75, 0, 0);                                 // Kopf mit Auslauf
+    box(g, 1.2, 0.6, 1.2, 3.4, 0, 0);                                        // Kühlbad
+    box(g, 1.0, 0.05, 1.0, 3.4, 0.56, 0, mat(0x9ec9de, { transparent: true, opacity: 0.8 }));
+    bedienfeld(g, -1.2, 0, 1.0);
+    const kugeln = [0, 1, 2].map(() => mesh(new THREE.SphereGeometry(0.22, 16, 10), MILCH, 3.2, 3.0, 0, g, false));
     bewegt.push((t, dt) => {
-      schnecke.rotation.x += dt * 3;
-      kugeln.forEach((k, i) => { const u = (t * 0.5 + i / 3) % 1; k.position.set(1.8 + u * 1.2, 1.75 - u * 1.4 * u, 0.4); });
+      rohr.rotation.x += dt * 3;
+      kugeln.forEach((k, i) => { const u = (t * 0.5 + i / 3) % 1; k.position.set(3.2 + u * 0.3, 3.1 - 2.4 * u * u, 0); });
     });
   },
 };
 
 // Boden, Räume, Wände (Puppenhaus ohne Dach)
-const boden = new THREE.Mesh(new THREE.BoxGeometry(36, 0.4, 26), mat(0xc5d3dc, { roughness: 1 }));
-boden.position.set(15, -0.2, 10);
-scene.add(boden);
 
 const klickbar = [];
 for (const raum of RAEUME) {
@@ -400,10 +433,18 @@ for (const raum of RAEUME) {
     BAU[m.bau](mg);
     g.add(mg);
     mg.traverse(o => { if (o.isMesh) { o.userData.maschine = m; klickbar.push(o); } });
-    m.oben = new THREE.Vector3(m.p[0], new THREE.Box3().setFromObject(mg).max.y + 0.3, m.p[1]);
+    const mb = new THREE.Box3().setFromObject(mg);
+    m.oben = new THREE.Vector3(m.p[0], mb.max.y + 0.3, m.p[1]);
+    raum.box.expandByPoint(mb.min.setY(0)).expandByPoint(mb.max.setY(4.5));   // Anlagen ausserhalb (Wagen) gehören zum Raum
   }
 }
-const GANZ = new THREE.Box3(new THREE.Vector3(-1, 0, -1), new THREE.Vector3(31, 3, 21));
+const GANZ = RAEUME.reduce((b, r) => b.union(r.box), new THREE.Box3()).expandByVector(new THREE.Vector3(1, 0, 1));
+GANZ.max.y = 3;
+
+// Boden unter Gebäude und Vorplatz
+const boden = new THREE.Mesh(new THREE.BoxGeometry(GANZ.max.x - GANZ.min.x + 4, 0.4, GANZ.max.z - GANZ.min.z + 4), mat(0xc5d3dc, { roughness: 1 }));
+boden.position.set((GANZ.min.x + GANZ.max.x) / 2, -0.2, (GANZ.min.z + GANZ.max.z) / 2);
+scene.add(boden);
 
 // Rohre mit wandernder Streifen-Textur
 function streifen([a, b]) {
@@ -447,7 +488,7 @@ ctl.dollyToCursor = true;
 ctl.smoothTime = ruhig ? 0 : 0.35;
 ctl.minPolarAngle = 0.35;            // nicht senkrecht von oben
 ctl.maxPolarAngle = 1.2;             // nicht unter den Boden
-ctl.setBoundary(new THREE.Box3(new THREE.Vector3(-2, 0, -2), new THREE.Vector3(32, 6, 22)));
+ctl.setBoundary(new THREE.Box3(GANZ.min.clone().addScalar(-1).setY(0), GANZ.max.clone().addScalar(1).setY(6)));
 
 let zoomGanz = 1, drinnen = null;
 function rahmen() {
@@ -555,7 +596,7 @@ renderer.domElement.addEventListener('pointerup', e => {
 function welcherRaum() {
   if (cam.zoom < zoomGanz * 1.25) return null;   // Käserei (gross) ist nur 1.4-fach
   const z = ctl.getTarget(new THREE.Vector3());
-  z.x = THREE.MathUtils.clamp(z.x, 0, 30); z.z = THREE.MathUtils.clamp(z.z, 0, 20);
+  z.x = THREE.MathUtils.clamp(z.x, 0, BX); z.z = THREE.MathUtils.clamp(z.z, 0, BZ);
   return RAEUME.find(r => z.x >= r.r[0] && z.x <= r.r[2] && z.z >= r.r[1] && z.z <= r.r[3]);
 }
 

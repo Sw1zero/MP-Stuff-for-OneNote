@@ -12,6 +12,9 @@
    Eingabe mit Komma oder Punkt. Nach «Prüfen» Rückmeldung mit Symbol und Wort, richtige Werte und immer der Rechenweg.
    Hilfen für Generatoren: Rechner.pick(liste), Rechner.zahl(n, stellen) (Dezimalpunkt und Tausender mit ' wie in den LS).
    Rechner.umschalter('uebenId', 'rechnerId'): Tabs «Üben» / «Freier Rechner» vor zwei vorhandene Elemente.
+   Rechner.frei('elementId', { rechner: [{ name, intro?, felder: [{ id, label, einheit? | einheiten?: ['m', 'dm'], wert? }], rechne(w) }], hilfe? })
+     rechne bekommt { id: Zahl, idEinheit: 'm' } und gibt { ergebnis: 'html', weg: [...], nachher? } oder { fehler: 'Text' } zurück.
+     Gerechnet wird bei jeder Eingabe, sobald alle Felder eine Zahl enthalten.
    Testschnittstelle für pruefe_tools.js: window.LerntoolTest. */
 var Rechner = (function () {
   var OK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
@@ -168,7 +171,46 @@ var Rechner = (function () {
     });
   }
 
+  // Freie Rechner: Felder eingeben, Ergebnis und Rechenweg erscheinen sofort (gleiches Aussehen wie «Üben»)
+  function frei(id, c) {
+    var root = el(id), akt = 0;
+    root.innerHTML = (c.rechner.length > 1 ? '<div class="lk-filter" role="group" aria-label="Rechner">' + c.rechner.map(function (r, i) {
+      return '<button type="button" class="lk-chip" data-f="' + i + '">' + esc(r.name) + '</button>'; }).join('') + '</div>' : '') +
+      '<section class="q-card"><p class="r-intro" id="' + id + 'Intro"></p><div class="r-felder" id="' + id + 'Felder"></div>' +
+      '<p class="r-hinweis" id="' + id + 'Fehler" role="status"></p></section><div id="' + id + 'Aus" aria-live="polite"></div>' +
+      (c.hilfe ? '<details class="r-hilfe"><summary>' + esc(c.hilfe.titel || 'Formeln') + '</summary><div>' + c.hilfe.html + '</div></details>' : '');
+    function zeige(i) {
+      akt = i;
+      var r = c.rechner[i];
+      [].forEach.call(root.querySelectorAll('[data-f]'), function (b) { b.classList.toggle('active', +b.dataset.f === i); b.setAttribute('aria-pressed', +b.dataset.f === i); });
+      el(id + 'Intro').textContent = r.intro || '';
+      el(id + 'Intro').hidden = !r.intro;
+      el(id + 'Felder').innerHTML = r.felder.map(function (f) {
+        return '<label class="r-feld"><span class="r-label">' + esc(f.label) + '</span><span class="r-eingabe">' +
+          '<input type="text" inputmode="decimal" autocomplete="off" data-id="' + f.id + '" value="' + (f.wert === undefined ? '' : f.wert) + '">' +
+          (f.einheiten ? '<select data-id="' + f.id + 'Einheit" aria-label="Einheit ' + esc(f.label) + '">' + f.einheiten.map(function (e) { return '<option>' + e + '</option>'; }).join('') + '</select>'
+            : '<span class="r-einheit">' + esc(f.einheit || '') + '</span>') + '</span></label>';
+      }).join('');
+      [].forEach.call(el(id + 'Felder').querySelectorAll('input, select'), function (x) { x.oninput = x.onchange = rechnen; });
+      rechnen();
+    }
+    function rechnen() {
+      var r = c.rechner[akt], w = {}, leer = false;
+      [].forEach.call(el(id + 'Felder').querySelectorAll('[data-id]'), function (x) {
+        w[x.dataset.id] = x.tagName === 'SELECT' ? x.value : lesen(x.value);
+        if (x.tagName !== 'SELECT' && isNaN(w[x.dataset.id])) leer = true;
+      });
+      var e = leer ? null : r.rechne(w);
+      el(id + 'Fehler').textContent = e && e.fehler ? e.fehler : '';
+      el(id + 'Aus').innerHTML = !e || e.fehler ? '' : '<section class="q-card r-aus"><div class="r-ergebnis">' + e.ergebnis + '</div>' + (e.nachher || '') +
+        '<div class="r-weg"><b>Rechenweg</b><ol>' + e.weg.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ol></div></section>';
+    }
+    [].forEach.call(root.querySelectorAll('[data-f]'), function (b) { b.onclick = function () { zeige(+b.dataset.f); }; });
+    zeige(0);
+  }
+
   return {
+    frei: frei,
     umschalter: umschalter,
     pick: pick,
     zahl: zahl,

@@ -474,6 +474,43 @@ body {
 .m-card.wrong .m-mark { display: block; background: var(--red); }
 @media (prefers-reduced-motion: reduce) { .m-inner { transition: none; } }
 
+/* ============================================================
+   Rechentrainer (assets/rechner.js) – Karte, Rückmeldung, Knopf und Chips wie Quiz und Lernkärtchen
+   ============================================================ */
+.r-intro { margin: 0 0 12px; color: var(--text-muted); font-size: 0.95rem; }
+
+.r-card .q-badge { margin-bottom: 10px; }
+.r-card .q-badge[hidden] { display: none; }
+.r-text { font-size: 1.05rem; line-height: 1.55; color: var(--text); }
+.r-text strong { color: var(--blue-dark); }
+.r-felder { display: grid; gap: 12px; margin-top: 16px; }
+.r-feld { display: grid; gap: 4px; }
+.r-label { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); }
+.r-eingabe { display: flex; align-items: center; gap: 8px; }
+.r-eingabe input { flex: 1; min-width: 0; max-width: 220px; min-height: 48px; padding: 8px 12px; font: inherit; font-size: 1.15rem; font-variant-numeric: tabular-nums; color: var(--text); background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius-md); }
+.r-eingabe input:focus-visible { outline: none; border-color: var(--blue); box-shadow: var(--focus-ring); }
+.r-einheit { font-weight: 600; color: var(--blue-dark); }
+.r-hinweis { display: flex; align-items: center; gap: 6px; min-height: 1.2em; font-size: 0.9rem; color: var(--red-dark); }
+.r-hinweis svg { flex: 0 0 18px; width: 18px; height: 18px; }
+.r-feld.ok input { border-color: var(--success); background: var(--success-tint); }
+.r-feld.ok .r-hinweis { color: var(--success-dark); }
+.r-feld.nok input { border-color: var(--red); background: var(--red-light); }
+.r-weg { margin-top: 14px; padding: 12px 16px; border-left: 4px solid var(--blue); background: var(--blue-tint); border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+.r-weg[hidden] { display: none; }
+.r-weg b { color: var(--blue-dark); }
+.r-weg ol { margin: 6px 0 0; padding-left: 1.3em; line-height: 1.6; }
+.r-weg li + li { margin-top: 4px; }
+.r-hilfe { margin: 16px 0 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.r-hilfe summary { min-height: 44px; display: flex; align-items: center; padding: 0 16px; font-weight: 600; color: var(--blue-dark); cursor: pointer; }
+.r-hilfe summary:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-md); }
+.r-hilfe > div { padding: 0 16px 14px; line-height: 1.6; overflow-x: auto; }
+.r-tabelle { width: 100%; border-collapse: collapse; margin-top: 12px; font-variant-numeric: tabular-nums; }
+.r-tabelle th, .r-tabelle td { padding: 8px 10px; border: 1px solid var(--border); text-align: center; }
+.r-tabelle th { background: var(--blue-tint); color: var(--blue-dark); font-size: 0.9rem; }
+.r-tabelle .gesucht { background: #FFF6D6; font-weight: 700; }
+#rechner { max-width: 640px; margin: 0 auto; padding-bottom: 88px; }
+@media (min-width: 700px) { #rechner { padding-bottom: 0; } }
+
 .btn-danger {
   background: var(--red);
   color: #fff;

@@ -11,6 +11,7 @@
    bild steht bei der Aufgabe, nachher erscheint erst nach «Prüfen» vor dem Rechenweg (z. B. ausgefülltes Mischungskreuz).
    Eingabe mit Komma oder Punkt. Nach «Prüfen» Rückmeldung mit Symbol und Wort, richtige Werte und immer der Rechenweg.
    Hilfen für Generatoren: Rechner.pick(liste), Rechner.zahl(n, stellen) (Dezimalpunkt und Tausender mit ' wie in den LS).
+   Rechner.umschalter('uebenId', 'rechnerId'): Tabs «Üben» / «Freier Rechner» vor zwei vorhandene Elemente.
    Testschnittstelle für pruefe_tools.js: window.LerntoolTest. */
 var Rechner = (function () {
   var OK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
@@ -152,7 +153,23 @@ var Rechner = (function () {
     }
   };
 
+  // Umschalter «Üben» / «Freier Rechner»: setzt die Tabs vor die zwei Teile und zeigt zuerst «Üben»
+  function umschalter(uebenId, rechnerId) {
+    var u = el(uebenId), r = el(rechnerId), tabs = document.createElement('div');
+    tabs.className = 'mk-tabs'; tabs.setAttribute('role', 'tablist');
+    tabs.innerHTML = '<button type="button" role="tab" aria-selected="true">Üben</button><button type="button" role="tab" aria-selected="false">Freier Rechner</button>';
+    u.parentNode.insertBefore(tabs, u);
+    u.className += ' mk-teil'; r.className += ' mk-teil'; r.hidden = true;
+    [].forEach.call(tabs.children, function (b, i) {
+      b.onclick = function () {
+        tabs.children[0].setAttribute('aria-selected', i === 0); tabs.children[1].setAttribute('aria-selected', i === 1);
+        u.hidden = i !== 0; r.hidden = i !== 1;
+      };
+    });
+  }
+
   return {
+    umschalter: umschalter,
     pick: pick,
     zahl: zahl,
     init: function (c) {

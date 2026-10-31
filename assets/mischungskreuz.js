@@ -148,19 +148,8 @@ var Mischungskreuz = (function () {
   }
 
   function seite(cfg) {
-    var root = document.getElementById('mischungskreuz');
-    root.innerHTML = '<div class="mk-tabs" role="tablist"><button type="button" role="tab" id="mkTabU" aria-selected="true" aria-controls="mkTeilU">Üben</button>' +
-      '<button type="button" role="tab" id="mkTabR" aria-selected="false" aria-controls="mkTeilR">Freier Rechner</button></div>' +
-      '<div class="mk-teil" id="mkTeilU" role="tabpanel" aria-labelledby="mkTabU"><div id="rechner"></div></div>' +
-      '<div class="mk-teil" id="mkTeilR" role="tabpanel" aria-labelledby="mkTabR" hidden><div id="mkRechner"></div></div>';
-    function zeige(u) {
-      document.getElementById('mkTabU').setAttribute('aria-selected', u);
-      document.getElementById('mkTabR').setAttribute('aria-selected', !u);
-      document.getElementById('mkTeilU').hidden = !u;
-      document.getElementById('mkTeilR').hidden = u;
-    }
-    document.getElementById('mkTabU').onclick = function () { zeige(true); };
-    document.getElementById('mkTabR').onclick = function () { zeige(false); };
+    document.getElementById('mischungskreuz').innerHTML = '<div id="mkTeilU"><div id="rechner"></div></div><div id="mkTeilR"><div id="mkRechner"></div></div>';
+    Rechner.umschalter('mkTeilU', 'mkTeilR');
     Rechner.init(cfg.uebung);
     rechner('mkRechner', cfg.rechner);
   }

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unsere Molkerei – BZWU Lerntools</title>
+  <link rel="stylesheet" href="style.css?v=d6d6b61d">
+  <style>
+    /* nur diese Seite braucht .mk-*, deshalb nicht in style.css */
+    .mk-wrap { max-width: 1100px; margin: 0 auto; padding: 12px 16px 24px; }
+    .mk-hint { color: var(--text-muted); margin: 0 0 8px; min-height: 1.4em; }
+    .mk-stage { position: relative; height: min(72vh, 640px); border-radius: var(--radius-lg); overflow: hidden;
+      background: linear-gradient(#eef5f9, #d7e4ec); border: 1px solid var(--border); touch-action: none; user-select: none; }
+    .mk-stage canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+    .mk-stage canvas:active { cursor: grabbing; }
+    .mk-label { position: absolute; left: 0; top: 0; white-space: nowrap; font: 600 14px var(--font);
+      background: var(--surface); color: var(--blue-dark); border: 2px solid var(--blue-dark); border-radius: 999px;
+      padding: 8px 14px; min-height: 44px; cursor: pointer; box-shadow: 0 2px 6px rgba(19,64,97,.18); will-change: transform; }
+    .mk-label.room { background: var(--blue-dark); color: #fff; font-size: 15px; }
+    .mk-label.bereich { background: var(--blue-tint); border-style: dashed; }
+    .mk-label[hidden] { display: none; }
+    .mk-back { position: absolute; top: 12px; left: 12px; z-index: 2; }
+    .mk-back[hidden] { display: none; }
+    .mk-tipp { position: absolute; right: 12px; bottom: 10px; z-index: 1; font-size: 12px; color: var(--text-muted);
+      background: rgba(255,255,255,.8); padding: 4px 8px; border-radius: 6px; pointer-events: none; }
+    .mk-panel { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; background: var(--surface);
+      border-top: 1px solid var(--border); border-radius: var(--radius-lg) var(--radius-lg) 0 0; padding: 14px 16px 16px;
+      box-shadow: 0 -6px 20px rgba(19,64,97,.15); max-height: 62%; overflow-y: auto; }
+    .mk-panel[hidden] { display: none; }
+    .mk-panel h2 { margin: 0 44px 10px 0; font-size: 18px; color: var(--blue-dark); }
+    .mk-panel ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+    .mk-panel a { display: flex; justify-content: space-between; gap: 12px; align-items: center; min-height: 44px; padding: 8px 12px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); text-decoration: none; }
+    .mk-panel a:hover, .mk-panel a:focus-visible { border-color: var(--blue-light); background: var(--blue-tint); }
+    .mk-panel .typ { color: var(--text-muted); font-size: 13px; white-space: nowrap; }
+    .mk-close { position: absolute; top: 8px; right: 8px; width: 44px; height: 44px; border: 0; background: none;
+      font-size: 26px; color: var(--text-muted); cursor: pointer; }
+  </style>
+</head>
+<body>
+<header class="bzwu-header">
+  <div class="header-text">
+    <span class="school-badge">BZWU Wil-Uzwil · Milchpraktiker EBA</span>
+    <h1>Unsere Molkerei</h1>
+    <p>Gehen Sie in eine Abteilung und tippen Sie auf eine Maschine.</p>
+  </div>
+  <div class="header-logos">
+    <img src="assets/logos/bzwu.png" alt="BZWU" class="header-logo">
+    <img src="assets/logos/milchtechnologen.svg" alt="Milchtechnologen" class="header-logo">
+  </div>
+</header>
+
+<main class="mk-wrap">
+  <a class="back-link" href="index.html">← Alle Lerntools</a>
+  <p class="mk-hint" id="mkHint" aria-live="polite">Tippen Sie auf eine Abteilung.</p>
+  <div class="mk-stage" id="mkStage">
+    <button class="btn mk-back" id="mkBack" hidden>← Ganze Molkerei</button>
+    <span class="mk-tipp" id="mkTipp">Ziehen: verschieben · Zwei Finger oder Mausrad: zoomen und drehen</span>
+    <div class="mk-panel" id="mkPanel" hidden role="dialog" aria-labelledby="mkPanelTitle">
+      <button class="mk-close" id="mkClose" aria-label="Schliessen">×</button>
+      <h2 id="mkPanelTitle"></h2>
+      <ul id="mkList"></ul>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+import * as THREE from './assets/three.module.min.js';
+import CameraControls from './assets/camera-controls.module.min.js';
+CameraControls.install({ THREE });
+
+const BASE = './';
+
+// Titel und Typ kommen aus den Kacheln in index.html, hier stehen nur die Pfade
+const KACHELN = new Map();
+try {
+  const doc = new DOMParser().parseFromString(await (await fetch(BASE + 'index.html')).text(), 'text/html');
+  for (const a of doc.querySelectorAll('a.tool-card')) KACHELN.set(a.getAttribute('href'), {
+    href: a.getAttribute('href'),
+    titel: a.querySelector('.card-title')?.textContent.trim(),
+    typ: a.querySelector('.badge-type')?.textContent.trim() || '' });
+} catch (e) { console.warn('index.html nicht lesbar', e); }
+const fehlend = [];
+const kachel = href => KACHELN.get(href) || (fehlend.push(href), { href, titel: href.split('/').pop().replace('.html', ''), typ: '' });
+
+// Abteilungen: Rechteck im Grundriss (x0, z0, x1, z1). Nur Anlagen mit Tools (Zuordnung: references/molkerei-zuordnung.md).
+// bereich: true = Tools zum ganzen Bereich, nur Beschriftung ohne Körper.
+const RAEUME = [
+  { name: 'Milchannahme', r: [0, 0, 8, 9], maschinen: [
+    { name: 'Milchsammelwagen', bau: 'wagen', p: [3.6, 2.6], tools: [
+      'konsummilch/beschriften-milchsammelwagen.html'] },
+    { name: 'Milchlagertank', bau: 'lagertank', p: [5.8, 6.6], tools: [
+      'hartkaese/quiz-milch-lagern-fettgehalt.html'] },
+  ] },
+  { name: 'Milchbehandlung', r: [0, 9, 8, 15], maschinen: [
+    { name: 'Separator', bau: 'separator', p: [4, 12], tools: [
+      'konsummilch/memory-separator.html',
+      'konsummilch/zuordnung-separator.html',
+      'tools/fachrechner-fettberechnung.html',
+      'tools/fachrechner-mischungskreuz.html'] },
+  ] },
+  { name: 'Labor', r: [0, 15, 8, 20], maschinen: [
+    { name: 'Labortisch', bau: 'labor', p: [4, 17.4], tools: [
+      'konsummilch/zuordnung-milchzusammensetzung.html',
+      'butter/quiz-wator-test.html'] },
+  ] },
+  { name: 'Butterei', r: [8, 0, 20, 9], maschinen: [
+    // ganzer Bereich: kein Körper, nur Beschriftung an der Rückwand
+    { name: 'Fliessschema Butterei', bereich: true, p: [14, 0.8], hoehe: 3.2, tools: [
+      'butter/sortierer-butterherstellung.html',
+      'butter/quiz-fliessschema.html'] },
+    { name: 'Rahmreifungstank', bau: 'tanks', p: [11, 3.4], tools: [
+      'butter/zuordnung-rahmarten.html',
+      'butter/zuordnung-rahmfehler.html',
+      'butter/quiz-rahmreifung-mikrobiologisch.html',
+      'butter/wahr-falsch-rahmreifung.html',
+      'butter/lernkaertchen-rahmreifung.html',
+      'butter/tabellen-luecken-rahmreifung-kwk.html',
+      'butter/quiz-rahmreifung-kwk.html'] },
+    { name: 'Butterfertiger', bau: 'fertiger', p: [16.8, 3.4], tools: [
+      'butter/sortierer-butterkornbildung.html',
+      'butter/quiz-buttersorten-reinigung.html'] },
+    { name: 'Ausformen und Verpacken', bau: 'verpackung', p: [14, 7.2], tools: [
+      'butter/lernkaertchen-nachbehandlung.html',
+      'butter/zuordnung-butterfehler.html'] },
+  ] },
+  { name: 'Kesselhaus', r: [20, 0, 30, 9], maschinen: [
+    { name: 'Dampfkessel mit Ölbrenner', bau: 'kessel', p: [25, 4.5], tools: [
+      'tools/beschriften-oelbrenner.html'] },
+  ] },
+  { name: 'Käserei', r: [8, 9, 20, 20], maschinen: [
+    { name: 'Käsefertiger', bau: 'kessi', p: [12, 14.5], tools: [
+      'hartkaese/sortierer-hartkaese-flussdiagramm.html'] },
+    { name: 'Kulturen', bau: 'kulturen', p: [17, 17.6], tools: [
+      'hartkaese/quiz-kulturen-hartkaese.html',
+      'hartkaese/quiz-kulturherstellung.html',
+      'hartkaese/sortierer-kulturherstellung.html'] },
+  ] },
+  { name: 'Frischkäserei', r: [20, 9, 30, 20], maschinen: [
+    { name: 'Mozzarella-Filiermaschine', bau: 'filata', p: [25, 14.5], tools: [
+      'frischkaese/lernkaertchen-mozzarella.html',
+      'frischkaese/quiz-mozzarella.html',
+      'frischkaese/sortierer-mozzarella.html',
+      'frischkaese/tabellen-luecken-mozzarella.html',
+      'frischkaese/trainer-schritte-mozzarella.html',
+      'frischkaese/zuordnung-maengel-mozzarella.html'] },
+  ] },
+];
+
+// Rohre: Weg der Milch durch den Betrieb, Inhalt fliesst sichtbar
+const ROHRE = [
+  { farbe: ['#ffffff', '#cfe3ee'], punkte: [[2.7, 2.9, 2.6], [2.7, 6, 2.6], [2.7, 6, 6.6], [5.8, 6, 6.6], [5.8, 5.6, 6.6]] },          // Rohmilch: Wagen → Lagertank
+  { farbe: ['#ffffff', '#cfe3ee'], punkte: [[6.8, 1.2, 6.6], [7.4, 1.2, 6.6], [7.4, 4.8, 6.6], [7.4, 4.8, 10.8], [4, 4.8, 10.8], [4, 4.8, 12], [4, 3.33, 12]] }, // Lagertank → Separator
+  { farbe: ['#fff3c4', '#f0d77c'], punkte: [[4.9, 2.92, 12], [4.9, 5.4, 12], [4.9, 5.4, 3.4], [9.7, 5.4, 3.4], [9.7, 5, 3.4]] },   // Rahm → Rahmreifung
+  { farbe: ['#ffffff', '#cfe3ee'], punkte: [[3, 2.92, 12], [3, 4.2, 12], [3, 4.2, 10.2], [9.6, 4.2, 10.2], [9.6, 4.2, 14.5], [9.6, 3.4, 14.5]] }, // Käsereimilch → Käsefertiger, Einlauf am Rand wie im Foto
+  { farbe: ['#f4f4f4', '#e39a9a'], punkte: [[26.5, 3.9, 4.5], [26.5, 6, 4.5], [26.5, 6, 10.5], [15.4, 6, 10.5], [15.4, 6, 14.5], [15.4, 2.6, 14.5]] }, // Dampf → Käserei
+  { farbe: ['#f4f4f4', '#e39a9a'], punkte: [[23.5, 3.9, 4.5], [23.5, 5.6, 4.5], [23.5, 5.6, 13.6], [25.9, 5.6, 13.6], [25.9, 2.5, 14.3]] }, // Dampf → Filiermaschine
+];
+
+// ---- Szene ---------------------------------------------------------
+const stage = document.getElementById('mkStage');
+const handy = matchMedia('(pointer: coarse)').matches;
+const ruhig = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.prepend(renderer.domElement);
+renderer.domElement.setAttribute('aria-hidden', 'true');
+
+const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8ea6b8, 2.0));
+const sonne = new THREE.DirectionalLight(0xfff4e6, 2.2);
+sonne.position.set(4, 30, 22);
+sonne.target.position.set(15, 0, 10);
+sonne.castShadow = true;
+sonne.shadow.mapSize.set(handy ? 1024 : 2048, handy ? 1024 : 2048);
+Object.assign(sonne.shadow.camera, { left: -24, right: 24, top: 20, bottom: -20, near: 1, far: 80 });
+sonne.shadow.radius = 4;
+sonne.shadow.bias = -0.0008;
+scene.add(sonne, sonne.target);
+
+const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.55, metalness: 0.1, ...extra });
+const STAHL = mat(0xd5dce3, { metalness: 0.45, roughness: 0.35 });
+const BLAU = mat(0x134061);
+const WAND = mat(0xffffff, { roughness: 0.9 });
+const ROT = mat(0xcc3333);
+const GELB = mat(0xf3d36b);
+const MILCH = mat(0xfff8e4, { roughness: 0.3 });
+const SCHWARZ = mat(0x2a2f36);
+const KANTE = new THREE.LineBasicMaterial({ color: 0x134061, transparent: true, opacity: 0.25 });
+
+function mesh(geo, m, x, y, z, parent, kante = true) {
+  const o = new THREE.Mesh(geo, m);
+  o.position.set(x, y, z);
+  if (kante) o.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 30), KANTE));
+  parent.add(o);
+  return o;
+}
+const box = (g, w, h, d, x, y, z, m = STAHL) => mesh(new THREE.BoxGeometry(w, h, d), m, x, y + h / 2, z, g);
+const zyl = (g, r, h, x, y, z, m = STAHL, offen = false) =>
+  mesh(new THREE.CylinderGeometry(r, r, h, 32, 1, offen), m, x, y + h / 2, z, g);
+function liegend(g, r, l, x, y, z, m = STAHL) {
+  const o = mesh(new THREE.CylinderGeometry(r, r, l, 32), m, x, y, z, g);
+  o.rotation.z = Math.PI / 2;
+  return o;
+}
+const beine = (g, pts, h, m = BLAU) => pts.forEach(([x, z]) => zyl(g, 0.08, h, x, 0, z, m));
+const bedienfeld = (g, x, y, z) => { box(g, 0.5, 0.7, 0.15, x, y, z, WAND); box(g, 0.34, 0.24, 0.02, x, y + 0.36, z + 0.08, mat(0x69a9c9, { emissive: 0x69a9c9, emissiveIntensity: 0.4 })); };
+
+// Bewegungen: pro Bild aufgerufen mit Sekunden seit Start und Zeitschritt
+const bewegt = [];
+
+// Maschinen aus einfachen Körpern, Ursprung = Mitte am Boden
+const BAU = {
+  wagen(g) {
+    box(g, 1.6, 1.6, 2.2, 2.6, 0.5, 0, mat(0xffffff));                     // Kabine
+    box(g, 1.3, 0.5, 0.05, 2.75, 1.4, 1.1, mat(0x9ec9de, { metalness: 0.3 }));  // Scheibe
+    box(g, 5.4, 0.35, 2, -0.7, 0.45, 0, SCHWARZ);
+    liegend(g, 1, 4.4, -0.9, 1.85, 0);
+    for (const x of [2.4, -1.6, -2.6]) for (const z of [-1, 1]) {
+      const rad = mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.35, 20), SCHWARZ, x, 0.45, z, g, false);
+      rad.rotation.x = Math.PI / 2;
+    }
+    zyl(g, 0.2, 0.25, -0.9, 2.8, 0, BLAU);
+  },
+  // nach Foto references/_inbox/molkerei/zentrifuge_1+2 (SPX), 160 cm hoch: 1 Einheit = 50 cm
+  separator(g) {
+    // Rahmengestell mit Füssen
+    box(g, 2.0, 0.08, 1.2, -0.38, 0.34, 0, STAHL);
+    for (const x of [-1.32, 0.56]) for (const z of [-0.52, 0.52]) {
+      zyl(g, 0.05, 0.34, x, 0, z);
+      zyl(g, 0.11, 0.04, x, 0, z, SCHWARZ);
+    }
+    box(g, 0.5, 0.32, 0.5, -1.1, 0.42, 0);                                   // Motorträger
+    box(g, 1.0, 0.3, 0.8, 0, 0.42, 0);                                       // Gehäuseträger
+    // Motor liegend, mit Kühlrippen
+    liegend(g, 0.4, 1.4, -1.35, 1.14, 0);
+    zyl(g, 0.42, 0.04, -2.06, 1.14, 0).rotation.z = Math.PI / 2;
+    for (let i = 0; i < 4; i++) box(g, 0.1, 0.04, 0.62, -1.75 + i * 0.14, 1.1, 0.33).rotation.x = -0.6;
+    // Getriebegehäuse, koaxial zum Motor, mit Schauglas und Knebel
+    liegend(g, 0.46, 1.3, 0, 1.12, 0);
+    const glas = zyl(g, 0.15, 0.06, 0.15, 0.95, 0.44, mat(0x9ec9de, { metalness: 0.3, roughness: 0.1 }));
+    glas.rotation.x = Math.PI / 2;
+    const knebel = zyl(g, 0.07, 0.12, -0.3, 1.12, 0.46, SCHWARZ);
+    knebel.rotation.x = Math.PI / 2;
+    zyl(g, 0.6, 0.12, 0, 1.46, 0);                                           // Sockel der Haube
+    // Haube: Ring mit Wulst, darüber der Konus (Drehprofil nach Foto)
+    const profil = [[0.62, 1.55], [0.72, 1.58], [0.75, 1.68], [0.73, 1.78], [0.78, 1.82], [0.77, 1.88], [0.64, 2.08], [0.42, 2.42], [0.2, 2.74], [0.12, 2.82], [0.12, 2.86], [0, 2.86]]
+      .map(([r, y]) => new THREE.Vector2(r, y));
+    mesh(new THREE.LatheGeometry(profil, 40), STAHL, 0, 0, 0, g);
+    zyl(g, 0.06, 0.07, 0, 1.68, 0.73, mat(0xb0bac4, { metalness: 0.6 })).rotation.x = Math.PI / 2;   // Deckelschraube
+    box(g, 0.28, 0.2, 0.02, 0, 2.3, 0.53, GELB).rotation.x = -0.6;          // Warnschild
+    // oben: Zulauf senkrecht, Abläufe waagrecht mit Manometern
+    zyl(g, 0.08, 0.36, 0, 2.86, 0);
+    zyl(g, 0.11, 0.05, 0, 2.97, 0);
+    liegend(g, 0.06, 1.9, -0.05, 2.92, 0);
+    for (const x of [-0.55, 0.6]) {
+      zyl(g, 0.03, 0.12, x, 2.95, 0);
+      const mano = zyl(g, 0.11, 0.05, x, 3.07, 0, WAND);
+      mano.rotation.x = Math.PI / 2;
+    }
+    box(g, 0.34, 0.38, 0.28, 0.98, 1.38, 0, STAHL);                          // Steuerkasten rechts
+    // Trommel dreht unsichtbar in der Haube: kein Scheindrehen, Bewegung zeigen die Rohre
+  },
+  lagertank(g) {
+    zyl(g, 1.2, 3.6, 0, 0.6, 0);
+    mesh(new THREE.SphereGeometry(1.2, 32, 12, 0, Math.PI * 2, 0, Math.PI / 2), STAHL, 0, 4.2, 0, g);
+    zyl(g, 0.35, 0.12, 0, 5.35, 0, BLAU);
+    beine(g, [[-0.8, -0.8], [0.8, -0.8], [0, 0.9]], 0.6);
+    box(g, 0.3, 0.3, 0.5, 1.1, 0.95, 0, STAHL);   // Auslauf
+  },
+  tanks(g) {
+    for (const dx of [-1.3, 1.3]) {
+      zyl(g, 1.1, 3.2, dx, 0.6, 0);
+      mesh(new THREE.SphereGeometry(1.1, 32, 12, 0, Math.PI * 2, 0, Math.PI / 2), STAHL, dx, 3.8, 0, g);
+      zyl(g, 0.35, 0.12, dx, 4.75, 0, BLAU);                                  // Mannloch
+      beine(g, [[dx - 0.7, -0.7], [dx + 0.7, -0.7], [dx, 0.8]], 0.6);
+    }
+    bedienfeld(g, 0, 0, 1.3);
+  },
+  fertiger(g) {
+    box(g, 4, 1.2, 1.8, 0, 0, 0, BLAU);
+    const fass = liegend(g, 1, 2.6, -0.5, 2.2, 0);
+    box(fass, 0.3, 2.62, 0.3, 0.95, 0, 0, BLAU);                              // Leiste: zeigt das Drehen
+    box(g, 1.3, 1.2, 1.4, 1.4, 1.2, 0);
+    box(g, 0.9, 0.5, 0.9, 1.4, 2.4, 0, mat(0xb0bac4, { metalness: 0.4 }));
+    bewegt.push((t, dt) => { fass.rotation.x += dt * 2.2; });
+  },
+  verpackung(g) {
+    box(g, 5, 0.25, 1, 0, 1, 0, SCHWARZ);
+    box(g, 1.4, 2.2, 1.4, 1.9, 0, 0);
+    bedienfeld(g, 1.9, 0.6, 0.72);
+    for (const x of [-2.2, 1.2]) box(g, 0.15, 1, 0.8, x, 0, 0, BLAU);
+    const packs = [0, 1, 2, 3].map(i => box(g, 0.5, 0.3, 0.6, 0, 1.25, 0, GELB));
+    bewegt.push(t => packs.forEach((p, i) => { p.position.x = -2.3 + ((t * 0.6 + i * 0.85) % 3.4); }));
+  },
+  labor(g) {
+    box(g, 3.2, 1.1, 1.4, 0, 0, 0, WAND);
+    const glas = mat(0xbfe0f0, { transparent: true, opacity: 0.8, roughness: 0.1 });
+    for (const x of [-1.1, -0.7, -0.3]) zyl(g, 0.13, 0.55, x, 1.1, 0, glas);
+    box(g, 0.8, 0.5, 0.6, 0.9, 1.1, 0, BLAU);
+    box(g, 0.6, 0.35, 0.05, 0.9, 1.7, -0.2, mat(0x69a9c9, { emissive: 0x69a9c9, emissiveIntensity: 0.5 }));
+  },
+  kessel(g) {
+    for (const x of [-2, 2]) box(g, 0.4, 0.9, 2, x, 0, 0, BLAU);
+    liegend(g, 1.5, 5.5, 0, 2.4, 0);
+    box(g, 1, 1.4, 1.2, -3.3, 1.2, 0, ROT);
+    const flamme = mesh(new THREE.ConeGeometry(0.3, 0.8, 16), mat(0xff9a2e, { emissive: 0xff7a00, emissiveIntensity: 1.2 }), -3.95, 1.9, 0, g, false);
+    flamme.rotation.z = Math.PI / 2;
+    zyl(g, 0.35, 3.5, 1.5, 3.6, 0);
+    bedienfeld(g, -3.3, 0, 1);
+    // Rauch aus dem Kamin
+    const rauch = [0, 1, 2, 3, 4].map(() => mesh(new THREE.SphereGeometry(0.35, 12, 8), mat(0xffffff, { transparent: true, opacity: 0.6 }), 1.5, 7, 0, g, false));
+    bewegt.push(t => {
+      flamme.scale.set(1, 0.85 + 0.25 * Math.sin(t * 17) * Math.sin(t * 5), 1);
+      rauch.forEach((r, i) => {
+        const k = (t * 0.35 + i / rauch.length) % 1;
+        r.position.set(1.5 + k * 0.8, 7.2 + k * 3, 0);
+        r.scale.setScalar(0.6 + k * 1.6);
+        r.material.opacity = 0.55 * (1 - k);
+      });
+    });
+  },
+  kessi(g) {
+    // nach Foto (Frey-Kessi): innen Kupfer, aussen Chromstahl, Brücke mit Antrieb, Rührwerk mit zwei Stangen
+    // 3 m Durchmesser, Rand auf 150 cm (1 Einheit = 50 cm)
+    const m = mat(0xd5dce3, { metalness: 0.45, roughness: 0.35, side: THREE.DoubleSide });
+    zyl(g, 3, 2.6, 0, 0.4, 0, m, true);
+    zyl(g, 2.94, 2.58, 0, 0.42, 0, mat(0xe39a6e, { metalness: 0.3, roughness: 0.4, emissive: 0x8a4a2a, emissiveIntensity: 0.35, side: THREE.BackSide }), true);
+    const rand = mesh(new THREE.TorusGeometry(2.98, 0.08, 8, 64), STAHL, 0, 3, 0, g, false);
+    rand.rotation.x = Math.PI / 2;
+    const oberflaeche = zyl(g, 2.93, 0.05, 0, 1.8, 0, MILCH);   // tief genug, dass das Kupfer sichtbar bleibt
+    zyl(g, 3.05, 0.4, 0, 0, 0, BLAU);
+    box(g, 0.7, 0.5, 7, 0, 3.8, 0);                                          // Brücke
+    for (const s of [-1, 1]) box(g, 0.25, 4.3, 0.25, 0, 0, s * 3.4);
+    box(g, 0.5, 0.5, 0.5, 0, 3.3, 0);                                        // Antrieb
+    zyl(g, 0.14, 1.3, -2.4, 1.85, 0, MILCH);                                 // Milchsack am Einlauf
+    const harfe = new THREE.Group();
+    harfe.position.set(0, 2.8, 0);
+    g.add(harfe);
+    zyl(harfe, 0.07, 0.5, 0, 0, 0);
+    box(harfe, 0.12, 0.12, 2.6, 0, 0, 0);
+    for (const s of [-1, 1]) zyl(harfe, 0.06, 2.1, 0, -2.1, s * 1.25);
+    bedienfeld(g, 2.2, 0, -2.6);
+    bewegt.push((t, dt) => {
+      harfe.rotation.y += dt * 1.1;
+      oberflaeche.position.y = 1.825 + Math.sin(t * 2) * 0.02;
+    });
+  },
+  kulturen(g) {
+    box(g, 3.2, 0.3, 1.1, 0, 0, 0, BLAU);
+    for (const x of [-1, 0, 1]) {
+      zyl(g, 0.4, 1.4, x, 0.3, 0);
+      mesh(new THREE.ConeGeometry(0.4, 0.3, 20), STAHL, x, 1.85, 0, g);
+    }
+  },
+  filata(g) {
+    box(g, 3.4, 1.5, 1.6, 0, 0, 0);
+    const schnecke = liegend(g, 0.45, 3, 0, 1.95, 0, BLAU);
+    box(schnecke, 0.5, 3.02, 0.12, 0, 0, 0, STAHL);
+    const trichter = mesh(new THREE.ConeGeometry(0.8, 1.1, 24), STAHL, -1.1, 2.9, 0, g);
+    trichter.rotation.x = Math.PI;
+    bedienfeld(g, 1.2, 0.3, 0.88);
+    const kugeln = [0, 1, 2].map(i => mesh(new THREE.SphereGeometry(0.22, 16, 10), MILCH, 0, 1.75, 0, g, false));
+    bewegt.push((t, dt) => {
+      schnecke.rotation.x += dt * 3;
+      kugeln.forEach((k, i) => { const u = (t * 0.5 + i / 3) % 1; k.position.set(1.8 + u * 1.2, 1.75 - u * 1.4 * u, 0.4); });
+    });
+  },
+};
+
+// Boden, Räume, Wände (Puppenhaus ohne Dach)
+const boden = new THREE.Mesh(new THREE.BoxGeometry(36, 0.4, 26), mat(0xc5d3dc, { roughness: 1 }));
+boden.position.set(15, -0.2, 10);
+scene.add(boden);
+
+const klickbar = [];
+for (const raum of RAEUME) {
+  const [x0, z0, x1, z1] = raum.r, w = x1 - x0, d = z1 - z0, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
+  const g = new THREE.Group();
+  scene.add(g);
+  const flaeche = mesh(new THREE.BoxGeometry(w - 0.1, 0.1, d - 0.1), mat(0xe4f1f7, { roughness: 0.8 }), cx, 0.05, cz, g);
+  flaeche.userData.raum = raum;
+  klickbar.push(flaeche);
+  // nur die hinteren Aussenwände hoch, alle anderen niedrig: freie Sicht hinein
+  const h = 0.5, t = 0.25;
+  box(g, w, z0 === 0 ? 2.4 : h, t, cx, 0, z0, WAND);
+  box(g, t, x0 === 0 ? 2.4 : h, d, x0, 0, cz, WAND);
+  box(g, w, h, t, cx, 0, z1, WAND);
+  box(g, t, h, d, x1, 0, cz, WAND);
+  raum.mitte = new THREE.Vector3(cx, 1.5, cz);
+  raum.box = new THREE.Box3(new THREE.Vector3(x0, 0, z0), new THREE.Vector3(x1, 4.5, z1));
+  for (const m of raum.maschinen) {
+    m.raum = raum;
+    if (m.bereich) { m.oben = new THREE.Vector3(m.p[0], m.hoehe, m.p[1]); continue; }
+    const mg = new THREE.Group();
+    mg.position.set(m.p[0], 0.1, m.p[1]);
+    BAU[m.bau](mg);
+    g.add(mg);
+    mg.traverse(o => { if (o.isMesh) { o.userData.maschine = m; klickbar.push(o); } });
+    m.oben = new THREE.Vector3(m.p[0], new THREE.Box3().setFromObject(mg).max.y + 0.3, m.p[1]);
+  }
+}
+const GANZ = new THREE.Box3(new THREE.Vector3(-1, 0, -1), new THREE.Vector3(31, 3, 21));
+
+// Rohre mit wandernder Streifen-Textur
+function streifen([a, b]) {
+  const c = document.createElement('canvas');
+  c.width = 64; c.height = 8;
+  const x = c.getContext('2d'), gr = x.createLinearGradient(0, 0, 64, 0);
+  gr.addColorStop(0, a); gr.addColorStop(0.5, b); gr.addColorStop(1, a);
+  x.fillStyle = gr; x.fillRect(0, 0, 64, 8);
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+for (const rohr of ROHRE) {
+  const pfad = new THREE.CurvePath(), p = rohr.punkte.map(v => new THREE.Vector3(...v));
+  for (let i = 1; i < p.length; i++) pfad.add(new THREE.LineCurve3(p[i - 1], p[i]));
+  const laenge = pfad.getLength(), tex = streifen(rohr.farbe);
+  tex.repeat.set(laenge / 0.8, 1);
+  const o = new THREE.Mesh(new THREE.TubeGeometry(pfad, Math.ceil(laenge * 6), 0.13, 10), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.3, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0.25 }));
+  scene.add(o);
+  bewegt.push((t, dt) => { tex.offset.x -= dt * 1.6; });
+  for (const q of p.slice(1, -1)) mesh(new THREE.SphereGeometry(0.17, 12, 8), STAHL, q.x, q.y, q.z, scene, false);
+}
+
+scene.traverse(o => { if (o.isMesh) { o.castShadow = o !== boden && !o.material.transparent; o.receiveShadow = true; } });
+
+for (const r of RAEUME) for (const m of r.maschinen) if (m.tools) m.tools = m.tools.map(kachel);
+if (fehlend.length) console.warn('Ohne Kachel in index.html:', fehlend);
+
+// ---- Kamera: frei zoomen, verschieben, drehen (mit Grenzen) -------
+const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 500);
+const ctl = new CameraControls(cam, renderer.domElement);
+const A = CameraControls.ACTION;
+ctl.mouseButtons.left = A.TRUCK;
+ctl.mouseButtons.right = A.ROTATE;
+ctl.mouseButtons.wheel = A.ZOOM;
+ctl.touches.one = A.TOUCH_TRUCK;
+ctl.touches.two = A.TOUCH_ZOOM_ROTATE;
+ctl.touches.three = A.TOUCH_ZOOM_ROTATE;
+ctl.dollyToCursor = true;
+ctl.smoothTime = ruhig ? 0 : 0.35;
+ctl.minPolarAngle = 0.35;            // nicht senkrecht von oben
+ctl.maxPolarAngle = 1.2;             // nicht unter den Boden
+ctl.setBoundary(new THREE.Box3(new THREE.Vector3(-2, 0, -2), new THREE.Vector3(32, 6, 22)));
+
+let zoomGanz = 1, drinnen = null;
+function rahmen() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  Object.assign(cam, { left: -w / 2, right: w / 2, top: h / 2, bottom: -h / 2 });
+  cam.updateProjectionMatrix();
+  renderer.setSize(w, h, false);
+  neuZeichnen = true;
+}
+function start() {
+  // Hochformat: steiler und entlang der langen Seite
+  const hoch = stage.clientWidth < stage.clientHeight;
+  const blick = hoch ? new THREE.Vector3(1, 1.9, 0.45) : new THREE.Vector3(1, 1.25, 1.35);
+  const z = GANZ.getCenter(new THREE.Vector3()), p = z.clone().addScaledVector(blick.normalize(), 120);
+  ctl.minAzimuthAngle = -Infinity; ctl.maxAzimuthAngle = Infinity;
+  ctl.setLookAt(p.x, p.y, p.z, z.x, z.y, z.z, false);
+  const az = ctl.azimuthAngle;
+  ctl.minAzimuthAngle = az - 0.9; ctl.maxAzimuthAngle = az + 0.9;   // höchstens gut 50° drehen, Wände bleiben hinten
+  ctl.update(0);
+  setzeGanz(einpassen(GANZ, false, 1.04));
+}
+function setzeGanz(z) { zoomGanz = z; ctl.minZoom = z * 0.8; ctl.maxZoom = z * 8; }
+// Box mittig ins Bild, Blickwinkel bleibt (fitToBox von camera-controls dreht auf die nächste Achse)
+function einpassen(b, weich, rand = 1.12) {
+  const c = b.getCenter(new THREE.Vector3()), q = cam.quaternion.clone().invert();
+  let mx = 0, my = 0;
+  for (const x of [b.min.x, b.max.x]) for (const y of [b.min.y, b.max.y]) for (const z of [b.min.z, b.max.z]) {
+    const p = new THREE.Vector3(x, y, z).sub(c).applyQuaternion(q);
+    mx = Math.max(mx, Math.abs(p.x)); my = Math.max(my, Math.abs(p.y));
+  }
+  const zoom = Math.min(stage.clientWidth / (2 * mx * rand), stage.clientHeight / (2 * my * rand));
+  if (weich === null) return zoom;   // nur rechnen
+  ctl.moveTo(c.x, c.y, c.z, weich);
+  ctl.zoomTo(zoom, weich);
+  return zoom;
+}
+
+// ---- Beschriftungen als echte Knöpfe (Tastatur, Screenreader) ------
+const labels = [];
+function label(text, klasse, anker, onclick, raum) {
+  const b = document.createElement('button');
+  b.className = 'mk-label ' + klasse;
+  b.textContent = text;
+  b.onclick = onclick;
+  stage.appendChild(b);
+  labels.push({ b, anker, raum });
+  return b;
+}
+for (const raum of RAEUME) {
+  raum.label = label(raum.name, 'room', raum.mitte, () => betrete(raum));
+  for (const m of raum.maschinen) m.label = label(m.name, m.bereich ? 'bereich' : '', m.oben, () => zeige(m), raum);
+}
+if (handy) document.getElementById('mkTipp').textContent = 'Ziehen: verschieben · Zwei Finger: zoomen und drehen';
+
+// ---- Zustand -------------------------------------------------------
+const $ = id => document.getElementById(id);
+function betrete(raum) {
+  schliesse();
+  if (!raum) { einpassen(GANZ, !ruhig, 1.04); return; }
+  einpassen(raum.box, !ruhig);
+  raum.maschinen.find(m => m.tools).label.focus({ preventScroll: true });
+}
+function zeige(m) {
+  $('mkPanelTitle').textContent = m.name;
+  $('mkList').replaceChildren(...m.tools.map(t => {
+    const li = document.createElement('li'), a = document.createElement('a');
+    a.href = BASE + t.href;
+    a.innerHTML = '<span></span><span class="typ"></span>';
+    a.children[0].textContent = t.titel; a.children[1].textContent = t.typ;
+    li.appendChild(a);
+    return li;
+  }));
+  $('mkPanel').hidden = false;
+  $('mkList').querySelector('a').focus({ preventScroll: true });
+}
+function schliesse() { $('mkPanel').hidden = true; }
+$('mkBack').onclick = () => betrete(null);
+$('mkClose').onclick = schliesse;
+addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (!$('mkPanel').hidden) schliesse(); else if (drinnen) betrete(null);
+});
+
+// Antippen im Bild (nicht ziehen): Raum betreten bzw. Maschine öffnen
+const ray = new THREE.Raycaster(), maus = new THREE.Vector2();
+let druck = null, finger = 0;
+renderer.domElement.addEventListener('pointerdown', e => {
+  druck = ++finger === 1 ? [e.clientX, e.clientY] : null;   // zweiter Finger: Geste, kein Antippen
+  $('mkTipp').hidden = true;
+});
+for (const typ of ['pointerup', 'pointercancel']) renderer.domElement.addEventListener(typ, () => { finger = Math.max(0, finger - 1); });
+renderer.domElement.addEventListener('pointerup', e => {
+  if (finger > 0 || !druck || Math.hypot(e.clientX - druck[0], e.clientY - druck[1]) > 8) return;
+  const rect = renderer.domElement.getBoundingClientRect();
+  maus.set((e.clientX - rect.left) / rect.width * 2 - 1, -(e.clientY - rect.top) / rect.height * 2 + 1);
+  ray.setFromCamera(maus, cam);
+  const hit = ray.intersectObjects(klickbar, false)[0];
+  if (!hit) return;
+  const { raum, maschine } = hit.object.userData;
+  if (maschine) drinnen ? zeige(maschine) : betrete(maschine.raum);
+  else if (raum) betrete(raum);
+});
+
+// Raum, in dessen Mitte die Kamera schaut, sobald genug hineingezoomt ist
+function welcherRaum() {
+  if (cam.zoom < zoomGanz * 1.25) return null;   // Käserei (gross) ist nur 1.4-fach
+  const z = ctl.getTarget(new THREE.Vector3());
+  z.x = THREE.MathUtils.clamp(z.x, 0, 30); z.z = THREE.MathUtils.clamp(z.z, 0, 20);
+  return RAEUME.find(r => z.x >= r.r[0] && z.x <= r.r[2] && z.z >= r.r[1] && z.z <= r.r[3]);
+}
+
+// ---- Zeichnen ------------------------------------------------------
+const uhr = new THREE.Clock(), v = new THREE.Vector3();
+let sichtbar = true, neuZeichnen = true;
+new IntersectionObserver(([e]) => { sichtbar = e.isIntersecting; }).observe(stage);
+function bild() {
+  requestAnimationFrame(bild);
+  const dt = Math.min(uhr.getDelta(), 0.1);
+  const bewegt_ = ctl.update(dt);
+  // Bewegung reduziert: nur bei Kamerafahrt oder neuer Grösse zeichnen
+  if (!bewegt_ && !neuZeichnen && (ruhig || !sichtbar)) return;
+  neuZeichnen = false;
+  if (!ruhig) for (const f of bewegt) f(uhr.elapsedTime, dt);
+  renderer.render(scene, cam);
+  const neu = welcherRaum();
+  if (neu !== drinnen) {
+    drinnen = neu;
+    $('mkBack').hidden = !drinnen;
+    $('mkHint').textContent = drinnen ? `${drinnen.name}: Tippen Sie auf eine Maschine.` : 'Tippen Sie auf eine Abteilung.';
+  }
+  const w = stage.clientWidth, h = stage.clientHeight;
+  for (const { b, anker, raum } of labels) {
+    b.hidden = raum ? raum !== drinnen : !!drinnen;   // drinnen nur die Maschinen dieses Raums
+    if (b.hidden) continue;
+    v.copy(anker).project(cam);
+    const x = Math.round((v.x + 1) / 2 * w), y = Math.round((1 - v.y) / 2 * h);   // ganze Pixel: Schrift scharf, Knopf ruhig
+    b.hidden = x < -50 || x > w + 50 || y < 0 || y > h + 40;
+    b.style.transform = `translate(${x}px, ${y}px) translate(-50%, -100%)`;
+  }
+}
+// Handy drehen: Blick und Ausschnitt bleiben, Zoom wächst mit der Bildgrösse mit
+// In der Übersicht neu starten, damit Hoch-/Querformat den passenden Blickwinkel bekommt
+new ResizeObserver(() => {
+  rahmen();
+  if (!drinnen) { start(); return; }
+  const alt = zoomGanz;
+  setzeGanz(einpassen(GANZ, null, 1.04));
+  ctl.zoomTo(cam.zoom * zoomGanz / alt, false);
+}).observe(stage);
+// Testschnittstelle für pruefe_tools.js
+const mitTools = r => r.maschinen.filter(m => m.tools);
+window.LerntoolTest = {
+  typ: 'molkerei',
+  fehlend: () => fehlend,
+  raeume: () => RAEUME.map(r => ({ name: r.name, maschinen: mitTools(r).map(m => ({ name: m.name, hrefs: m.tools.map(t => t.href) })) })),
+  betrete: i => betrete(RAEUME[i]),
+  zeige: (i, j) => zeige(mitTools(RAEUME[i])[j]),
+};
+rahmen();
+start();
+bild();
+</script>
+</body>
+</html>

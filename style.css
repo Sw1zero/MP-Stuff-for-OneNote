@@ -511,6 +511,31 @@ body {
 #rechner { max-width: 640px; margin: 0 auto; padding-bottom: 88px; }
 @media (min-width: 700px) { #rechner { padding-bottom: 0; } }
 
+/* ============================================================
+   Mischungskreuz (assets/mischungskreuz.js) – Kreuz als SVG, freier Rechner, Umschalter Üben/Rechner
+   ============================================================ */
+.mk-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; max-width: 640px; margin: 0 auto 16px; padding: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.mk-tabs button { min-height: 44px; font: inherit; font-weight: 600; color: var(--blue-dark); background: none; border: 0; border-radius: calc(var(--radius-md) - 2px); cursor: pointer; }
+.mk-tabs button[aria-selected="true"] { color: #fff; background: var(--blue-dark); }
+.mk-tabs button:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.mk-teil[hidden] { display: none; }
+#mkRechner { max-width: 640px; margin: 0 auto; }
+#mkRechner .q-card + .q-card { margin-top: 16px; }
+.mk-eingabe { display: grid; gap: 12px; }
+.mk-paar { display: grid; grid-template-columns: 1fr; gap: 12px; }
+@media (min-width: 560px) { .mk-paar { grid-template-columns: 1fr 1fr; } }
+.mk-eingabe .r-eingabe input { max-width: none; }
+.mk-modus { margin: 4px 0 0; }
+.mk-kreuz { margin: 14px 0 4px; }
+.mk-svg { display: block; width: 100%; max-width: 420px; height: auto; margin: 0 auto; font-family: inherit; }
+.mk-linie { stroke: var(--blue); stroke-width: 2; stroke-dasharray: 6 4; }
+.mk-box { fill: var(--surface); stroke: var(--border); stroke-width: 1.5; }
+.mk-teile.mk-a, .mk-teile.mk-b { fill: var(--blue-tint); stroke: var(--blue); }
+.mk-ziel { fill: #FFF6D6; stroke: var(--blue-dark); stroke-width: 1.5; }
+.mk-titel { font-size: 13px; fill: var(--text-muted); }
+.mk-wert { font-size: 17px; font-weight: 700; fill: var(--blue-dark); }
+.r-tabelle-wrap { overflow-x: auto; }
+
 .btn-danger {
   background: var(--red);
   color: #fff;

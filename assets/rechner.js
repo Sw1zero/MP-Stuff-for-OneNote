@@ -6,8 +6,9 @@
      intro: '…'                                                           // optional
    });
    Ein Generator liefert pro Aufruf eine neue Aufgabe:
-     { text: 'html', felder: [{ label?, einheit, wert, tol?, mehrstufig? }], weg: ['Schritt 1 html', …], bild?: 'html' }
+     { text: 'html', felder: [{ label?, einheit, wert, tol?, mehrstufig? }], weg: ['Schritt 1 html', …], bild?: 'html', nachher?: 'html' }
    tol fehlt: Rundungstoleranz der Einheit (RUNDUNG), mehrstufig: true gibt 0.1 % vom Wert dazu. tol: 0 heisst exakt (Einheiten umrechnen).
+   bild steht bei der Aufgabe, nachher erscheint erst nach «Prüfen» vor dem Rechenweg (z. B. ausgefülltes Mischungskreuz).
    Eingabe mit Komma oder Punkt. Nach «Prüfen» Rückmeldung mit Symbol und Wort, richtige Werte und immer der Rechenweg.
    Hilfen für Generatoren: Rechner.pick(liste), Rechner.zahl(n, stellen) (Dezimalpunkt und Tausender mit ' wie in den LS).
    Testschnittstelle für pruefe_tools.js: window.LerntoolTest. */
@@ -54,7 +55,7 @@ var Rechner = (function () {
       '<section class="q-card r-card"><span class="q-badge" id="rBadge"></span><div class="r-text" id="rText"></div><div id="rBild"></div>' +
       '<form class="r-felder" id="rFelder" novalidate></form>' +
       '<div class="q-feedback" id="rFeedback" role="status" aria-live="polite"></div>' +
-      '<div class="r-weg" id="rWeg" hidden><b>Rechenweg</b><ol id="rWegListe"></ol></div></section>' +
+      '<div id="rNachher"></div><div class="r-weg" id="rWeg" hidden><b>Rechenweg</b><ol id="rWegListe"></ol></div></section>' +
       (cfg.hilfe ? '<details class="r-hilfe"><summary>' + esc(cfg.hilfe.titel || 'Formeln') + '</summary><div>' + cfg.hilfe.html + '</div></details>' : '') +
       '<div class="q-next show"><button type="button" class="q-btn" id="rBtn">Prüfen</button></div>';
     [].forEach.call(document.querySelectorAll('#rechner .lk-chip'), function (b) {
@@ -96,6 +97,7 @@ var Rechner = (function () {
     el('rFeedback').className = 'q-feedback';
     el('rFeedback').innerHTML = '';
     el('rWeg').hidden = true;
+    el('rNachher').innerHTML = '';
     el('rBtn').textContent = 'Prüfen';
     var erstes = el('rIn0');
     if (erstes && document.activeElement && document.activeElement.id !== 'rBtn') erstes.focus({ preventScroll: true });
@@ -125,6 +127,7 @@ var Rechner = (function () {
       (aufgabe.felder.length > 1 ? '<span>' + richtig + ' von ' + aufgabe.felder.length + ' Werten stimmen.</span>' : '') + '</div>';
     el('rWegListe').innerHTML = (aufgabe.weg || []).map(function (s) { return '<li>' + s + '</li>'; }).join('');
     el('rWeg').hidden = !(aufgabe.weg && aufgabe.weg.length);
+    el('rNachher').innerHTML = aufgabe.nachher || '';
     geprueft = true;
     el('rBtn').textContent = 'Nächste Aufgabe';
   }

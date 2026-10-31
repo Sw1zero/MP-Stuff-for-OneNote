@@ -6,7 +6,9 @@
      categories: { labels: {k: 'Text'}, colors: {k: {bg, fg}} },  // optional, Frage hat cat: k
      messages: { excellent, good, poor },   // optional, Unterzeile im Endbildschirm (MT: subMessages {excellent, retry})
    });
-   Frage: { question | q, answers | options, correct, explanation, badge?, cat? }
+   Frage: { question | q, answers | options, correct, explanation, feedback?, badge?, cat? }
+   feedback: optional eine Erklärung pro Antwort (gleiche Reihenfolge wie answers), ersetzt explanation für die gewählte Antwort.
+   mischen: false  -> Fragen in der gegebenen Reihenfolge (z. B. Prozessschritte), Antworten werden trotzdem gemischt.
    Antworten werden gemischt, ausser bei ['Wahr', 'Falsch'].
    wahrFalsch: true  -> Karten { statement, answer: true|false, explanation }, Knöpfe Falsch | Wahr,
                         Karte nach links/rechts wischen oder Pfeiltasten.
@@ -35,6 +37,7 @@ var Quiz = (function () {
       answers: order.map(function (i) { return answers[i]; }),
       correct: order.indexOf(q.correct),
       explanation: q.explanation || '',
+      feedback: q.feedback ? order.map(function (i) { return q.feedback[i]; }) : null,
       badge: q.badge || (cat ? cfg.categories.labels[q.cat] : cfg.badge) || '',
       color: cat ? cfg.categories.colors[q.cat] : null,
       raw: raw
@@ -102,7 +105,7 @@ var Quiz = (function () {
 
   function start(list) {
     pool = list;
-    deck = shuffle(list).map(norm);
+    deck = (cfg.mischen === false ? list : shuffle(list)).map(norm);
     pos = 0; results = [];
     el('qEnd').classList.remove('show');
     el('qCard').style.display = '';
@@ -145,7 +148,7 @@ var Quiz = (function () {
     results.push(ok);
     fb.className = 'q-feedback show ' + (ok ? 'ok' : 'nok');
     fb.innerHTML = (ok ? OK : NOK) + '<div><b>' + (ok ? 'Richtig!' : 'Nicht ganz.') + (cfg.wahrFalsch ? ' Die Aussage ist ' + q.answers[q.correct].toLowerCase() + '.' : ok ? '' : ' Richtig ist ' + 'ABCDEF'[q.correct] + '.') +
-      '</b><span>' + esc(q.explanation) + '</span></div>';
+      '</b><span>' + esc((q.feedback && q.feedback[i]) || q.explanation) + '</span></div>';
     el('qNextBtn').textContent = pos === deck.length - 1 ? 'Ergebnis anzeigen' : 'Weiter';
     el('qNext').classList.add('show');
     el('qNextBtn').focus({ preventScroll: true });

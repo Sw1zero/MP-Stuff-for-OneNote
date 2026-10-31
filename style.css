@@ -441,6 +441,39 @@ body {
 .q-btn.lk-yes { background: var(--success); }
 @media (prefers-reduced-motion: reduce) { .lk-inner { transition: none; } }
 
+/* ============================================================
+   Memory (assets/memory.js) – Kopfzeile, Paarwahl, Endkarte und «Neu mischen» wie Quiz und Lernkärtchen
+   ============================================================ */
+.m-intro { margin: 0 0 12px; color: var(--text-muted); font-size: 0.95rem; }
+.m-status { display: none; align-items: center; gap: 10px; min-height: 44px; margin-bottom: 12px; padding: 8px 14px; border-radius: var(--radius-md); font-size: 0.95rem; }
+.m-status.show { display: flex; }
+.m-status.ok { background: var(--success-tint); color: var(--success-dark); }
+.m-status.nok { background: var(--red-light); color: var(--red-dark); }
+.m-status svg { flex: 0 0 20px; width: 20px; height: 20px; }
+.m-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+@media (min-width: 600px) { .m-grid { grid-template-columns: repeat(4, 1fr); gap: 12px; } }
+@media (min-width: 900px) { .m-grid { grid-template-columns: repeat(6, 1fr); } }
+.m-card { position: relative; aspect-ratio: 1; padding: 0; font: inherit; background: none; border: 0; border-radius: var(--radius-md); perspective: 800px; cursor: pointer; }
+.m-card:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.m-inner { display: block; width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform .4s ease; }
+.m-card.flipped .m-inner { transform: rotateY(180deg); }
+.m-face { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: var(--radius-md); border: 3px solid transparent; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
+.m-back { background: var(--blue-dark); color: #fff; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; box-shadow: var(--shadow-md); }
+.m-front { transform: rotateY(180deg); background: var(--surface); border-color: var(--border); box-shadow: var(--shadow-md); }
+.m-front.is-img img { width: 100%; height: 100%; object-fit: contain; padding: 6px; }
+.m-front.is-name { padding: 6px; text-align: center; color: var(--blue-dark); background: var(--blue-tint); hyphens: auto; -webkit-hyphens: auto; overflow-wrap: anywhere; }
+.m-name { font-size: 0.85rem; font-weight: 700; line-height: 1.25; }
+.m-zusatz { margin-top: 4px; font-size: 0.75rem; line-height: 1.2; color: var(--text-muted); }
+.m-card.matched .m-front { border-color: var(--success); }
+.m-card.wrong .m-front { border-color: var(--red); }
+.m-card.matched { cursor: default; }
+/* Symbol oben rechts, damit Richtig/Falsch nicht nur an der Rahmenfarbe hängt */
+.m-mark { position: absolute; top: -6px; right: -6px; display: none; width: 26px; height: 26px; padding: 4px; border-radius: 50%; color: #fff; z-index: 2; }
+.m-mark svg { width: 100%; height: 100%; display: block; }
+.m-card.matched .m-mark { display: block; background: var(--success); }
+.m-card.wrong .m-mark { display: block; background: var(--red); }
+@media (prefers-reduced-motion: reduce) { .m-inner { transition: none; } }
+
 .btn-danger {
   background: var(--red);
   color: #fff;

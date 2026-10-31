@@ -174,6 +174,7 @@ var Rechner = (function () {
   // Freie Rechner: Felder eingeben, Ergebnis und Rechenweg erscheinen sofort (gleiches Aussehen wie «Üben»)
   function frei(id, c) {
     var root = el(id), akt = 0;
+    root.classList.add('r-frei');
     root.innerHTML = (c.rechner.length > 1 ? '<div class="lk-filter" role="group" aria-label="Rechner">' + c.rechner.map(function (r, i) {
       return '<button type="button" class="lk-chip" data-f="' + i + '">' + esc(r.name) + '</button>'; }).join('') + '</div>' : '') +
       '<section class="q-card"><p class="r-intro" id="' + id + 'Intro"></p><div class="r-felder" id="' + id + 'Felder"></div>' +

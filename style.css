@@ -483,11 +483,11 @@ body {
 .r-card .q-badge[hidden] { display: none; }
 .r-text { font-size: 1.05rem; line-height: 1.55; color: var(--text); }
 .r-text strong { color: var(--blue-dark); }
-.r-felder { display: grid; gap: 12px; margin-top: 16px; }
-.r-feld { display: grid; gap: 4px; }
+.r-felder { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 16px; }  /* minmax: Felder nie breiter als die Karte */
+.r-feld { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; }
 .r-label { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); }
 .r-eingabe { display: flex; align-items: center; gap: 8px; }
-.r-eingabe input { flex: 1; min-width: 0; max-width: 220px; min-height: 48px; padding: 8px 12px; font: inherit; font-size: 1.15rem; font-variant-numeric: tabular-nums; color: var(--text); background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius-md); }
+.r-eingabe input { flex: 1; min-width: 0; min-height: 48px; padding: 8px 12px; font: inherit; font-size: 1.15rem; font-variant-numeric: tabular-nums; color: var(--text); background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius-md); }
 .r-eingabe input:focus-visible { outline: none; border-color: var(--blue); box-shadow: var(--focus-ring); }
 .r-einheit { font-weight: 600; color: var(--blue-dark); }
 .r-hinweis { display: flex; align-items: center; gap: 6px; min-height: 1.2em; font-size: 0.9rem; color: var(--red-dark); }
@@ -509,6 +509,8 @@ body {
 .r-tabelle th { background: var(--blue-tint); color: var(--blue-dark); font-size: 0.9rem; }
 .r-tabelle .gesucht { background: #FFF6D6; font-weight: 700; }
 #rechner { max-width: 640px; margin: 0 auto; padding-bottom: 88px; }
+.r-frei { max-width: 640px; margin: 0 auto; }
+.r-eingabe select { flex: 0 0 auto; }
 @media (min-width: 700px) { #rechner { padding-bottom: 0; } }
 .r-eingabe select { min-height: 48px; padding: 0 8px; font: inherit; font-weight: 600; color: var(--blue-dark); background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius-md); }
 .r-eingabe select:focus-visible { outline: none; border-color: var(--blue); box-shadow: var(--focus-ring); }
@@ -529,7 +531,6 @@ body {
 .mk-eingabe { display: grid; gap: 12px; }
 .mk-paar { display: grid; grid-template-columns: 1fr; gap: 12px; }
 @media (min-width: 560px) { .mk-paar { grid-template-columns: 1fr 1fr; } }
-.mk-eingabe .r-eingabe input { max-width: none; }
 .mk-modus { margin: 4px 0 0; }
 .mk-kreuz { margin: 14px 0 4px; }
 .mk-svg { display: block; width: 100%; max-width: 420px; height: auto; margin: 0 auto; font-family: inherit; }

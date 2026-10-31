@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fettberechnung Butter – Fachrechner</title>
+  <link rel="stylesheet" href="../style.css?v=9d4bf0bd">
+</head>
+<body>
+
+<header class="bzwu-header">
+  <div class="header-text">
+    <span class="school-badge">BZWU Wil-Uzwil · Milchpraktiker EBA · Rechner</span>
+    <h1>Fettberechnung – Fachrechner</h1>
+    <p>Berechnen Sie die fehlende Menge und prüfen Sie mit Enter.</p>
+  </div>
+  <div class="header-logos">
+    <img src="../assets/logos/bzwu.png" alt="BZWU" class="header-logo">
+    <img src="../assets/logos/milchtechnologen.svg" alt="Milchtechnologen" class="header-logo">
+  </div>
+</header>
+
+<main class="page-main">
+  <a class="back-link" href="../index.html">← Alle Lerntools</a>
+  <div id="rechner"></div>
+</main>
+
+<footer class="bzwu-footer">
+  BZWU Wil-Uzwil · Milchpraktiker EBA · Philipp Neukomm
+</footer>
+
+<script src="../assets/rechner.js?v=5fca8161"></script>
+<script>
+var z = Rechner.zahl;
+var NAME = { V: 'Vollmilch', R: 'Rahm', M: 'Magermilch' };
+var FALL = [['V', 'R'], ['V', 'M'], ['R', 'V'], ['R', 'M'], ['M', 'V'], ['M', 'R']];  // [gegeben, gesucht]
+
+function tabelle(w, g, a) {
+  return '<table class="r-tabelle"><tr>' + ['V', 'R', 'M'].map(function (k) { return '<th>' + NAME[k] + '</th>'; }).join('') + '</tr><tr>' +
+    ['V', 'R', 'M'].map(function (k) {
+      return k === g ? '<td>' + z(w[k]) + ' kg</td>' : k === a ? '<td class="gesucht">?</td>' : '<td>–</td>';
+    }).join('') + '</tr></table>';
+}
+
+function genFett() {
+  var V = Rechner.pick([2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 18, 20, 25, 30, 40, 50, 60, 75, 90]) * 100;
+  var R = V * 11 / 100, M = V - R;
+  var w = { V: V, R: R, M: M };
+  var f = Rechner.pick(FALL), g = f[0], a = f[1];
+  var weg = {
+    VR: ['Rahm = Vollmilch × 0.11', 'Rahm = ' + z(V) + ' kg × 0.11 = <strong>' + z(R) + ' kg</strong>'],
+    VM: ['Magermilch = Vollmilch × 0.89', 'Magermilch = ' + z(V) + ' kg × 0.89 = <strong>' + z(M) + ' kg</strong>'],
+    RV: ['Vollmilch = Rahm ÷ 0.11', 'Vollmilch = ' + z(R) + ' kg ÷ 0.11 = <strong>' + z(V) + ' kg</strong>'],
+    RM: ['Zuerst die Vollmilch: ' + z(R) + ' kg ÷ 0.11 = ' + z(V) + ' kg', 'Magermilch = Vollmilch − Rahm = ' + z(V) + ' kg − ' + z(R) + ' kg = <strong>' + z(M) + ' kg</strong>'],
+    MV: ['Vollmilch = Magermilch ÷ 0.89', 'Vollmilch = ' + z(M) + ' kg ÷ 0.89 = <strong>' + z(V) + ' kg</strong>'],
+    MR: ['Zuerst die Vollmilch: ' + z(M) + ' kg ÷ 0.89 = ' + z(V) + ' kg', 'Rahm = Vollmilch − Magermilch = ' + z(V) + ' kg − ' + z(M) + ' kg = <strong>' + z(R) + ' kg</strong>']
+  }[g + a];
+  return {
+    text: 'Sie haben <strong>' + z(w[g]) + ' kg ' + NAME[g] + '</strong>. Wie viel kg <strong>' + NAME[a] + '</strong> sind das?',
+    bild: tabelle(w, g, a),
+    felder: [{ label: NAME[a], einheit: 'kg', wert: w[a] }],
+    weg: weg
+  };
+}
+
+Rechner.init({
+  kategorien: [{ name: 'Vollmilch, Rahm, Magermilch', aufgaben: [genFett] }],
+  hilfe: { titel: 'Anhaltspunkte', html:
+    '<p>Aus 100 kg Vollmilch gewinnt man rund <strong>11 kg Rahm</strong>. Der Rest ist <strong>Magermilch</strong> (rund 89 kg).</p>' +
+    '<table class="r-tabelle"><tr><th>Gesucht</th><th>Rechnung</th></tr>' +
+    '<tr><td>Rahm</td><td>Vollmilch × 0.11</td></tr>' +
+    '<tr><td>Magermilch</td><td>Vollmilch × 0.89</td></tr>' +
+    '<tr><td>Vollmilch</td><td>Rahm ÷ 0.11 oder Magermilch ÷ 0.89</td></tr></table>' }
+});
+</script>
+</body>
+</html>

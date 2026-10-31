@@ -317,20 +317,6 @@
         </div>
       </a>
 
-      <a class="tool-card" href="butter/fachrechner-fettberechnung.html" data-module="butter" data-type="fachrechner">
-        <div class="card-top">
-          <span class="badge badge-module">Butter</span>
-          <span class="badge badge-type">Fachrechner</span>
-        </div>
-        <div class="card-title">Fettberechnung - Vollmilch/Rahm/Magermilch</div>
-        <div class="card-meta">
-          Zufallsaufgaben
-          <span class="dot"></span>
-          11% Rahm, Rechenweg
-          <span class="dot"></span>
-          Eingabe
-        </div>
-      </a>
 
       <a class="tool-card" href="butter/zuordnung-butterfehler.html" data-module="butter" data-type="zuordnung">
         <div class="card-top">
@@ -382,20 +368,6 @@
         </div>
       </a>
 
-      <a class="tool-card" href="hartkaese/fachrechner-mischungskreuz.html" data-module="hartkaese" data-type="fachrechner">
-        <div class="card-top">
-          <span class="badge badge-module">Hartkäse</span>
-          <span class="badge badge-type">Fachrechner</span>
-        </div>
-        <div class="card-title">Mischungskreuz - Fettgehalt Käsereimilch</div>
-        <div class="card-meta">
-          Zufallsaufgaben
-          <span class="dot"></span>
-          Vollmilch/Magermilch, Rechenweg
-          <span class="dot"></span>
-          Eingabe
-        </div>
-      </a>
 
       <a class="tool-card" href="hartkaese/quiz-milch-lagern-fettgehalt.html" data-module="hartkaese" data-type="quiz">
         <div class="card-top">
@@ -651,6 +623,34 @@
   <div class="module-section" id="section-allgemein">
     <div class="section-title">Allgemeine Tools</div>
     <div class="tool-grid">
+      <a class="tool-card" href="tools/fachrechner-fettberechnung.html" data-module="allgemein butter" data-type="fachrechner">
+        <div class="card-top">
+          <span class="badge badge-module">Butter</span>
+          <span class="badge badge-type">Fachrechner</span>
+        </div>
+        <div class="card-title">Fettberechnung - Vollmilch/Rahm/Magermilch</div>
+        <div class="card-meta">
+          Zufallsaufgaben
+          <span class="dot"></span>
+          11% Rahm, Rechenweg
+          <span class="dot"></span>
+          Eingabe
+        </div>
+      </a>
+      <a class="tool-card" href="tools/fachrechner-mischungskreuz.html" data-module="allgemein hartkaese" data-type="fachrechner">
+        <div class="card-top">
+          <span class="badge badge-module">Hartkäse</span>
+          <span class="badge badge-type">Fachrechner</span>
+        </div>
+        <div class="card-title">Mischungskreuz - Fettgehalt Käsereimilch</div>
+        <div class="card-meta">
+          Zufallsaufgaben
+          <span class="dot"></span>
+          Vollmilch/Magermilch, Rechenweg
+          <span class="dot"></span>
+          Eingabe
+        </div>
+      </a>
 
       <a class="tool-card" href="tools/prozent-trainer.html" data-module="allgemein" data-type="trainer">
         <div class="card-top">
@@ -678,7 +678,7 @@
           <span class="dot"></span>
           Random
           <span class="dot"></span>
-          mit Serie-Zähler
+          mit Rechenweg
         </div>
       </a>
 
@@ -716,7 +716,7 @@ document.querySelectorAll('.filter-btn').forEach(function(btn) {
 function applyFilter() {
   // Show/hide individual cards
   document.querySelectorAll('.tool-card:not(.disabled)').forEach(function(card) {
-    var moduleMatch = activeModule === 'all' || card.dataset.module === activeModule;
+    var moduleMatch = activeModule === 'all' || card.dataset.module.split(' ').indexOf(activeModule) !== -1; // data-module darf mehrere Module enthalten, leerzeichengetrennt
     var typeMatch   = activeType   === 'all' || card.dataset.type   === activeType;
     card.style.display = (moduleMatch && typeMatch) ? '' : 'none';
   });

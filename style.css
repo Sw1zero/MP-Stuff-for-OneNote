@@ -237,9 +237,14 @@ body {
   border: none;
   border-radius: var(--radius-md);
   padding: 10px 22px;
+  min-height: 44px;  /* Touch-Ziel */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   cursor: pointer;
   transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .btn:active { transform: scale(0.97); }

@@ -6,36 +6,18 @@
   <title>BZWU Milchpraktiker EBA – Lerntools</title>
   <link rel="stylesheet" href="style.css?v=d6d6b61d">
   <style>
-    .filter-bar {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .filter-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .filter-label {
-      font-size: 0.72rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: var(--text-subtle);
-      width: 48px;
-      flex-shrink: 0;
-    }
-    @media (max-width: 600px) {
-      .filter-bar { padding: 10px 16px; }
-      .filter-label { width: auto; }
-    }
 
     .module-section { margin-bottom: 8px; }
     .module-section.hidden { display: none; }
+
+    .sn-pfad { font-size: 0.9rem; color: var(--text-muted); margin: 0 0 6px; }
+    .sn-pfad a { color: var(--blue-dark); display: inline-block; min-height: 44px; line-height: 44px; }
+    .sn-titel { font-size: 1.35rem; color: var(--blue-dark); margin: 0 0 16px; }
+    .sn-titel:focus { outline: none; }
+    .tool-card.sn-stufe { padding-right: 44px; justify-content: center; min-height: 92px; }
+    .tool-card.sn-stufe .card-title { font-size: 1.08rem; }
+    .sn-ansicht .card-top .badge:not(.badge-type) { display: none; }   /* Modul steht schon im Pfad */
+    .sn-pfeil { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font-size: 1.8rem; color: var(--blue-light); }
   </style>
 </head>
 <body>
@@ -44,7 +26,6 @@
   <div class="header-text">
   <span class="school-badge">BZWU Wil-Uzwil · Milchpraktiker EBA</span>
   <h1>Lerntools</h1>
-  <p>Interaktive Übungen für den Unterricht – einfach anklicken und loslegen.</p>
   </div>
   <div class="header-logos">
     <img src="assets/logos/bzwu.png" alt="BZWU" class="header-logo">
@@ -52,51 +33,14 @@
   </div>
 </header>
 
-<div class="filter-bar">
-  <div class="filter-row">
-    <span class="filter-label">Modul</span>
-    <button class="filter-btn active" data-filter="module" data-value="all">Alle</button>
-    <button class="filter-btn" data-filter="module" data-value="butter">Butter</button>
-    <button class="filter-btn" data-filter="module" data-value="speiseeis">Speiseeis</button>
-    <button class="filter-btn" data-filter="module" data-value="sauermilch">Sauermilchprodukte</button>
-    <button class="filter-btn" data-filter="module" data-value="hartkaese">Hartkäse</button>
-    <button class="filter-btn" data-filter="module" data-value="halbhartkaese">Halbhartkäse</button>
-    <button class="filter-btn" data-filter="module" data-value="frischkaese">Frischkäse</button>
-    <button class="filter-btn" data-filter="module" data-value="konsummilch">Konsummilch</button>
-    <button class="filter-btn" data-filter="module" data-value="allgemein">Allgemein</button>
-  </div>
-  <div class="filter-row">
-    <span class="filter-label">Typ</span>
-    <button class="filter-btn active" data-filter="type" data-value="all">Alle</button>
-    <button class="filter-btn" data-filter="type" data-value="wahr-falsch">Wahr/Falsch</button>
-    <button class="filter-btn" data-filter="type" data-value="tabellen-luecken">Tabellen-Lücken</button>
-    <button class="filter-btn" data-filter="type" data-value="prozessvergleich">Prozessvergleich</button>
-    <button class="filter-btn" data-filter="type" data-value="lernkaertchen">Lernkärtchen</button>
-    <button class="filter-btn" data-filter="type" data-value="quiz">Quiz</button>
-    <button class="filter-btn" data-filter="type" data-value="memory">Memory</button>
-    <button class="filter-btn" data-filter="type" data-value="sortierer">Sortierer</button>
-    <button class="filter-btn" data-filter="type" data-value="zuordnung">Zuordnung</button>
-    <button class="filter-btn" data-filter="type" data-value="lueckentext">Lückentext</button>
-    <button class="filter-btn" data-filter="type" data-value="hotspot">Hotspot</button>
-    <button class="filter-btn" data-filter="type" data-value="prozess-entscheid">Prozess-Entscheid</button>
-    <button class="filter-btn" data-filter="type" data-value="spiel">Spiel</button>
-    <button class="filter-btn" data-filter="type" data-value="fachrechner">Fachrechner</button>
-    <button class="filter-btn" data-filter="type" data-value="trainer">Trainer</button>
-    <button class="filter-btn" data-filter="type" data-value="beschriften">Beschriften</button>
-  </div>
-</div>
-
 <main class="page-main">
-
-  <!-- Zweiter Einstieg: Tools dort finden, wo sie im Betrieb stehen -->
-  <p style="margin: 0 0 24px"><a class="btn btn-primary" href="molkerei.html" style="text-decoration: none">Molkerei in 3D erkunden</a></p>
 
   <!-- Butter -->
   <div class="module-section" id="section-butter">
     <div class="section-title">Butter</div>
     <div class="tool-grid">
 
-      <a class="tool-card" href="butter/zuordnung-rahmarten.html" data-module="butter" data-type="zuordnung">
+      <a class="tool-card" href="butter/zuordnung-rahmarten.html" data-thema="Rahm" data-module="butter" data-type="zuordnung">
         <div class="card-top">
           <span class="badge badge-module">Butter</span>
           <span class="badge badge-type">Zuordnung</span>
@@ -111,7 +55,7 @@
         </div>
       </a>
 
-      <a class="tool-card" href="butter/zuordnung-rahmfehler.html" data-module="butter" data-type="zuordnung">
+      <a class="tool-card" href="butter/zuordnung-rahmfehler.html" data-thema="Rahm" data-module="butter" data-type="zuordnung">
         <div class="card-top">
           <span class="badge badge-module">Butter</span>
           <span class="badge badge-type">Zuordnung</span>
@@ -126,7 +70,7 @@
         </div>
       </a>
 
-      <a class="tool-card" href="butter/quiz-rahmreifung-mikrobiologisch.html" data-module="butter" data-type="quiz">
+      <a class="tool-card" href="butter/quiz-rahmreifung-mikrobiologisch.html" data-thema="Rahmbehandlung" data-module="butter" data-type="quiz">
         <div class="card-top">
           <span class="badge badge-module">Butter</span>
           <span class="badge badge-type">Quiz</span>
@@ -141,7 +85,7 @@
         </div>
       </a>
 
-      <a class="tool-card" href="butter/wahr-falsch-rahmreifung.html" data-module="butter" data-type="wahr-falsch">
+      <a class="tool-card" href="butter/wahr-falsch-rahmreifung.html" data-thema="Rahmbehandlung" data-module="butter" data-type="wahr-falsch">
         <div class="card-top">
           <span class="badge badge-module">Butter</span>
           <span class="badge badge-type">Wahr/Falsch</span>
@@ -156,7 +100,7 @@
         </div>
       </a>
 
-      <a class="tool-card" href="butter/lernkaertchen-rahmreifung.html" data-module="butter" data-type="lernkaertchen">
+      <a class="tool-card" href="butter/lernkaertchen-rahmreifung.html" data-thema="Rahmbehandlung" data-module="butter" data-type="lernkaertchen">
         <div class="card-top">
           <span class="badge badge-module">Butter</span>
           <span class="badge badge-type">Lernkärtchen</span>
@@ -171,7 +115,7 @@
         </div>
       </a>
 
-      <a class="tool-card" href="butter/tabellen-luecken-rahmreifung-kwk.html" data-module="butter" data-type="tabellen-luecken">
+      <a class="tool-card" href="butter/tabellen-luecken-rahmreifung-kwk.html" data-thema="Rahmbehandlung" data-module="butter" data-type="tabellen-luecken">
         <div class="card-top">
           <span class="badge badge-module">Butter</span>
           <span class="badge badge-type">Tabellen-Lücken</span>
@@ -186,37 +130,7 @@
         </div>
       </a>
 
-      <a class="tool-card" href="butter/sortierer-butterherstellung.html" data-module="butter" data-type="sortierer">
-        <div class="card-top">
-          <span class="badge badge-module">Butter</span>
-          <span class="badge badge-type">Sortierer</span>
-        </div>
-        <div class="card-title">Butterherstellung - Fliessschema sortieren</div>
-        <div class="card-meta">
-          9 Schritte
-          <span class="dot"></span>
-          Rahm bis Butter
-          <span class="dot"></span>
-          Drag & Drop
-        </div>
-      </a>
-
-      <a class="tool-card" href="butter/sortierer-butterkornbildung.html" data-module="butter" data-type="sortierer">
-        <div class="card-top">
-          <span class="badge badge-module">Butter</span>
-          <span class="badge badge-type">Sortierer</span>
-        </div>
-        <div class="card-title">Butterkornbildung - Phasen sortieren</div>
-        <div class="card-meta">
-          6 Bilder
-          <span class="dot"></span>
-          Rahm bis Butterkorn
-          <span class="dot"></span>
-          Drag & Drop
-        </div>
-      </a>
-
-      <a class="tool-card" href="butter/quiz-rahmreifung-kwk.html" data-module="butter" data-type="quiz">
+      <a class="tool-card" href="butter/quiz-rahmreifung-kwk.html" data-thema="Rahmbehandlung" data-module="butter" data-type="quiz">
         <div class="card-top">
           <span class="badge badge-module">Butter</span>
           <span class="badge badge-type">Quiz</span>
@@ -231,7 +145,22 @@
         </div>
       </a>
 
-      <a class="tool-card" href="butter/quiz-fliessschema.html" data-module="butter" data-type="quiz">
+      <a class="tool-card" href="butter/sortierer-butterherstellung.html" data-thema="Butter herstellen" data-module="butter" data-type="sortierer">
+        <div class="card-top">
+          <span class="badge badge-module">Butter</span>
+          <span class="badge badge-type">Sortierer</span>
+        </div>
+        <div class="card-title">Butterherstellung - Fliessschema sortieren</div>
+        <div class="card-meta">
+          9 Schritte
+          <span class="dot"></span>
+          Rahm bis Butter
+          <span class="dot"></span>
+          Drag & Drop
+        </div>
+      </a>
+
+      <a class="tool-card" href="butter/quiz-fliessschema.html" data-thema="Butter herstellen" data-module="butter" data-type="quiz">
         <div class="card-top">
           <span class="badge badge-module">Butter</span>
           <span class="badge badge-type">Quiz</span>
@@ -246,9 +175,22 @@
         </div>
       </a>
 
+      <a class="tool-card" href="butter/sortierer-butterkornbildung.html" data-thema="Butter herstellen" data-module="butter" data-type="sortierer">
+        <div class="card-top">
+          <span class="badge badge-module">Butter</span>
+          <span class="badge badge-type">Sortierer</span>
+        </div>
+        <div class="card-title">Butterkornbildung - Phasen sortieren</div>
+        <div class="card-meta">
+          6 Bilder
+          <span class="dot"></span>
+          Rahm bis Butterkorn
+          <span class="dot"></span>
+          Drag & Drop
+        </div>
+      </a>
 
-
-      <a class="tool-card" href="butter/lernkaertchen-nachbehandlung.html" data-module="butter" data-type="lernkaertchen">
+      <a class="tool-card" href="butter/lernkaertchen-nachbehandlung.html" data-thema="Kneten, Ausformen, Verpacken" data-module="butter" data-type="lernkaertchen">
         <div class="card-top">
           <span class="badge badge-module">Butter</span>
           <span class="badge badge-type">Lernkärtchen</span>
@@ -263,22 +205,7 @@
         </div>
       </a>
 
-      <a class="tool-card" href="butter/quiz-wator-test.html" data-module="butter" data-type="quiz">
-        <div class="card-top">
-          <span class="badge badge-module">Butter</span>
-          <span class="badge badge-type">Quiz</span>
-        </div>
-        <div class="card-title">Wator-Test - Quiz</div>
-        <div class="card-meta">
-          10 Fragen
-          <span class="dot"></span>
-          Wasserverteilung, Note 1-5, Massnahmen
-          <span class="dot"></span>
-          Multiple Choice
-        </div>
-      </a>
-
-      <a class="tool-card" href="butter/quiz-buttersorten-reinigung.html" data-module="butter" data-type="quiz">
+      <a class="tool-card" href="butter/quiz-buttersorten-reinigung.html" data-thema="Buttersorten und Reinigung" data-module="butter" data-type="quiz">
         <div class="card-top">
           <span class="badge badge-module">Butter</span>
           <span class="badge badge-type">Quiz</span>
@@ -293,8 +220,7 @@
         </div>
       </a>
 
-
-      <a class="tool-card" href="butter/zuordnung-butterfehler.html" data-module="butter" data-type="zuordnung">
+      <a class="tool-card" href="butter/zuordnung-butterfehler.html" data-thema="Qualität und Analytik" data-module="butter" data-type="zuordnung">
         <div class="card-top">
           <span class="badge badge-module">Butter</span>
           <span class="badge badge-type">Zuordnung</span>
@@ -306,6 +232,21 @@
           9 Butterfehler
           <span class="dot"></span>
           Zuordnen
+        </div>
+      </a>
+
+      <a class="tool-card" href="butter/quiz-wator-test.html" data-thema="Qualität und Analytik" data-module="butter" data-type="quiz">
+        <div class="card-top">
+          <span class="badge badge-module">Butter</span>
+          <span class="badge badge-type">Quiz</span>
+        </div>
+        <div class="card-title">Wator-Test - Quiz</div>
+        <div class="card-meta">
+          10 Fragen
+          <span class="dot"></span>
+          Wasserverteilung, Note 1-5, Massnahmen
+          <span class="dot"></span>
+          Multiple Choice
         </div>
       </a>
 
@@ -329,7 +270,7 @@
     <div class="section-title">Hartkäse</div>
     <div class="tool-grid">
 
-      <a class="tool-card" href="hartkaese/sortierer-hartkaese-flussdiagramm.html" data-module="hartkaese" data-type="sortierer">
+      <a class="tool-card" href="hartkaese/sortierer-hartkaese-flussdiagramm.html" data-thema="Flussdiagramm" data-module="hartkaese" data-type="sortierer">
         <div class="card-top">
           <span class="badge badge-module">Hartkäse</span>
           <span class="badge badge-type">Sortierer</span>
@@ -344,8 +285,7 @@
         </div>
       </a>
 
-
-      <a class="tool-card" href="hartkaese/quiz-milch-lagern-fettgehalt.html" data-module="hartkaese" data-type="quiz">
+      <a class="tool-card" href="hartkaese/quiz-milch-lagern-fettgehalt.html" data-thema="Milch lagern, Fett einstellen" data-module="hartkaese" data-type="quiz">
         <div class="card-top">
           <span class="badge badge-module">Hartkäse</span>
           <span class="badge badge-type">Quiz</span>
@@ -360,7 +300,7 @@
         </div>
       </a>
 
-      <a class="tool-card" href="hartkaese/quiz-kulturen-hartkaese.html" data-module="hartkaese" data-type="quiz">
+      <a class="tool-card" href="hartkaese/quiz-kulturen-hartkaese.html" data-thema="Kulturen" data-module="hartkaese" data-type="quiz">
         <div class="card-top">
           <span class="badge badge-module">Hartkäse</span>
           <span class="badge badge-type">Quiz</span>
@@ -375,7 +315,7 @@
         </div>
       </a>
 
-      <a class="tool-card" href="hartkaese/quiz-kulturherstellung.html" data-module="hartkaese" data-type="quiz">
+      <a class="tool-card" href="hartkaese/quiz-kulturherstellung.html" data-thema="Kulturen" data-module="hartkaese" data-type="quiz">
         <div class="card-top">
           <span class="badge badge-module">Hartkäse</span>
           <span class="badge badge-type">Quiz</span>
@@ -390,7 +330,7 @@
         </div>
       </a>
 
-      <a class="tool-card" href="hartkaese/sortierer-kulturherstellung.html" data-module="hartkaese" data-type="sortierer">
+      <a class="tool-card" href="hartkaese/sortierer-kulturherstellung.html" data-thema="Kulturen" data-module="hartkaese" data-type="sortierer">
         <div class="card-top">
           <span class="badge badge-module">Hartkäse</span>
           <span class="badge badge-type">Sortierer</span>
@@ -419,7 +359,7 @@
     <div class="section-title">Frischkäse</div>
     <div class="tool-grid">
 
-      <a class="tool-card" href="frischkaese/lernkaertchen-mozzarella.html" data-module="frischkaese" data-type="lernkaertchen">
+      <a class="tool-card" href="frischkaese/lernkaertchen-mozzarella.html" data-thema="Mozzarella" data-module="frischkaese" data-type="lernkaertchen">
         <div class="card-top">
           <span class="badge badge-module">Frischkäse</span>
           <span class="badge badge-type">Lernkärtchen</span>
@@ -434,7 +374,7 @@
         </div>
       </a>
 
-      <a class="tool-card" href="frischkaese/quiz-mozzarella.html" data-module="frischkaese" data-type="quiz">
+      <a class="tool-card" href="frischkaese/quiz-mozzarella.html" data-thema="Mozzarella" data-module="frischkaese" data-type="quiz">
         <div class="card-top">
           <span class="badge badge-module">Frischkäse</span>
           <span class="badge badge-type">Quiz</span>
@@ -449,7 +389,7 @@
         </div>
       </a>
 
-      <a class="tool-card" href="frischkaese/sortierer-mozzarella.html" data-module="frischkaese" data-type="sortierer">
+      <a class="tool-card" href="frischkaese/sortierer-mozzarella.html" data-thema="Mozzarella" data-module="frischkaese" data-type="sortierer">
         <div class="card-top">
           <span class="badge badge-module">Frischkäse</span>
           <span class="badge badge-type">Sortierer</span>
@@ -464,7 +404,7 @@
         </div>
       </a>
 
-      <a class="tool-card" href="frischkaese/tabellen-luecken-mozzarella.html" data-module="frischkaese" data-type="tabellen-luecken">
+      <a class="tool-card" href="frischkaese/tabellen-luecken-mozzarella.html" data-thema="Mozzarella" data-module="frischkaese" data-type="tabellen-luecken">
         <div class="card-top">
           <span class="badge badge-module">Frischkäse</span>
           <span class="badge badge-type">Tabellen-Lücken</span>
@@ -479,7 +419,7 @@
         </div>
       </a>
 
-      <a class="tool-card" href="frischkaese/zuordnung-maengel-mozzarella.html" data-module="frischkaese" data-type="zuordnung">
+      <a class="tool-card" href="frischkaese/zuordnung-maengel-mozzarella.html" data-thema="Mozzarella" data-module="frischkaese" data-type="zuordnung">
         <div class="card-top">
           <span class="badge badge-module">Frischkäse</span>
           <span class="badge badge-type">Zuordnung</span>
@@ -494,7 +434,7 @@
         </div>
       </a>
 
-      <a class="tool-card" href="frischkaese/trainer-schritte-mozzarella.html" data-module="frischkaese" data-type="tabellen-luecken">
+      <a class="tool-card" href="frischkaese/trainer-schritte-mozzarella.html" data-thema="Mozzarella" data-module="frischkaese" data-type="tabellen-luecken">
         <div class="card-top">
           <span class="badge badge-module">Frischkäse</span>
           <span class="badge badge-type">Tabellen-Lücken</span>
@@ -504,6 +444,21 @@
           9 Schritte
           <span class="dot"></span>
           Einfach · Mittel · Schwer
+        </div>
+      </a>
+
+      <a class="tool-card" href="tools/beschriften-oelbrenner.html" data-thema="Wärmeerzeuger" data-module="allgemein frischkaese" data-type="beschriften">
+        <div class="card-top">
+          <span class="badge badge-module">Kesselhaus</span>
+          <span class="badge badge-type">Beschriften</span>
+        </div>
+        <div class="card-title">Ölbrenner beschriften</div>
+        <div class="card-meta">
+          15 Bauteile
+          <span class="dot"></span>
+          3 Schwierigkeitsstufen
+          <span class="dot"></span>
+          Zuordnen, Anklicken, Eintippen
         </div>
       </a>
 
@@ -580,22 +535,8 @@
 
   <!-- Allgemein -->
   <div class="module-section" id="section-allgemein">
-    <div class="section-title">Allgemeine Tools</div>
+    <div class="section-title">Rechnen</div>
     <div class="tool-grid">
-      <a class="tool-card" href="tools/beschriften-oelbrenner.html" data-module="allgemein frischkaese" data-type="beschriften">
-        <div class="card-top">
-          <span class="badge badge-module">Kesselhaus</span>
-          <span class="badge badge-type">Beschriften</span>
-        </div>
-        <div class="card-title">Ölbrenner beschriften</div>
-        <div class="card-meta">
-          15 Bauteile
-          <span class="dot"></span>
-          3 Schwierigkeitsstufen
-          <span class="dot"></span>
-          Zuordnen, Anklicken, Eintippen
-        </div>
-      </a>
 
       <a class="tool-card" href="tools/fachrechner-fettberechnung.html" data-module="allgemein butter" data-type="fachrechner">
         <div class="card-top">
@@ -611,6 +552,7 @@
           Eingabe
         </div>
       </a>
+
       <a class="tool-card" href="tools/fachrechner-mischungskreuz.html" data-module="allgemein hartkaese" data-type="fachrechner">
         <div class="card-top">
           <span class="badge badge-module">Hartkäse</span>
@@ -665,45 +607,7 @@
   BZWU Wil-Uzwil · Milchpraktiker EBA · Philipp Neukomm
 </footer>
 
-<script>
-var activeModule = 'all';
-var activeType   = 'all';
-
-document.querySelectorAll('.filter-btn').forEach(function(btn) {
-  btn.addEventListener('click', function() {
-    var filter = btn.dataset.filter;
-    var value  = btn.dataset.value;
-
-    // Update active state for this filter row
-    document.querySelectorAll('.filter-btn[data-filter="' + filter + '"]').forEach(function(b) {
-      b.classList.remove('active');
-    });
-    btn.classList.add('active');
-
-    if (filter === 'module') activeModule = value;
-    if (filter === 'type')   activeType   = value;
-
-    applyFilter();
-  });
-});
-
-function applyFilter() {
-  // Show/hide individual cards
-  document.querySelectorAll('.tool-card:not(.disabled)').forEach(function(card) {
-    var moduleMatch = activeModule === 'all' || card.dataset.module.split(' ').indexOf(activeModule) !== -1; // data-module darf mehrere Module enthalten, leerzeichengetrennt
-    var typeMatch   = activeType   === 'all' || card.dataset.type   === activeType;
-    card.style.display = (moduleMatch && typeMatch) ? '' : 'none';
-  });
-
-  // Show/hide module sections when all their cards are hidden
-  document.querySelectorAll('.module-section').forEach(function(section) {
-    var visible = section.querySelectorAll('.tool-card:not(.disabled):not([style*="display: none"])').length;
-    section.classList.toggle('hidden', visible === 0);
-  });
-}
-
-applyFilter();
-</script>
+<script src="assets/startseite.js?v=69f93a4f"></script>
 
 </body>
 </html>

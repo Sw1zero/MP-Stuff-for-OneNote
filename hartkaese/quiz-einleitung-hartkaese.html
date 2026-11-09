@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Einleitung Hartkäse - Quiz</title>
+  <link rel="stylesheet" href="../style.css?v=d6d6b61d">
+</head>
+<body>
+
+<header class="bzwu-header">
+  <div class="header-text">
+    <span class="school-badge">BZWU Wil-Uzwil · Milchpraktikerin / Milchpraktiker EBA · Hartkäse</span>
+    <h1>Einleitung Hartkäse - Quiz</h1>
+    <p>Wählen Sie die richtige Antwort. Sie erhalten sofort eine Rückmeldung.</p>
+  </div>
+  <div class="header-logos">
+    <img src="../assets/logos/bzwu.png" alt="BZWU" class="header-logo">
+    <img src="../assets/logos/milchtechnologen.svg" alt="Milchtechnologen" class="header-logo">
+  </div>
+</header>
+
+<main class="q-wrap">
+  <a class="back-link" href="../index.html">&#8592; Alle Lerntools</a>
+  <div id="quiz"></div>
+</main>
+
+<footer class="bzwu-footer">
+  BZWU Wil-Uzwil · Milchpraktikerin / Milchpraktiker EBA · Philipp Neukomm
+</footer>
+
+<script src="../assets/quiz.js?v=6c3e9a7b"></script>
+<script>
+var ALL_QUESTIONS = [
+  { q: 'Wie hoch ist der Wassergehalt im fettfreien Käse (wff) bei extra-hartem Käse?',
+    options: ['bis 500 g/kg', 'mehr als 500 und bis 540 g/kg', 'mehr als 540 und bis 650 g/kg', 'mehr als 650 g/kg'],
+    correct: 0,
+    explanation: 'Bei extra-hartem Käse liegt der wff bei bis 500 g/kg. Je weniger Wasser, desto härter der Käse.'
+  },
+  { q: 'Wie hoch ist der Wassergehalt im fettfreien Käse (wff) bei hartem Käse?',
+    options: ['bis 500 g/kg', 'mehr als 500 und bis 540 g/kg', 'mehr als 540 und bis 650 g/kg', 'mehr als 650 g/kg'],
+    correct: 1,
+    explanation: 'Bei hartem Käse liegt der wff bei mehr als 500 und bis 540 g/kg. Je weniger Wasser, desto härter der Käse.'
+  },
+  { q: 'Wie hoch ist der Wassergehalt im fettfreien Käse (wff) bei halbhartem Käse?',
+    options: ['bis 500 g/kg', 'mehr als 500 und bis 540 g/kg', 'mehr als 540 und bis 650 g/kg', 'mehr als 650 g/kg'],
+    correct: 2,
+    explanation: 'Bei halbhartem Käse liegt der wff bei mehr als 540 und bis 650 g/kg. Je weniger Wasser, desto härter der Käse.'
+  },
+  { q: 'Wie hoch ist der Wassergehalt im fettfreien Käse (wff) bei weichem Käse?',
+    options: ['bis 500 g/kg', 'mehr als 500 und bis 540 g/kg', 'mehr als 540 und bis 650 g/kg', 'mehr als 650 g/kg'],
+    correct: 3,
+    explanation: 'Bei weichem Käse liegt der wff bei mehr als 650 g/kg. Je weniger Wasser, desto härter der Käse.'
+  },
+  { q: 'Welche Organisation ist die Sortenorganisation für den Sbrinz?',
+    options: ['Sortenorganisation Sbrinz AOP', 'Interprofession Gruyère Switzerland AOP', 'Sortenorganisation Emmentaler Switzerland AOP'],
+    correct: 0,
+    explanation: 'Für den Sbrinz ist die Sortenorganisation Sbrinz AOP zuständig. Für den Gruyère die Interprofession Gruyère Switzerland AOP, für den Emmentaler die Sortenorganisation Emmentaler Switzerland AOP.'
+  },
+  { q: 'Welche Sortenorganisation für Schweizer Käse mit AOP-Status gibt es?',
+    options: ['Sortenorganisation Emmentaler Switzerland AOP', 'Sortenorganisation Mozzarella Switzerland AOP', 'Sortenorganisation Frischkäse Switzerland AOP', 'Sortenorganisation Quark Switzerland AOP'],
+    correct: 0,
+    explanation: 'Es gibt die Sortenorganisation Emmentaler Switzerland AOP, die Interprofession Gruyère Switzerland AOP und die Sortenorganisation Sbrinz AOP.'
+  },
+  { q: 'Welche Aufgabe haben die Sortenorganisationen?',
+    options: ['Sie sichern die Qualität und fördern die Käseproduktion.', 'Sie verkaufen den Käse direkt im Laden.', 'Sie melken die Kühe und liefern die Milch.', 'Sie reifen den Käse im eigenen Keller.'],
+    correct: 0,
+    explanation: 'Sortenorganisationen sichern die Qualität, machen Markenpolitik und fördern die Käseproduktion in der Schweiz.'
+  },
+  { q: 'Wahr oder Falsch? Für Hartkäse darf nur Rohmilch verwendet werden.',
+    options: ['Wahr', 'Falsch'],
+    correct: 0,
+    explanation: 'Wahr. Das verlangen die Sortenorganisationen.'
+  },
+  { q: 'Wie warm darf die Milch vor dem Gerinnen höchstens werden?',
+    options: ['30 °C', '40 °C', '60 °C', '72 °C'],
+    correct: 1,
+    explanation: 'Die Milch darf vor dem Gerinnen nicht über 40 °C erwärmt werden. Sonst ist sie keine Rohmilch mehr.'
+  },
+  { q: 'Welche Keimbelastung darf die Lieferantenmilch haben?',
+    options: ["unter 80'000 KBE/ml (Keime pro Milliliter)", "unter 350'000 KBE/ml (Keime pro Milliliter)", 'nicht nachweisbar'],
+    correct: 0,
+    explanation: "Die Keimbelastung muss unter 80'000 KBE/ml liegen."
+  },
+  { q: 'Welchen Zellgehalt darf die Lieferantenmilch haben?',
+    options: ["unter 80'000 Zellen/ml", "unter 350'000 Zellen/ml", 'nicht nachweisbar'],
+    correct: 1,
+    explanation: "Der Zellgehalt muss unter 350'000 Zellen/ml liegen."
+  },
+  { q: 'Was gilt für Hemmstoffe in der Lieferantenmilch?',
+    options: ["unter 80'000 pro ml", "unter 350'000 pro ml", 'nicht nachweisbar'],
+    correct: 2,
+    explanation: 'Hemmstoffe dürfen in der Milch nicht nachweisbar sein.'
+  },
+  { q: 'Welche Keime sind in der Käsereimilch unerwünscht?',
+    options: ['Buttersäurebakterien, Propionsäurebakterien, Staphylokokken', 'Milchsäurebakterien, Hefen, Schimmelpilze', 'Nur Keime aus dem Käsekeller', 'Keine, alle Keime sind erwünscht'],
+    correct: 0,
+    explanation: 'Unerwünscht sind Buttersäurebakterien, Propionsäurebakterien, Staphylokokken und Mikrokokken. Sie verschlechtern die Käsequalität.'
+  },
+  { q: 'Was sind Hemmstoffe in der Milch?',
+    options: ['Zusätze, die die Milch länger haltbar machen', 'Stoffe wie Antibiotika, die das Wachstum von Bakterien stören', 'Salze, die aus dem Futter in die Milch kommen', 'Fett, das sich in der Milch absetzt'],
+    correct: 1,
+    explanation: 'Hemmstoffe sind zum Beispiel Antibiotika gegen Euterkrankheiten. Sie stören die Milchsäurebakterien.'
+  },
+  { q: 'Was ist ein Problem von Hemmstoffen für den Käse?',
+    options: ['Sie stören die Milchsäurebakterien. Die Gärung läuft schlecht.', 'Sie fördern die Milchsäurebakterien. Die Gärung läuft zu schnell.', 'Sie erhöhen den Fettgehalt. Der Käse wird zu weich.', 'Sie senken den Zellgehalt. Die Milch wird zu dünn.'],
+    correct: 0,
+    explanation: 'Hemmstoffe stören die Milchsäurebakterien. Die Gärung im Käse läuft dann schlecht.'
+  },
+  { q: 'Was ist ein Problem von Hemmstoffen für die Menschen?',
+    options: ['Sie können gefährlich sein: Allergien oder Resistenzen (Antibiotika wirken nicht mehr).', 'Sie können nützlich sein: Sie schützen vor Allergien und Krankheiten.', 'Sie können lästig sein: Sie machen den Käse salzig und trocken.', 'Sie können harmlos sein: Sie verschwinden beim Pressen des Käses.'],
+    correct: 0,
+    explanation: 'Hemmstoffe wie Antibiotika können Allergien auslösen oder Resistenzen fördern. Dann wirken Antibiotika nicht mehr.'
+  }
+];
+
+Quiz.init({
+  badge: 'Einleitung',
+  questions: ALL_QUESTIONS,
+  messages: {
+    excellent: 'Ausgezeichnet! Sie kennen die Anforderungen an die Milch sehr gut.',
+    good: 'Gut gemacht! Noch ein paar Fragen üben und Sie sind top.',
+    ok: 'Nicht schlecht. Schauen Sie das Arbeitsblatt nochmals an.',
+    poor: 'Schauen Sie das Arbeitsblatt nochmals an. Dann klappt es besser.'
+  }
+});
+</script>
+</body>
+</html>

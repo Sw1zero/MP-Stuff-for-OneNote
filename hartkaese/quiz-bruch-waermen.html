@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bruch wärmen - Quiz</title>
+  <link rel="stylesheet" href="../style.css?v=d6d6b61d">
+</head>
+<body>
+
+<header class="bzwu-header">
+  <div class="header-text">
+    <span class="school-badge">BZWU Wil-Uzwil · Milchpraktikerin / Milchpraktiker EBA · Hartkäse</span>
+    <h1>Bruch wärmen - Quiz</h1>
+    <p>Wählen Sie die richtige Antwort. Sie erhalten sofort eine Rückmeldung.</p>
+  </div>
+  <div class="header-logos">
+    <img src="../assets/logos/bzwu.png" alt="BZWU" class="header-logo">
+    <img src="../assets/logos/milchtechnologen.svg" alt="Milchtechnologen" class="header-logo">
+  </div>
+</header>
+
+<main class="q-wrap">
+  <a class="back-link" href="../index.html">&#8592; Alle Lerntools</a>
+  <div id="quiz"></div>
+</main>
+
+<footer class="bzwu-footer">
+  BZWU Wil-Uzwil · Milchpraktikerin / Milchpraktiker EBA · Philipp Neukomm
+</footer>
+
+<script src="../assets/quiz.js?v=6c3e9a7b"></script>
+<script>
+var ALL_QUESTIONS = [
+  { q: 'Was passiert beim Vorkäsen und Bruchwärmen mit dem Bruch?',
+    options: ['Er gibt Sirte (Wasser) ab und wird fester.', 'Er nimmt Sirte (Wasser) auf und wird weicher.', 'Er löst sich auf und wird flüssig.', 'Er bleibt gleich und wird nur wärmer.'],
+    correct: 0,
+    explanation: 'Der Bruch gibt Sirte ab. Diesen Vorgang nennt man Entsirtung (Synärese).'
+  },
+  { q: 'Was ist ein Ziel des Bruchwärmens?',
+    options: ['Die Entsirtung (Synärese) fördern', 'Den Wassergehalt im Käse erhöhen', 'Die Gallerte neu bilden', 'Die Milch kühlen'],
+    correct: 0,
+    explanation: 'Mit steigender Temperatur zieht sich der Bruch zusammen und presst Sirte aus.'
+  },
+  { q: 'Was ist ein weiteres Ziel des Bruchwärmens?',
+    options: ['Die gewünschten Bakterien vermehren', 'Die gewünschten Bakterien stoppen', 'Das Lab zugeben', 'Die Kultur herstellen'],
+    correct: 0,
+    explanation: 'Die gewünschten Milchsäurebakterien vermehren sich bis zur Höchsttemperatur der Kultur.'
+  },
+  { q: 'Was ist ein weiteres Ziel des Bruchwärmens?',
+    options: ['Unerwünschte Bakterien verringern', 'Alle Bakterien abtöten', 'Unerwünschte Bakterien fördern', 'Den Fettgehalt einstellen'],
+    correct: 0,
+    explanation: 'Ab etwa 50 °C werden Fremdbakterien weniger. Die Milchsäurebakterien sind hitzetolerant und bleiben aktiv.'
+  },
+  { q: 'Ab welcher Temperatur werden beim Bruchwärmen viele Fremdbakterien abgetötet (inaktiviert)?',
+    options: ['ab ca. 38 °C', 'ab ca. 50 °C', 'ab ca. 65 °C'],
+    correct: 1,
+    explanation: 'Ab etwa 50 °C werden Fremdbakterien weniger.'
+  },
+  { q: 'Was bedeutet «thermophil»?',
+    options: ['kälteverträglich', 'hitzetolerant', 'salztolerant', 'säuretolerant'],
+    correct: 1,
+    explanation: 'Thermophile Bakterien sind hitzetolerant. Sie vertragen hohe Temperaturen.'
+  },
+  { q: 'Weshalb müssen die Milchsäurebakterien beim Hartkäse thermophil sein?',
+    options: ['Sie werden beim Bruchwärmen auf 52 bis 59 °C nicht abgetötet (inaktiviert).', 'Sie werden beim Bruchwärmen auf 52 bis 59 °C bewusst abgetötet.', 'Sie werden beim Bruchwärmen auf 52 bis 59 °C in Sirte aufgelöst.', 'Sie werden beim Bruchwärmen auf 52 bis 59 °C zu Fremdbakterien.'],
+    correct: 0,
+    explanation: 'Hartkäse wird auf 52 bis 59 °C gewärmt. Thermophile Bakterien sind hitzetolerant. Sie werden nicht inaktiviert und arbeiten weiter.'
+  },
+  { q: 'Auf welche Temperatur wärmen Sie den Bruch bei Extrahart- und Hartkäse?',
+    options: ['34–40 °C', '38–45 °C', '52–59 °C'],
+    correct: 2,
+    explanation: 'Extrahart- und Hartkäse (Rohmilch): 52–59 °C.'
+  },
+  { q: 'Auf welche Temperatur wärmen Sie den Bruch bei Halbhartkäse?',
+    options: ['34–40 °C', '38–45 °C', '52–59 °C'],
+    correct: 1,
+    explanation: 'Halbhartkäse (thermisierte Milch): 38–45 °C.'
+  },
+  { q: 'Auf welche Temperatur wärmen Sie den Bruch bei Weichkäse und Frischkäse?',
+    options: ['34–40 °C', '38–45 °C', '52–59 °C'],
+    correct: 0,
+    explanation: 'Weichkäse und Frischkäse (pasteurisierte Milch): 34–40 °C.'
+  },
+  { q: 'Wie viel Sirte verliert der Bruch beim Vorkäsen etwa?',
+    options: ['5 %', '25 %', '60 %'],
+    correct: 1,
+    explanation: 'Beim Vorkäsen verliert der Bruch etwa 25 % Sirte. Beim Wärmen kommen 9 bis 10 % dazu.'
+  }
+];
+
+Quiz.init({
+  badge: 'Bruch wärmen',
+  questions: ALL_QUESTIONS,
+  messages: {
+    excellent: 'Ausgezeichnet! Sie kennen das Bruchwärmen sehr gut.',
+    good: 'Gut gemacht! Noch ein paar Fragen üben und Sie sind top.',
+    ok: 'Nicht schlecht. Schauen Sie das Arbeitsblatt nochmals an.',
+    poor: 'Schauen Sie das Arbeitsblatt nochmals an. Dann klappt es besser.'
+  }
+});
+</script>
+</body>
+</html>

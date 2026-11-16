@@ -126,10 +126,10 @@ var Mischungskreuz = (function () {
       if (!(o.menge > 0)) o.menge = undefined;
       var r = rechne(o), mit = r.M !== undefined;
       aus.innerHTML = '<section class="q-card"><div class="mk-kreuz">' + svg(o, r) + '</div>' +
-        '<div class="r-tabelle-wrap"><table class="r-tabelle"><tr><th>Komponente</th><th>Teile</th><th>Anteil</th>' + (mit ? '<th>Menge</th>' : '') + '</tr>' +
-        '<tr><td>' + esc(o.nameA) + '</td><td>' + z(r.tA) + '</td><td>' + z(r.tA / r.S * 100, 1) + ' %</td>' + (mit ? '<td>' + z(r.mA, 2) + ' kg</td>' : '') + '</tr>' +
-        '<tr><td>' + esc(o.nameB) + '</td><td>' + z(r.tB) + '</td><td>' + z(r.tB / r.S * 100, 1) + ' %</td>' + (mit ? '<td>' + z(r.mB, 2) + ' kg</td>' : '') + '</tr>' +
-        '<tr><th>Total</th><td>' + z(r.S) + '</td><td>100 %</td>' + (mit ? '<td>' + z(r.M, 2) + ' kg</td>' : '') + '</tr></table></div>' +
+        '<div class="r-tabelle-wrap"><table class="r-tabelle"><tr><th>Komponente</th><th>Teile</th>' + (mit ? '<th>Menge</th>' : '') + '</tr>' +
+        '<tr><td>' + esc(o.nameA) + '</td><td>' + z(r.tA) + '</td>' + (mit ? '<td>' + z(r.mA, 2) + ' kg</td>' : '') + '</tr>' +
+        '<tr><td>' + esc(o.nameB) + '</td><td>' + z(r.tB) + '</td>' + (mit ? '<td>' + z(r.mB, 2) + ' kg</td>' : '') + '</tr>' +
+        '<tr><th>Total</th><td>' + z(r.S) + '</td>' + (mit ? '<td>' + z(r.M, 2) + ' kg</td>' : '') + '</tr></table></div>' +
         '<div class="r-weg"><b>Rechenweg</b><ol>' + weg(o, r, mit ? 'mengen' : 'teile').map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ol></div></section>';
     }
     [].forEach.call(root.querySelectorAll('.mk-modus .lk-chip'), function (b) { b.onclick = function () { setModus(b.dataset.m); update(); }; });

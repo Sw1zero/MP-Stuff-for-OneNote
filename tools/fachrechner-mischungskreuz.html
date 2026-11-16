@@ -30,7 +30,7 @@
 </footer>
 
 <script src="../assets/rechner.js?v=532d2e94"></script>
-<script src="../assets/mischungskreuz.js?v=2e9d7f15"></script>
+<script src="../assets/mischungskreuz.js?v=75b3792d"></script>
 <script>
 var pick = Rechner.pick, z = Rechner.zahl;
 
@@ -46,18 +46,10 @@ function genFett() {
       z(a) + ' %</strong> Fett, die Magermilch <strong>' + z(b) + ' %</strong>. Wie viel kg Vollmilch und wie viel kg Magermilch brauchen Sie?' });
 }
 
-function genAnteil() {
-  var a = pick(Q_VOLL), b = pick(Q_MAGER), c = pick(Q_ZIEL);
-  return Mischungskreuz.aufgabe({ nameA: 'Vollmilch', a: a, nameB: 'Magermilch', b: b, c: c, gesucht: 'anteile',
-    text: 'Sie mischen Vollmilch (<strong>' + z(a) + ' %</strong> Fett) und Magermilch (<strong>' + z(b) + ' %</strong> Fett) zu Käsereimilch mit <strong>' +
-      z(c) + ' %</strong> Fett. Wie viel Prozent der Mischung sind Vollmilch, wie viel Magermilch?' });
-}
-
 Mischungskreuz.seite({
   uebung: {
     kategorien: [
-      { name: 'Mengen', aufgaben: [genFett] },
-      { name: 'Anteile in %', aufgaben: [genAnteil] }
+      { name: 'Mengen', aufgaben: [genFett] }
     ],
   hilfe: { titel: 'So geht das Mischungskreuz', html:
     '<ol><li>Links oben Komponente A mit ihrem Wert, links unten Komponente B.</li>' +

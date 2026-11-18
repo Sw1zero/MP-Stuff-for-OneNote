@@ -1159,3 +1159,10 @@ body {
 .er-ansicht #erKopf .er-raum.hier rect { fill: rgba(30, 90, 180, .45); stroke: #0b2a5b; stroke-width: 1.8; }
 .er-ansicht #erKopf .er-raum.offen, .er-ansicht #erKopf .er-raum.fertig { pointer-events: auto; cursor: pointer; }
 .er-ansicht #erKopf .er-stand { margin: 2px 0 0; padding: 1px 6px; width: fit-content; font-size: .7rem; color: #1f2933; background: rgba(255, 255, 255, .55); border-radius: 4px; }
+
+/* Escape Room: Messung pro Schloss im Schlussbild */
+.er-mess-titel { margin: 14px 0 6px; font-size: .95rem; color: var(--blue-dark); }
+.er-mess { overflow-x: auto; }
+.er-mess table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.er-mess th, .er-mess td { padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+.er-mess th { color: var(--text-muted); font-weight: 600; }

@@ -1166,3 +1166,8 @@ body {
 .er-mess table { width: 100%; border-collapse: collapse; font-size: .9rem; }
 .er-mess th, .er-mess td { padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--border); }
 .er-mess th { color: var(--text-muted); font-weight: 600; }
+
+/* Anrufbeantworter: rote Lampe blinkt, bis die Nachricht angehört (gelesen) ist */
+.er-hot.er-blink:not(.er-gelesen)::before { content: ''; position: absolute; right: 6px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: #e02020; box-shadow: 0 0 8px 3px rgba(255, 40, 40, .8); animation: er-blinken 1s steps(1) infinite; pointer-events: none; }
+@keyframes er-blinken { 50% { opacity: .1; box-shadow: none; } }
+@media (prefers-reduced-motion: reduce) { .er-hot.er-blink:not(.er-gelesen)::before { animation: none; } }

@@ -1147,3 +1147,15 @@ body {
 .er-hot.er-gelesen::after { content: '✓'; position: absolute; right: 2px; top: 2px; width: 18px; height: 18px; line-height: 18px; border-radius: 50%; background: var(--success); color: #fff; font-size: 12px; font-weight: 700; text-align: center; }
 .er-dlg { width: min(640px, 92vw); max-height: 90vh; overflow: auto; margin: auto; border: 0; border-radius: var(--radius-lg); padding: 18px 20px; }
 .er-dlg::backdrop { background: rgba(0, 0, 0, .55); }
+
+/* Escape Room: Raumplan als durchsichtige Minikarte unten links (wie im Videospiel), Grundriss mit Wänden */
+.er-ansicht #erKopf { position: absolute; bottom: 8px; left: 8px; z-index: 2; width: min(22%, 270px); pointer-events: none; }
+.er-ansicht #erKopf .er-plan { margin: 0; padding: 3px; background: rgba(255, 255, 255, .32); box-shadow: none; border-radius: 6px; backdrop-filter: blur(2px); }
+.er-ansicht #erKopf .er-raum rect { fill: rgba(255, 255, 255, .35); stroke: #1f2933; stroke-width: 1.1; rx: 0; }
+.er-ansicht #erKopf .er-raum text { font-size: 4.4px; fill: #1f2933; text-transform: uppercase; letter-spacing: .1px; }
+.er-ansicht #erKopf .er-raum .er-zustand { font-size: 3px; text-transform: none; fill: #3e4c59; }
+.er-ansicht #erKopf .er-raum.zu rect { fill: transparent; stroke: #52606d; stroke-width: .7; stroke-dasharray: 2 1.2; }
+.er-ansicht #erKopf .er-raum.fertig rect { fill: rgba(46, 160, 90, .35); stroke: #1f2933; }
+.er-ansicht #erKopf .er-raum.hier rect { fill: rgba(30, 90, 180, .45); stroke: #0b2a5b; stroke-width: 1.8; }
+.er-ansicht #erKopf .er-raum.offen, .er-ansicht #erKopf .er-raum.fertig { pointer-events: auto; cursor: pointer; }
+.er-ansicht #erKopf .er-stand { margin: 2px 0 0; padding: 1px 6px; width: fit-content; font-size: .7rem; color: #1f2933; background: rgba(255, 255, 255, .55); border-radius: 4px; }

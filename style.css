@@ -1045,3 +1045,105 @@ body {
 .ls-wrap .lb-slot.correct, .ls-wrap .lb-slot.wrong { flex-wrap: wrap; gap: 2px 4px; }
 .ls-wrap .lb-slot .gap-mark { margin: 0; }
 .ls-wrap .lb-slot .gap-mark.nok { flex-basis: 100%; }
+
+/* ============================================================
+   Escape Room (assets/escape-room.js, nur MT) – Karten, Knöpfe und Rückmeldung wie Quiz und Rechner
+   ============================================================ */
+.er-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.er-leiste { display: flex; gap: 4px; list-style: none; margin: 8px 0 12px; padding: 0; }
+.er-leiste li { flex: 1; display: grid; place-items: center; min-height: 28px; border-radius: var(--radius-sm); background: var(--border); color: var(--text-muted); font-size: 0.8rem; font-weight: 700; }
+.er-leiste li.fertig { background: var(--success); color: #fff; }
+.er-leiste li.jetzt { background: var(--blue-dark); color: #fff; box-shadow: 0 0 0 2px var(--blue-light); }
+.er-protokoll { margin: 0 0 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.er-protokoll summary { min-height: 44px; display: flex; align-items: center; padding: 0 16px; font-weight: 600; color: var(--blue-dark); cursor: pointer; }
+.er-protokoll summary:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-md); }
+.er-protokoll ol, .er-protokoll p { margin: 0; padding: 0 16px 14px 36px; line-height: 1.55; font-size: 0.92rem; }
+.er-protokoll p { padding-left: 16px; color: var(--text-muted); }
+.er-szene { margin: 0 0 14px; padding: 16px 18px; border-radius: var(--radius-lg); background: var(--blue-dark); color: #fff; line-height: 1.55; }
+.er-szene p + p { margin-top: 8px; }
+.er-ort { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--blue-tint); }
+.er-station { animation: er-ein .35s ease-out; }
+@keyframes er-ein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.er-titel { margin: 10px 0 8px; font-size: 1.15rem; color: var(--blue-dark); }
+.er-titel:focus { outline: none; }
+.er-aufgabe { line-height: 1.55; }
+.er-aufgabe p { margin: 10px 0; }
+.er-aufgabe strong { color: var(--blue-dark); }
+.er-zitat { padding: 10px 14px; border-left: 4px solid var(--blue-light); background: var(--blue-tint); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-style: italic; }
+.er-schema { display: flex; flex-wrap: wrap; gap: 6px 4px; list-style: none; margin: 10px 0; padding: 0; }
+.er-schema li { padding: 6px 10px; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem; background: var(--surface); }
+.er-schema li:not(:last-child)::after { content: ' →'; color: var(--text-muted); }
+.er-schema li.er-luecke { border-style: dashed; border-color: var(--blue-dark); font-weight: 700; color: var(--blue-dark); min-width: 56px; text-align: center; }
+.er-karten { margin: 12px 0 4px; }
+.q-answer.er-gewaehlt { border-color: var(--blue-dark); background: var(--blue-tint); }
+.er-schloss { margin-top: 14px; padding: 12px 14px 14px; border: 2px solid var(--blue-dark); border-radius: var(--radius-md); background: var(--bg); }
+.er-schloss-titel { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--blue-dark); }
+.er-warte { margin-top: 10px; min-height: 1.2em; font-size: 0.92rem; font-weight: 600; color: var(--blue-dark); }
+.er-tipps { margin: 6px 0 0; padding: 0; list-style: none; }
+.er-tipps li { margin-top: 8px; padding: 10px 14px; border-radius: var(--radius-md); background: #FFF6D6; line-height: 1.5; }
+.er-hilfe .q-btn.ghost:disabled { opacity: 0.5; cursor: default; }
+.er-quelle { margin-top: 8px; font-size: 0.8rem; color: var(--text-muted); }
+.er-tabelle { overflow-x: auto; }
+.er-kurve { margin: 10px 0; }
+.er-kurve svg { width: 100%; height: auto; font-family: var(--font); font-size: 12px; fill: var(--text-muted); }
+.er-kurve polyline { fill: none; stroke: var(--blue-dark); stroke-width: 2; }
+.er-kurve circle { fill: var(--blue-dark); }
+.er-kurve .er-gitter { stroke: var(--border); stroke-width: 1; }
+.er-kurve .er-wert { fill: var(--text); font-weight: 600; }
+.er-kurve figcaption { font-size: 0.8rem; color: var(--text-muted); text-align: center; }
+.er-regeln h2, .er-ziele h2 { font-size: 1.05rem; color: var(--blue-dark); margin-bottom: 8px; }
+.er-regeln ul, .er-ziele ul, .er-liste { padding-left: 1.2em; line-height: 1.6; }
+.er-regeln li + li, .er-ziele li + li { margin-top: 6px; }
+.er-ende { background: var(--success-dark); }
+.er-bilanz { margin-top: 12px; color: var(--text-muted); }
+.er-knoepfe { margin: 16px 0 32px; }
+.er-wrap .q-card + .q-card { margin-top: 14px; }
+/* Version 2: Raumplan, Dokumente, Mappe */
+.er-plan { margin: 4px 0 6px; background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 8px; }
+.er-plan svg { display: block; width: 100%; height: auto; font-family: var(--font); }
+.er-raum rect { fill: var(--surface); stroke: var(--blue-light); stroke-width: 0.6; }
+.er-raum text { font-size: 4.2px; font-weight: 700; fill: var(--blue-dark); }
+.er-raum .er-zustand { font-size: 3.4px; font-weight: 500; fill: var(--text-muted); }
+.er-raum.offen { cursor: pointer; }
+.er-raum.zu rect { fill: var(--bg); stroke: var(--border); stroke-dasharray: 1.5 1; }
+.er-raum.zu text { fill: var(--text-muted); }
+.er-raum.fertig { cursor: pointer; }
+.er-raum.fertig rect { fill: var(--success-tint); stroke: var(--success); }
+.er-raum.fertig .er-zustand { fill: var(--success-dark); }
+.er-raum.hier rect { stroke: var(--blue-dark); stroke-width: 1.2; }
+.er-nav { margin: 6px 0 4px; }
+.er-nav .lk-chip:disabled { opacity: 0.55; cursor: default; }
+.er-stand { margin: 0 0 10px; font-size: 0.9rem; color: var(--text-muted); }
+.er-mappe { padding: 0 16px 14px; }
+.er-mappe h3, .er-doks h3 { margin: 12px 0 6px; font-size: 0.95rem; color: var(--blue-dark); }
+.er-mappe ol { padding: 0 0 0 1.2em; line-height: 1.55; font-size: 0.92rem; }
+.er-mappe p { padding: 0; }
+.er-doks { margin: 0 0 14px; }
+.er-dok { margin-top: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.er-dok summary { min-height: 44px; display: flex; align-items: center; gap: 6px; padding: 0 14px; font-weight: 600; color: var(--blue-dark); cursor: pointer; }
+.er-dok summary span { font-weight: 400; font-size: 0.85rem; color: var(--text-muted); }
+.er-dok summary:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-md); }
+.er-dok > div { padding: 0 12px 12px; overflow-x: auto; }
+.er-papier { padding: 12px 14px; background: #FFFDF5; border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow-sm); line-height: 1.5; }
+.er-papier ul { padding-left: 1.2em; }
+.er-papier-kopf { margin-bottom: 6px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
+.er-hand { font-style: italic; }
+.er-legende { columns: 2; column-gap: 20px; padding-left: 1.6em; font-size: 0.9rem; line-height: 1.6; }
+.er-bild { margin: 0 0 14px; background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 8px; }
+.er-bild img { display: block; width: 100%; height: auto; }
+.er-bild figcaption { font-size: 0.8rem; color: var(--text-muted); text-align: center; }
+.er-tank { fill: var(--bg); stroke: var(--blue-dark); stroke-width: 2; }
+.er-tank-milch { fill: var(--blue-tint); }
+.er-anzeige { fill: var(--blue-dark); }
+.er-kurve .er-anzeige-text { fill: #fff; font-weight: 600; }
+.er-loeschen { margin-top: 0; }
+.er-schloss .q-btn { margin-top: 4px; }
+@media (prefers-reduced-motion: reduce) { .er-station { animation: none; } }
+/* Szene bricht aus der 640-px-Spalte aus (Lernende arbeiten am PC): so breit wie das Fenster, höchstens 1280 px, und nie höher als das Fenster */
+.er-ansicht { position: relative; width: min(1280px, calc(100vw - 48px), calc((100vh - 120px) * 16 / 9)); margin: 0 0 14px 50%; transform: translateX(-50%); border-radius: var(--radius-lg); overflow: hidden; background: var(--border); }
+.er-ansicht img { display: block; width: 100%; height: auto; }
+.er-hot { position: absolute; padding: 0; background: transparent; border: 2px solid transparent; border-radius: 4px; cursor: pointer; }
+.er-hot:hover, .er-hot:focus-visible { border-color: #fff; background: rgba(255, 255, 255, .2); outline: none; box-shadow: 0 0 0 2px var(--blue-dark); }
+.er-hot.er-gelesen::after { content: '✓'; position: absolute; right: 2px; top: 2px; width: 18px; height: 18px; line-height: 18px; border-radius: 50%; background: var(--success); color: #fff; font-size: 12px; font-weight: 700; text-align: center; }
+.er-dlg { width: min(640px, 92vw); max-height: 90vh; overflow: auto; margin: auto; border: 0; border-radius: var(--radius-lg); padding: 18px 20px; }
+.er-dlg::backdrop { background: rgba(0, 0, 0, .55); }

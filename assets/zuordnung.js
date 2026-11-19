@@ -57,9 +57,18 @@ var Zuordnung = (function () {
     return String(s).toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')
       .replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
   }
-  function passt(eingabe, g) {
-    var f = fold(eingabe);
-    return !!f && (g.keys || [g.label]).some(function (k) { return f.indexOf(fold(k)) !== -1; });
+  // Länge des längsten passenden Stichworts, voller Text zählt am meisten, 0 = passt nicht. Ohne Leerzeichen verglichen
+  function treffer(f, g) {
+    var o = function (s) { return fold(s).replace(/ /g, ''); }, name = g.label || g.text || '', best;
+    f = f.replace(/ /g, '');
+    best = name && f === o(name) ? 1e9 : 0;
+    (g.keys || [name]).forEach(function (k) { var fk = o(k); if (fk && f.indexOf(fk) !== -1 && fk.length > best) best = fk.length; });
+    return best;
+  }
+  // Richtig nur, wenn keine andere Lösung besser passt (gleiche Stichworte in mehreren Lücken bleiben erlaubt)
+  function passt(eingabe, g, alle) {
+    var f = fold(eingabe), t = f ? treffer(f, g) : 0;
+    return t > 0 && !(alle || []).some(function (o) { return o !== g && treffer(f, o) > t; });
   }
   function karte(i) {
     var k = cfg.karten[i];
@@ -307,9 +316,9 @@ var Zuordnung = (function () {
     }).join('') + '</ol>' + (bes ? '</div>' : '') + schluss('Überprüfen');
     el('zCheck').onclick = function () {
       if (solved === true) return start();
-      var k = 0;
+      var k = 0, alle = cfg.gruppen.map(function (g, i) { return tab ? loesung(i) : g; });
       [].forEach.call(document.querySelectorAll('.z-row'), function (row) {
-        var g = loesung(+row.dataset.i), inp = row.querySelector('.z-input'), ok = passt(inp.value, g);
+        var g = loesung(+row.dataset.i), inp = row.querySelector('.z-input'), ok = passt(inp.value, g, alle);
         if (ok) k++;
         row.classList.toggle('is-correct', ok);
         row.classList.toggle('is-wrong', !ok);

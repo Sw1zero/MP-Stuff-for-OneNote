@@ -47,7 +47,31 @@ var UMRECHNUNGEN = [
   { von: 'ml', nach: 'dl', kat: 1, werte: [100, 200, 250, 300, 400, 500, 750, 1000, 2500], faktor: 0.01, regel: '1 dl = 100 ml, also ÷ 100' },
   { von: 'dl', nach: 'ml', kat: 1, werte: [1, 2, 2.5, 3, 4, 5, 7.5, 10, 25], faktor: 100, regel: '1 dl = 100 ml, also × 100' },
   { von: 'ml', nach: 'cl', kat: 1, werte: [10, 20, 25, 30, 40, 50, 75, 100, 250, 500], faktor: 0.1, regel: '1 cl = 10 ml, also ÷ 10' },
-  { von: 'cl', nach: 'ml', kat: 1, werte: [1, 2, 2.5, 3, 4, 5, 7.5, 10, 25, 50], faktor: 10, regel: '1 cl = 10 ml, also × 10' }
+  { von: 'cl', nach: 'ml', kat: 1, werte: [1, 2, 2.5, 3, 4, 5, 7.5, 10, 25, 50], faktor: 10, regel: '1 cl = 10 ml, also × 10' },
+  { von: 'dm', nach: 'm', kat: 2, werte: [5, 10, 15, 20, 25, 30, 50, 75, 100], faktor: 0.1, regel: '1 m = 10 dm, also ÷ 10' },
+  { von: 'm', nach: 'dm', kat: 2, werte: [0.5, 1, 1.5, 2, 2.5, 3, 5, 7.5, 10], faktor: 10, regel: '1 m = 10 dm, also × 10' },
+  { von: 'cm', nach: 'dm', kat: 2, werte: [5, 10, 15, 20, 25, 30, 50, 75, 100], faktor: 0.1, regel: '1 dm = 10 cm, also ÷ 10' },
+  { von: 'dm', nach: 'cm', kat: 2, werte: [0.5, 1, 1.5, 2, 2.5, 3, 5, 7.5, 10], faktor: 10, regel: '1 dm = 10 cm, also × 10' },
+  { von: 'mm', nach: 'cm', kat: 2, werte: [5, 10, 15, 20, 25, 30, 50, 75, 100], faktor: 0.1, regel: '1 cm = 10 mm, also ÷ 10' },
+  { von: 'cm', nach: 'mm', kat: 2, werte: [0.5, 1, 1.5, 2, 2.5, 3, 5, 7.5, 10], faktor: 10, regel: '1 cm = 10 mm, also × 10' },
+  { von: 'cm', nach: 'm', kat: 2, werte: [25, 50, 75, 100, 150, 200, 250, 500], faktor: 0.01, regel: '1 m = 100 cm, also ÷ 100' },
+  { von: 'm', nach: 'cm', kat: 2, werte: [0.25, 0.5, 0.75, 1, 1.5, 2, 2.5, 5], faktor: 100, regel: '1 m = 100 cm, also × 100' },
+  { von: 'mm', nach: 'm', kat: 2, werte: [250, 500, 750, 1000, 1500, 2000, 2500, 5000], faktor: 0.001, regel: '1 m = 1000 mm, also ÷ 1000' },
+  { von: 'm', nach: 'mm', kat: 2, werte: [0.25, 0.5, 0.75, 1, 1.5, 2, 2.5, 5], faktor: 1000, regel: '1 m = 1000 mm, also × 1000' },
+  { von: 'dm²', nach: 'm²', kat: 3, werte: [25, 50, 100, 150, 200, 250, 500, 1000], faktor: 0.01, regel: '1 m² = 100 dm², also ÷ 100' },
+  { von: 'm²', nach: 'dm²', kat: 3, werte: [0.25, 0.5, 1, 1.5, 2, 2.5, 5, 10], faktor: 100, regel: '1 m² = 100 dm², also × 100' },
+  { von: 'cm²', nach: 'dm²', kat: 3, werte: [25, 50, 100, 150, 200, 250, 500, 1000], faktor: 0.01, regel: '1 dm² = 100 cm², also ÷ 100' },
+  { von: 'dm²', nach: 'cm²', kat: 3, werte: [0.25, 0.5, 1, 1.5, 2, 2.5, 5, 10], faktor: 100, regel: '1 dm² = 100 cm², also × 100' },
+  { von: 'cm²', nach: 'm²', kat: 3, werte: [2500, 5000, 10000, 15000, 20000, 25000, 50000], faktor: 0.0001, regel: '1 m² = 10000 cm², also ÷ 10000' },
+  { von: 'm²', nach: 'cm²', kat: 3, werte: [0.25, 0.5, 1, 1.5, 2, 2.5, 5], faktor: 10000, regel: '1 m² = 10000 cm², also × 10000' },
+  { von: 'm²', nach: 'ha', kat: 3, werte: [2500, 5000, 10000, 15000, 20000, 25000, 50000, 100000], faktor: 0.0001, regel: '1 ha = 10000 m², also ÷ 10000' },
+  { von: 'ha', nach: 'm²', kat: 3, werte: [0.25, 0.5, 1, 1.5, 2, 2.5, 5, 10], faktor: 10000, regel: '1 ha = 10000 m², also × 10000' },
+  { von: 'dm³', nach: 'm³', kat: 4, werte: [250, 500, 1000, 1500, 2000, 2500, 5000], faktor: 0.001, regel: '1 m³ = 1000 dm³, also ÷ 1000' },
+  { von: 'm³', nach: 'dm³', kat: 4, werte: [0.25, 0.5, 1, 1.5, 2, 2.5, 5], faktor: 1000, regel: '1 m³ = 1000 dm³, also × 1000' },
+  { von: 'cm³', nach: 'dm³', kat: 4, werte: [250, 500, 1000, 1500, 2000, 2500, 5000], faktor: 0.001, regel: '1 dm³ = 1000 cm³, also ÷ 1000' },
+  { von: 'dm³', nach: 'cm³', kat: 4, werte: [0.25, 0.5, 1, 1.5, 2, 2.5, 5], faktor: 1000, regel: '1 dm³ = 1000 cm³, also × 1000' },
+  { von: 'cm³', nach: 'm³', kat: 4, werte: [1000, 2500, 5000, 10000, 25000, 50000], faktor: 1e-6, regel: '1 m³ = 1000000 cm³, also ÷ 1000000' },
+  { von: 'm³', nach: 'cm³', kat: 4, werte: [0.001, 0.0025, 0.005, 0.01, 0.025, 0.05], faktor: 1000000, regel: '1 m³ = 1000000 cm³, also × 1000000' }
 ];
 
 // Ein Generator pro Kategorie, der eine zufällige Umrechnung dieser Kategorie stellt
@@ -55,6 +79,10 @@ function generator(kat) {
   return function () {
     var u = Rechner.pick(UMRECHNUNGEN.filter(function (x) { return x.kat === kat; }));
     var w = Rechner.pick(u.werte);
+    if (Math.random() < 0.5) { // Hälfte der Aufgaben: Zufallswert mit 3 gültigen Ziffern im Bereich der Liste (z.B. 3.47 oder 32.4)
+      var lo = Math.min.apply(null, u.werte), hi = Math.max.apply(null, u.werte);
+      w = parseFloat((lo + Math.random() * (hi - lo)).toPrecision(3));
+    }
     var e = parseFloat((w * u.faktor).toPrecision(9));
     return {
       text: 'Rechnen Sie um: <strong>' + Rechner.zahl(w) + ' ' + u.von + '</strong> = ? ' + u.nach,
@@ -64,18 +92,46 @@ function generator(kat) {
   };
 }
 
+// Längen mit gemischten Einheiten malnehmen: Fläche (2 Längen) oder Raummass (3 Längen), Ergebnis in vorgegebener Einheit
+var LAENGE = { m: { fak: 100, min: 0.5, max: 5 }, dm: { fak: 10, min: 5, max: 50 }, cm: { fak: 1, min: 20, max: 200 } };
+function berechnen(n) {
+  return function () {
+    var ziel = Rechner.pick(['m', 'dm', 'cm']), hoch = n === 2 ? '²' : '³', teile = [], prod = 1, schritte = [], umr = [];
+    for (var i = 0; i < n; i++) {
+      var e = Rechner.pick(['m', 'dm', 'cm']), L = LAENGE[e];
+      var w = parseFloat((L.min + Math.random() * (L.max - L.min)).toPrecision(3));
+      var im = parseFloat((w * L.fak / LAENGE[ziel].fak).toPrecision(9));
+      teile.push(w + ' ' + e); schritte.push(Rechner.zahl(im));
+      if (e !== ziel) umr.push(Rechner.zahl(w) + ' ' + e + ' = ' + Rechner.zahl(im) + ' ' + ziel);
+      prod *= im;
+    }
+    prod = parseFloat(prod.toPrecision(9));
+    return {
+      text: 'Wie viel <strong>' + ziel + hoch + '</strong> sind <strong>' + teile.map(function (t) { return Rechner.zahl(parseFloat(t)) + ' ' + t.split(' ')[1]; }).join(' × ') + '</strong>?',
+      felder: [{ label: 'Ergebnis', einheit: ziel + hoch, wert: prod, tol: Math.abs(prod) * 0.005 }],
+      weg: (umr.length ? ['Alles in ' + ziel + ' umrechnen: ' + umr.join(', ')] : []).concat([schritte.join(' × ') + ' = <strong>' + Rechner.zahl(prod) + ' ' + ziel + hoch + '</strong>'])
+    };
+  };
+}
+
 Rechner.init({
   kategorien: [
     { name: 'Masse', aufgaben: [generator(0)] },
-    { name: 'Volumen', aufgaben: [generator(1)] }
+    { name: 'Volumen', aufgaben: [generator(1)] },
+    { name: 'Länge', aufgaben: [generator(2)] },
+    { name: 'Fläche', aufgaben: [generator(3)] },
+    { name: 'Raummass', aufgaben: [generator(4)] },
+    { name: 'Fläche berechnen', aufgaben: [berechnen(2)] },
+    { name: 'Raum berechnen', aufgaben: [berechnen(3)] }
   ],
   hilfe: { titel: 'Umrechnungshilfe', html:
-    '<table class="r-tabelle"><tr><th>Masse</th><th>Volumen</th></tr>' +
-    '<tr><td>1 t = 1000 kg</td><td>1 l = 10 dl</td></tr>' +
-    '<tr><td>1 kg = 1000 g</td><td>1 l = 100 cl</td></tr>' +
-    '<tr><td>1 g = 1000 mg</td><td>1 l = 1000 ml</td></tr>' +
-    '<tr><td></td><td>1 dl = 100 ml</td></tr>' +
-    '<tr><td></td><td>1 cl = 10 ml</td></tr></table>' }
+    '<table class="r-tabelle"><tr><th>Masse</th><th>Volumen</th><th>Länge</th><th>Fläche</th><th>Raummass</th></tr>' +
+    '<tr><td>1 t = 1000 kg</td><td>1 l = 10 dl</td><td>1 m = 10 dm</td><td>1 m² = 100 dm²</td><td>1 m³ = 1000 dm³</td></tr>' +
+    '<tr><td>1 kg = 1000 g</td><td>1 l = 100 cl</td><td>1 dm = 10 cm</td><td>1 dm² = 100 cm²</td><td>1 dm³ = 1000 cm³</td></tr>' +
+    '<tr><td>1 g = 1000 mg</td><td>1 l = 1000 ml</td><td>1 cm = 10 mm</td><td>1 m² = 10 000 cm²</td><td>1 m³ = 1 000 000 cm³</td></tr>' +
+    '<tr><td></td><td>1 dl = 100 ml</td><td>1 m = 100 cm</td><td>1 ha = 10 000 m²</td><td>1 dm³ = 1 l</td></tr>' +
+    '<tr><td></td><td>1 cl = 10 ml</td><td>1 m = 1000 mm</td><td></td><td></td></tr>'
+    + '</table>' }
 });
 </script>
 </body>
